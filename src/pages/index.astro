@@ -1,0 +1,225 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const basePath = import.meta.env.BASE_URL || '';
+---
+
+<Layout title="Obstack — The Ultimate Observability Stack" description="Obstack is the ultimate observability stack for businesses who want to internalize and automate their observability needs. Start with Bee, the zero-code Linux observability agent.">
+  <!-- Hero -->
+  <section class="py-20 sm:py-32">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl text-center">
+        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+          The Ultimate Observability Stack
+        </h1>
+        <p class="mt-6 text-lg text-gray-600">
+          Internalize and automate your observability needs with Obstack.
+          Zero-code, zero-overhead, built for production.
+        </p>
+        <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
+          <a
+            href={`${basePath}/download`}
+            class="rounded-md bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700"
+            >Download Bee</a
+          >
+          <a
+            href={`${basePath}/demo`}
+            class="rounded-md border border-gray-300 px-8 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
+            >Request a Demo</a
+          >
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stack Overview -->
+  <section class="py-16 sm:py-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          The Obstack Stack
+        </h2>
+        <p class="mt-4 text-lg text-gray-600">
+          A suite of purpose-built observability components, each solving a
+          specific need. Start with Bee and add more as you grow.
+        </p>
+      </div>
+
+      <div class="mt-16 grid gap-8 md:grid-cols-3">
+        <!-- Bee -->
+        <div class="rounded-xl border border-gray-200 p-8 shadow-sm">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-2.21 0-4 1.79-4 4 0 .88.29 1.72.8 2.4l5.2 5.2c.68-.68 1.2-1.52 1.2-2.4 0-2.21-1.79-4-4-4zm0 0c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900">Bee</h3>
+          <p class="mt-3 text-sm text-gray-600">
+            Zero-code Linux observability agent with eBPF and native Node.js
+            profiling.
+          </p>
+          <div class="mt-4 flex gap-4">
+            <a
+              href={`${basePath}/bee`}
+              class="text-sm font-medium text-indigo-600 hover:underline"
+              >Learn more &rarr;</a
+            >
+            <a
+              href={`${basePath}/download`}
+              class="text-sm font-medium text-indigo-600 hover:underline"
+              >Download</a
+            >
+          </div>
+        </div>
+
+        <!-- Future Component -->
+        <div class="rounded-xl border border-gray-200 p-8 shadow-sm opacity-60">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h7.67M12 15V5m0 0L8 9m4-4l4 4M5 20h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v11a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900">Coming Soon</h3>
+          <p class="mt-3 text-sm text-gray-600">
+            More components are in development to complete the stack.
+          </p>
+          <span class="mt-4 inline-block text-sm font-medium text-gray-400">Coming soon</span>
+        </div>
+
+        <!-- Future Component -->
+        <div class="rounded-xl border border-gray-200 p-8 shadow-sm opacity-60">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.135a8.96 8.96 0 013.357 0m-3.357 0v.001a8.96 8.96 0 013.357 0m-3.357 0a8.96 8.96 0 013.357 0M12 12h.01m-2.553 6.86a8.96 8.96 0 01-3.357-1.001m3.357 1.001v-.001a8.96 8.96 0 013.357 1.001m-3.357-1.001a8.96 8.96 0 013.357 1.001M12 12h.01M12 12v.01" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-900">Coming Soon</h3>
+          <p class="mt-3 text-sm text-gray-600">
+            Additional observability tools are in the pipeline.
+          </p>
+          <span class="mt-4 inline-block text-sm font-medium text-gray-400">Coming soon</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Features -->
+  <section class="bg-gray-50 py-16 sm:py-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Key Capabilities
+        </h2>
+        <p class="mt-4 text-lg text-gray-600">
+          Built for production observability with zero application changes.
+        </p>
+      </div>
+
+      <div class="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="flex flex-col items-center text-center">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Zero-Code</h3>
+          <p class="mt-2 text-sm text-gray-600">
+            No application packages, flags, source changes, or restarts required.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center text-center">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2l4 -4m5.674 7.326a9 9 0 11-18 0a9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Bounded Resources</h3>
+          <p class="mt-2 text-sm text-gray-600">
+            Every queue, eBPF map, and buffer has an explicit ceiling.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center text-center">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">eBPF Powered</h3>
+          <p class="mt-2 text-sm text-gray-600">
+            Kernel-level observability with cgroup-skb programs.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center text-center">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0a9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Native Profiling</h3>
+          <p class="mt-2 text-sm text-gray-600">
+            99Hz Node.js profiling with V8 symbolization.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center text-center">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0a9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Multi-Protocol</h3>
+          <p class="mt-2 text-sm text-gray-600">
+            HTTP/1, HTTP/2/gRPC, TLS, Redis, MySQL support.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center text-center">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9a3 3 0 100 6a3 3 0 000-6z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 9h2.5a1 1 0 01.894.553l1.37 2.744A1 1 0 006.5 13h3.5a1 1 0 00.894-1.447l-1.37-2.744A1 1 0 009.5 9H11a3 3 0 00-3-3H1z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">OTLP Export</h3>
+          <p class="mt-2 text-sm text-gray-600">
+            Compatible with Vector, Prometheus, and OTLP collectors.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-20 sm:py-32">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Ready to get started?
+        </h2>
+        <p class="mt-4 text-lg text-gray-600">
+          Download Bee, request a demo, or browse our licensing options.
+        </p>
+        <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
+          <a
+            href={`${basePath}/download`}
+            class="rounded-md bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700"
+            >Download Bee</a
+          >
+          <a
+            href={`${basePath}/demo`}
+            class="rounded-md border border-gray-300 px-8 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
+            >Request a Demo</a
+          >
+          <a
+            href={`${basePath}/pricing`}
+            class="rounded-md border border-gray-300 px-8 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
+            >View Pricing</a
+          >
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,219 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const basePath = import.meta.env.BASE_URL || '';
+---
+
+<Layout title="Download Obstack Bee — Linux Observability Agent" description="Download Obstack Bee, the zero-code Linux observability agent. Choose from stable releases, nightly builds, or the Docker image.">
+  <!-- Hero -->
+  <section class="py-20 sm:py-32">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl text-center">
+        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+          Download Obstack Bee
+        </h1>
+        <p class="mt-6 text-lg text-gray-600">
+          Get the latest stable release of Obstack Bee, or explore other
+          download options.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest Release -->
+  <section class="py-16 sm:py-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl">
+        <div class="rounded-xl border-2 border-indigo-600 bg-white p-8 shadow-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800">
+                Latest Stable
+              </span>
+              <h2 class="mt-2 text-3xl font-bold text-gray-900">
+                Obstack Bee v1.0.0
+              </h2>
+              <p class="mt-2 text-gray-600">
+                Released July 29, 2026
+              </p>
+            </div>
+            <div class="text-right">
+              <p class="text-2xl font-bold text-gray-900">Apache-2.0</p>
+              <p class="text-sm text-gray-500">License</p>
+            </div>
+          </div>
+
+          <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <a
+              href="https://github.com/netter/obstack-bee/releases/download/v1.0.0/obstack-bee-v1.0.0-x86_64-unknown-linux-gnu.tar.gz"
+              class="flex flex-col items-center rounded-lg border border-gray-200 p-4 text-center hover:bg-gray-50"
+            >
+              <svg class="mb-2 h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-4-4l-.586-.586a2 2 0 10-2.828 0L4 12v4h4z" />
+              </svg>
+              <span class="text-sm font-medium">Linux x86_64</span>
+              <span class="text-xs text-gray-500">tar.gz</span>
+            </a>
+
+            <a
+              href="https://github.com/netter/obstack-bee/releases/download/v1.0.0/obstack-bee-v1.0.0-aarch64-unknown-linux-gnu.tar.gz"
+              class="flex flex-col items-center rounded-lg border border-gray-200 p-4 text-center hover:bg-gray-50"
+            >
+              <svg class="mb-2 h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-4-4l-.586-.586a2 2 0 10-2.828 0L4 12v4h4z" />
+              </svg>
+              <span class="text-sm font-medium">Linux ARM64</span>
+              <span class="text-xs text-gray-500">tar.gz</span>
+            </a>
+
+            <a
+              href="https://github.com/netter/obstack-bee/releases/download/v1.0.0/obstack-bee-v1.0.0-docker.tar.gz"
+              class="flex flex-col items-center rounded-lg border border-gray-200 p-4 text-center hover:bg-gray-50"
+            >
+              <svg class="mb-2 h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l4-4m0 0l-4-4m4 4H8" />
+              </svg>
+              <span class="text-sm font-medium">Docker Image</span>
+              <span class="text-xs text-gray-500">tar.gz</span>
+            </a>
+
+            <a
+              href="https://hub.docker.com/r/obstack/bee"
+              class="flex flex-col items-center rounded-lg border border-gray-200 p-4 text-center hover:bg-gray-50"
+            >
+              <svg class="mb-2 h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-4-4l-.586-.586a2 2 0 10-2.828 0L4 12v4h4z" />
+              </svg>
+              <span class="text-sm font-medium">Docker Hub</span>
+              <span class="text-xs text-gray-500">obstack/bee</span>
+            </a>
+          </div>
+
+          <div class="mt-8 rounded-lg bg-gray-900 p-6">
+            <div class="flex items-center justify-between">
+              <h3 class="font-mono text-sm font-medium text-gray-300">Quick Install</h3>
+              <button
+                id="copy-install"
+                class="text-sm text-indigo-400 hover:text-indigo-300"
+              >
+                Copy
+              </button>
+            </div>
+            <pre
+              id="install-command"
+              class="mt-2 overflow-x-auto text-sm text-gray-300"
+            ><code>curl -L https://obstack.io/download/bee | tar xz -C /usr/local/bin</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- All Releases -->
+  <section class="py-16 sm:py-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">
+          All Releases
+        </h2>
+        <p class="mt-4 text-center text-lg text-gray-600">
+          Browse all available versions of Obstack Bee.
+        </p>
+
+        <div class="mt-12 overflow-x-auto">
+          <table class="w-full table-auto text-left">
+            <thead>
+              <tr class="border-b border-gray-200">
+                <th class="pb-3 text-sm font-medium text-gray-900">Version</th>
+                <th class="pb-3 text-sm font-medium text-gray-900">Release Date</th>
+                <th class="pb-3 text-sm font-medium text-gray-900">Assets</th>
+                <th class="pb-3 text-sm font-medium text-gray-900">License</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr>
+                <td class="py-4 text-sm font-medium text-gray-900">
+                  <a href="https://github.com/netter/obstack-bee/releases/tag/v1.0.0" class="text-indigo-600 hover:underline">v1.0.0</a>
+                </td>
+                <td class="py-4 text-sm text-gray-600">July 29, 2026</td>
+                <td class="py-4 text-sm text-gray-600">
+                  <a href="https://github.com/netter/obstack-bee/releases/download/v1.0.0/obstack-bee-v1.0.0-x86_64-unknown-linux-gnu.tar.gz" class="text-indigo-600 hover:underline">Linux x86_64</a>
+                  <span class="mx-2 text-gray-300">·</span>
+                  <a href="https://github.com/netter/obstack-bee/releases/download/v1.0.0/obstack-bee-v1.0.0-aarch64-unknown-linux-gnu.tar.gz" class="text-indigo-600 hover:underline">Linux ARM64</a>
+                </td>
+                <td class="py-4 text-sm text-gray-600">Apache-2.0</td>
+              </tr>
+              <tr>
+                <td class="py-4 text-sm font-medium text-gray-900">
+                  <a href="https://github.com/netter/obstack-bee/releases/tag/v0.9.0" class="text-indigo-600 hover:underline">v0.9.0 (Beta)</a>
+                </td>
+                <td class="py-4 text-sm text-gray-600">June 15, 2026</td>
+                <td class="py-4 text-sm text-gray-600">
+                  <a href="https://github.com/netter/obstack-bee/releases/download/v0.9.0/obstack-bee-v0.9.0-x86_64-unknown-linux-gnu.tar.gz" class="text-indigo-600 hover:underline">Linux x86_64</a>
+                </td>
+                <td class="py-4 text-sm text-gray-600">Apache-2.0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Installation Guide -->
+  <section class="bg-gray-50 py-16 sm:py-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">
+          Installation Guide
+        </h2>
+
+        <div class="mt-12 space-y-8">
+          <div class="rounded-lg border border-gray-200 bg-white p-6">
+            <h3 class="text-lg font-semibold text-gray-900">1. Download</h3>
+            <pre class="mt-3 rounded-lg bg-gray-900 p-4 text-sm text-gray-300"><code>curl -L https://obstack.io/download/bee | tar xz -C /usr/local/bin</code></pre>
+          </div>
+
+          <div class="rounded-lg border border-gray-200 bg-white p-6">
+            <h3 class="text-lg font-semibold text-gray-900">2. Validate</h3>
+            <pre class="mt-3 rounded-lg bg-gray-900 p-4 text-sm text-gray-300"><code>obstack-bee validate --config config/obstack-bee.yaml</code></pre>
+          </div>
+
+          <div class="rounded-lg border border-gray-200 bg-white p-6">
+            <h3 class="text-lg font-semibold text-gray-900">3. Run</h3>
+            <pre class="mt-3 rounded-lg bg-gray-900 p-4 text-sm text-gray-300"><code>sudo obstack-bee run --config config/obstack-bee.yaml</code></pre>
+          </div>
+        </div>
+
+        <div class="mt-12 text-center">
+          <a
+            href="https://docs.obstack.io/bee"
+            class="inline-flex items-center text-indigo-600 hover:underline"
+          >
+            <span>Read full documentation</span>
+            <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7l-7 7" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var btn = document.getElementById('copy-install');
+      var codeBlock = document.getElementById('install-command');
+
+      btn.addEventListener('click', function() {
+        var code = codeBlock.textContent.trim();
+        navigator.clipboard.writeText(code).then(function() {
+          btn.textContent = 'Copied!';
+          setTimeout(function() {
+            btn.textContent = 'Copy';
+          }, 2000);
+        });
+      });
+    });
+  </script>
+</Layout>

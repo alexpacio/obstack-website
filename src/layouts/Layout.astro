@@ -1,0 +1,71 @@
+---
+import "../styles/global.css";
+import ChatWidget from "../components/ChatWidget.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Obstack — The Ultimate Observability Stack",
+  description = "Internalize and automate your observability needs with Obstack. Start with Bee, the zero-code Linux observability agent.",
+} = Astro.props;
+
+const basePath = import.meta.env.BASE_URL || '';
+---
+
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body class="bg-white text-gray-900 antialiased">
+    <header class="border-b border-gray-100">
+      <nav class="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center space-x-2">
+          <a href={`${basePath}/`} class="text-xl font-bold text-gray-900">Obstack</a>
+          <span class="text-sm text-gray-500">Observability Stack</span>
+        </div>
+        <div class="hidden space-x-6 text-sm font-medium md:flex">
+          <a href={`${basePath}/`} class="text-gray-700 hover:text-gray-900">Home</a>
+          <a href={`${basePath}/bee`} class="text-gray-700 hover:text-gray-900">Bee</a>
+          <a href={`${basePath}/download`} class="text-gray-700 hover:text-gray-900">Download</a>
+          <a href={`${basePath}/pricing`} class="text-gray-700 hover:text-gray-900">Pricing</a>
+          <a href={`${basePath}/demo`} class="text-gray-700 hover:text-gray-900">Request Demo</a>
+        </div>
+        <a
+          href={`${basePath}/demo`}
+          class="hidden rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 md:inline-block"
+          >Request Demo</a
+        >
+      </nav>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="border-t border-gray-100 py-12">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
+          <p class="text-sm text-gray-500">
+            &copy; {new Date().getFullYear()} Obstack. All rights reserved.
+          </p>
+          <div class="flex space-x-6 text-sm text-gray-500">
+            <a href={`${basePath}/privacy`} class="hover:text-gray-900">Privacy</a>
+            <a href={`${basePath}/terms`} class="hover:text-gray-900">Terms</a>
+            <a href={`${basePath}/contact`} class="hover:text-gray-900">Contact</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <ChatWidget />
+  </body>
+</html>

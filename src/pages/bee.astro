@@ -1,0 +1,285 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const basePath = import.meta.env.BASE_URL || '';
+---
+
+<Layout title="Obstack Bee — Zero-Code Linux Observability Agent" description="Obstack Bee is a bounded, zero-code Linux application-observability agent written in Rust. Discover, capture, correlate, and export telemetry with eBPF and native Node.js profiling.">
+  <!-- Hero -->
+  <section class="py-20 sm:py-32">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl text-center">
+        <div class="mb-6 flex justify-center">
+          <span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800">
+            Now Available
+          </span>
+        </div>
+        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+          Obstack Bee
+        </h1>
+        <p class="mt-6 text-xl text-gray-600">
+          A bounded, zero-code Linux application-observability agent written in
+          Rust.
+        </p>
+        <p class="mt-4 text-lg text-gray-600">
+          Discover → Capture → Correlate → Export — all without modifying your
+          applications.
+        </p>
+        <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
+          <a
+            href={`${basePath}/download`}
+            class="rounded-md bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700"
+            >Download Bee</a
+          >
+          <a
+            href={`${basePath}/demo`}
+            class="rounded-md border border-gray-300 px-8 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
+            >Request a Demo</a
+          >
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture Diagram -->
+  <section class="py-16 sm:py-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">
+          Architecture
+        </h2>
+        <div class="mt-12 overflow-x-auto">
+          <pre class="bg-gray-900 p-6 text-sm text-gray-300 rounded-lg whitespace-pre overflow-x-auto">
+host /proc ──> immutable discovery snapshot ───────────────┐
+     │                                                    │
+     └─ Node PID ─> perf/V8 samples + OpenSSL uprobes     │
+                                     │                         │
+cgroup ingress/egress            │                         │
+         │                         │                         │
+         v                         v                         │
+  Aya eBPF: TCP port gate ─> payload + TLS plaintext rings  │
+         └─ per-CPU flow aggregation                        │
+                                     │                         │
+                                     v                         v
+               HTTP/1 + HTTP/2/gRPC + TLS + Redis + MySQL parsing
+                                     │
+                        peer/request/profile correlation
+                                     │
+                          bounded Compio channel
+                                     │
+                 /metrics + /graph ├─ Cyper OTLP/HTTP(S) protobuf
+                                     v
+                           node-local Vector
+          </pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key Features -->
+  <section class="bg-gray-50 py-16 sm:py-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Implemented Capabilities
+        </h2>
+        <p class="mt-4 text-lg text-gray-600">
+          Comprehensive observability with bounded resource usage.
+        </p>
+      </div>
+
+      <div class="mt-16 grid gap-12 sm:grid-cols-2">
+        <!-- Protocol Support -->
+        <div class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+          <h3 class="text-xl font-semibold text-gray-900">Protocol Support</h3>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Plaintext HTTP/1 client and server spans with TCP/header reassembly</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>TLS 1.2/1.3 handshake spans with SNI, ALPN, and protocol version</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Cleartext HTTP/2 spans with bounded frame and HPACK state</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Redis RESP2/RESP3 client spans with bounded pipelining</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Full plaintext MySQL query spans for COM_QUERY and prepare/execute/close</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Node.js Profiling -->
+        <div class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+          <h3 class="text-xl font-semibold text-gray-900">Native Node.js Profiling</h3>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>99 Hz profiling through perf_event_open</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Direct V8 heap reads using exported v8dbg_* constants</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Hot and slow JavaScript function spans</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Automatic trace correlation with HTTP requests</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Discovery & Graph -->
+        <div class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+          <h3 class="text-xl font-semibold text-gray-900">Discovery & Resource Graph</h3>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Automatic process, container, and Kubernetes identity discovery</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Bounded TCP application-resource graph</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>JSON, Prometheus, and OTLP relationship exports</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Metrics & Export -->
+        <div class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+          <h3 class="text-xl font-semibold text-gray-900">Metrics & Export</h3>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600">
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Process CPU, memory, and disk I/O metrics</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>Bounded application rate/error/duration metrics</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2 font-medium text-indigo-600">•</span>
+              <span>OTLP/HTTP protobuf export to Vector collector</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platform Requirements -->
+  <section class="py-16 sm:py-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">
+          Platform Requirements
+        </h2>
+        <div class="mt-12 grid gap-8 sm:grid-cols-3 text-center">
+          <div>
+            <div class="mb-4 flex justify-center">
+              <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3l2.593 2.594a1 1 0 01-1.414 1.414l-2.586-2.586A2 2 0 019 15V12z" />
+                </svg>
+              </span>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">Linux Kernel</h3>
+            <p class="mt-2 text-sm text-gray-600">x86-64, kernel 7.0 or newer</p>
+          </div>
+
+          <div>
+            <div class="mb-4 flex justify-center">
+              <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0a9 9 0 0118 0z" />
+                </svg>
+              </span>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">Node.js</h3>
+            <p class="mt-2 text-sm text-gray-600">Node.js 24 (64-bit V8 ABI)</p>
+          </div>
+
+          <div>
+            <div class="mb-4 flex justify-center">
+              <span class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3l-3 3m4-6h8m-8 6h8" />
+                </svg>
+              </span>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">Export</h3>
+            <p class="mt-2 text-sm text-gray-600">OTLP/HTTP to Vector collector</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download CTA -->
+  <section class="py-16 sm:py-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-4xl text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Ready to install Bee?
+        </h2>
+        <p class="mt-4 text-lg text-gray-600">
+          Download the latest release and get started in minutes.
+        </p>
+        <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
+          <a
+            href={`${basePath}/download`}
+            class="rounded-md bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700"
+            >Download Bee</a
+          >
+          <a
+            href={`${basePath}/pricing`}
+            class="rounded-md border border-gray-300 px-8 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
+            >View Licensing</a
+          >
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Diagnostics -->
+  <section class="bg-gray-50 py-16 sm:py-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          Built-in Diagnostics
+        </h2>
+        <p class="mt-4 text-lg text-gray-600">
+          Monitor Bee's health and resource usage with built-in endpoints.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-6 sm:grid-cols-3 text-center">
+        <div class="rounded-lg bg-white p-6 shadow-sm">
+          <code class="text-sm font-mono text-indigo-600">127.0.0.1:9400/healthz</code>
+          <p class="mt-2 text-sm text-gray-600">Health check endpoint</p>
+        </div>
+        <div class="rounded-lg bg-white p-6 shadow-sm">
+          <code class="text-sm font-mono text-indigo-600">127.0.0.1:9400/metrics</code>
+          <p class="mt-2 text-sm text-gray-600">Prometheus metrics</p>
+        </div>
+        <div class="rounded-lg bg-white p-6 shadow-sm">
+          <code class="text-sm font-mono text-indigo-600">127.0.0.1:9400/graph</code>
+          <p class="mt-2 text-sm text-gray-600">Resource graph JSON</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
