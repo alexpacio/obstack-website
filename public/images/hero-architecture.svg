@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none" width="800" height="600">
+  <defs>
+    <linearGradient id="gridGrad" x1="0" y1="0" x2="800" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2563eb" stroke-width="0.5" stroke-opacity="0.3"/>
+    </pattern>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background grid -->
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <rect width="800" height="600" fill="url(#gridGrad)"/>
+
+  <!-- Central node - Bee agent -->
+  <g filter="url(#glow)">
+    <rect x="340" y="220" width="120" height="160" rx="0" fill="#1e293b" stroke="#2563eb" stroke-width="2"/>
+    <rect x="350" y="235" width="100" height="12" fill="#2563eb" opacity="0.9"/>
+    <rect x="350" y="255" width="70" height="8" fill="#475569"/>
+    <rect x="350" y="270" width="90" height="8" fill="#475569"/>
+    <rect x="350" y="285" width="60" height="8" fill="#475569"/>
+    <rect x="350" y="310" width="100" height="40" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <rect x="360" y="320" width="20" height="20" fill="#2563eb" opacity="0.8"/>
+    <rect x="390" y="320" width="20" height="20" fill="#22c55e" opacity="0.8"/>
+    <rect x="420" y="320" width="20" height="20" fill="#f59e0b" opacity="0.8"/>
+    <rect x="360" y="350" width="80" height="6" fill="#334155"/>
+  </g>
+
+  <!-- Bee label -->
+  <text x="400" y="400" text-anchor="middle" font-family="M Plus 1p, sans-serif" font-size="14" font-weight="600" fill="#2563eb">obstack-bee</text>
+
+  <!-- Data streams flowing in -->
+  <g stroke="#2563eb" stroke-width="2" fill="none" stroke-dasharray="8,4" opacity="0.6">
+    <path d="M100 300 Q250 280 340 300" marker-end="url(#arrow)"/>
+    <path d="M100 350 Q250 350 340 340" marker-end="url(#arrow)"/>
+    <path d="M100 400 Q250 380 340 380" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- Data streams flowing out -->
+  <g stroke="#22c55e" stroke-width="2" fill="none" stroke-dasharray="8,4" opacity="0.6">
+    <path d="M460 280 Q600 260 700 280" marker-end="url(#arrow)"/>
+    <path d="M460 320 Q600 320 700 320" marker-end="url(#arrow)"/>
+    <path d="M460 360 Q600 380 700 360" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- Input labels -->
+  <text x="80" y="295" text-anchor="end" font-family="M Plus 1mn, monospace" font-size="11" fill="#64748b">HTTP/1.1</text>
+  <text x="80" y="345" text-anchor="end" font-family="M Plus 1mn, monospace" font-size="11" fill="#64748b">TLS/SSL</text>
+  <text x="80" y="395" text-anchor="end" font-family="M Plus 1mn, monospace" font-size="11" fill="#64748b">gRPC/HTTP2</text>
+
+  <!-- Output labels -->
+  <text x="720" y="275" text-anchor="start" font-family="M Plus 1mn, monospace" font-size="11" fill="#64748b">OTLP/HTTP</text>
+  <text x="720" y="315" text-anchor="start" font-family="M Plus 1mn, monospace" font-size="11" fill="#64748b">Prometheus</text>
+  <text x="720" y="355" text-anchor="start" font-family="M Plus 1mn, monospace" font-size="11" fill="#64748b">Vector</text>
+
+  <!-- Node.js process boxes -->
+  <g font-family="M Plus 1mn, monospace" font-size="10" fill="#64748b">
+    <rect x="50" y="80" width="140" height="60" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="120" y="110" text-anchor="middle" fill="#22c55e" font-weight="600">node:24</text>
+    <text x="120" y="130" text-anchor="middle" fill="#64748b">PID 1847</text>
+
+    <rect x="610" y="80" width="140" height="60" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="680" y="110" text-anchor="middle" fill="#22c55e" font-weight="600">node:24</text>
+    <text x="680" y="130" text-anchor="middle" fill="#64748b">PID 2931</text>
+
+    <rect x="50" y="460" width="140" height="60" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="120" y="490" text-anchor="middle" fill="#f59e0b" font-weight="600">redis:7</text>
+    <text x="120" y="510" text-anchor="middle" fill="#64748b">PID 4102</text>
+
+    <rect x="610" y="460" width="140" height="60" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+    <text x="680" y="490" text-anchor="middle" fill="#0ea5e9" font-weight="600">postgres:15</text>
+    <text x="680" y="510" text-anchor="middle" fill="#64748b">PID 5021</text>
+  </g>
+
+  <!-- Connection lines to processes -->
+  <g stroke="#334155" stroke-width="1" fill="none" opacity="0.4">
+    <path d="M120 140 V180"/>
+    <path d="M680 140 V180"/>
+    <path d="M120 460 V420"/>
+    <path d="M680 460 V420"/>
+  </g>
+
+  <!-- eBPF indicator -->
+  <rect x="360" y="140" width="80" height="28" rx="0" fill="#1e293b" stroke="#f59e0b" stroke-width="1"/>
+  <text x="400" y="160" text-anchor="middle" font-family="M Plus 1p, sans-serif" font-size="10" font-weight="600" fill="#f59e0b">eBPF + V8</text>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#22c55e"/>
+    </marker>
+  </defs>
+</svg>

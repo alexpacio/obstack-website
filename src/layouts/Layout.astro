@@ -24,73 +24,163 @@ const basePath = import.meta.env.BASE_URL || '';
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <title>{title}</title>
   </head>
   <body class="bg-white text-gray-900 antialiased">
-    <header class="border-b border-gray-200">
-      <nav class="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center space-x-3">
-          <img src="/obstack-transparent.svg" alt="Obstack" class="h-8 w-auto" />
-          <span class="text-xl font-bold text-gray-900">Obstack</span>
-          <span class="text-sm text-gray-500">Observability Stack</span>
+    <!-- Header -->
+    <header class="sticky top-0 z-50 w-full border-b border-border/50 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <nav class="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
+        <div class="flex items-center gap-3">
+          <a href={`${basePath}/`} class="flex items-center gap-3" aria-label="Obstack Home">
+            <img src="/obstack-transparent.svg" alt="" class="h-8 w-auto" />
+            <span class="text-xl font-bold text-gray-900">Obstack</span>
+            <span class="hidden sm:inline-block text-sm text-gray-500 font-medium">Observability Stack</span>
+          </a>
         </div>
 
-        <div class="hidden items-center space-x-8 md:flex">
-          <a href={`${basePath}/`} class="nav-link">Home</a>
+        <!-- Desktop Navigation -->
+        <div class="hidden items-center gap-1 md:flex">
+          <a href={`${basePath}/`} class="nav-link px-3 py-2">Home</a>
 
           <!-- Products Dropdown -->
-          <div class="relative" id="products-dropdown">
+          <div class="dropdown" id="products-dropdown">
             <button
               id="products-dropdown-button"
-              class="nav-link flex items-center gap-1"
+              class="nav-link px-3 py-2 flex items-center gap-1.5"
               type="button"
+              aria-haspopup="true"
+              aria-expanded="false"
             >
               Products
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="h-4 w-4 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             <div
               id="products-dropdown-menu"
-              class="dropdown-content hidden"
+              class="dropdown-menu"
+              role="menu"
+              aria-label="Products"
             >
-              <a href={`${basePath}/bee`} class="dropdown-item">Bee</a>
-              <a href={`${basePath}/download`} class="dropdown-item">Download</a>
-              <a
-                href="#"
-                class="dropdown-item text-gray-400 cursor-not-allowed"
-                >Coming Soon</a
-              >
+              <a href={`${basePath}/bee`} class="dropdown-item" role="menuitem">
+                <svg class="inline h-4 w-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Bee — eBPF Agent
+              </a>
+              <a href={`${basePath}/download`} class="dropdown-item" role="menuitem">
+                <svg class="inline h-4 w-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-4-4l-.586-.586a2 2 0 10-2.828 0L4 12v4h4z" />
+                </svg>
+                Download
+              </a>
+              <div class="dropdown-divider" />
+              <a href="#" class="dropdown-item text-gray-400 cursor-not-allowed" role="menuitem" aria-disabled="true">
+                <svg class="inline h-4 w-4 mr-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0a9 9 0 0118 0z" />
+                </svg>
+                Coming Soon
+              </a>
             </div>
           </div>
 
-          <a href={`${basePath}/pricing`} class="nav-link">Pricing</a>
-          <a href={`${basePath}/demo`} class="nav-link">Demo</a>
+          <a href={`${basePath}/pricing`} class="nav-link px-3 py-2">Pricing</a>
+          <a href={`${basePath}/demo`} class="nav-link px-3 py-2">Request Demo</a>
         </div>
 
+        <!-- CTA Button -->
         <a
           href={`${basePath}/demo`}
-          class="hidden rounded-none bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 md:inline-block"
+          class="hidden btn-primary px-5 py-2 text-sm md:inline-flex"
           >Request Demo</a
         >
       </nav>
     </header>
 
-    <main>
+    <!-- Mobile Menu (simple version) -->
+    <div class="md:hidden border-t border-border/50 bg-white">
+      <nav class="container mx-auto px-4 py-3 space-y-2" aria-label="Mobile navigation">
+        <a href={`${basePath}/bee`} class="block px-3 py-2 nav-link">Bee</a>
+        <a href={`${basePath}/download`} class="block px-3 py-2 nav-link">Download</a>
+        <a href={`${basePath}/pricing`} class="block px-3 py-2 nav-link">Pricing</a>
+        <a href={`${basePath}/demo`} class="block px-3 py-2 nav-link">Request Demo</a>
+      </nav>
+    </div>
+
+    <main id="main-content">
       <slot />
     </main>
 
-    <footer class="border-t border-gray-200 py-12">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
+    <!-- Footer -->
+    <footer class="border-t border-border bg-gray-50">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <div class="grid gap-8 md:grid-cols-4">
+          <!-- Brand -->
+          <div class="md:col-span-2">
+            <a href={`${basePath}/`} class="flex items-center gap-3" aria-label="Obstack Home">
+              <img src="/obstack-transparent.svg" alt="" class="h-10 w-auto" />
+              <span class="text-xl font-bold text-gray-900">Obstack</span>
+            </a>
+            <p class="mt-4 max-w-xs text-sm text-gray-500">
+              The ultimate observability stack for businesses who want to internalize and automate their observability needs.
+              Zero-code, zero-overhead, built for production.
+            </p>
+            <div class="mt-6 flex gap-4">
+              <a href="https://github.com/netter/obstack-bee" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary transition-colors" aria-label="GitHub">
+                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+              </a>
+              <a href="https://twitter.com/obstack" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary transition-colors" aria-label="Twitter">
+                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
+              </a>
+              <a href="mailto:sales@obstack.io" class="text-gray-400 hover:text-primary transition-colors" aria-label="Email">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Product Links -->
+          <div>
+            <h4 class="font-semibold text-gray-900">Product</h4>
+            <ul class="mt-4 space-y-3 text-sm text-gray-500">
+              <li><a href={`${basePath}/bee`} class="hover:text-primary transition-colors">Bee Agent</a></li>
+              <li><a href={`${basePath}/download`} class="hover:text-primary transition-colors">Download</a></li>
+              <li><a href={`${basePath}/pricing`} class="hover:text-primary transition-colors">Pricing</a></li>
+              <li><a href="${basePath}/demo" class="hover:text-primary transition-colors">Request Demo</a></li>
+            </ul>
+          </div>
+
+          <!-- Resources -->
+          <div>
+            <h4 class="font-semibold text-gray-900">Resources</h4>
+            <ul class="mt-4 space-y-3 text-sm text-gray-500">
+              <li><a href="#" class="hover:text-primary transition-colors">Documentation</a></li>
+              <li><a href="#" class="hover:text-primary transition-colors">API Reference</a></li>
+              <li><a href="#" class="hover:text-primary transition-colors">Blog</a></li>
+              <li><a href="#" class="hover:text-primary transition-colors">Changelog</a></li>
+            </ul>
+          </div>
+
+          <!-- Company -->
+          <div>
+            <h4 class="font-semibold text-gray-900">Company</h4>
+            <ul class="mt-4 space-y-3 text-sm text-gray-500">
+              <li><a href="#" class="hover:text-primary transition-colors">About</a></li>
+              <li><a href="#" class="hover:text-primary transition-colors">Careers</a></li>
+              <li><a href="#" class="hover:text-primary transition-colors">Contact</a></li>
+              <li><a href="#" class="hover:text-primary transition-colors">Press</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="mt-12 pt-8 border-t border-border flex flex-col items-center justify-between gap-4 md:flex-row">
           <p class="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} Obstack. All rights reserved.
           </p>
-          <div class="flex space-x-6 text-sm text-gray-500">
-            <a href={`${basePath}/privacy`} class="hover:text-gray-900">Privacy</a>
-            <a href={`${basePath}/terms`} class="hover:text-gray-900">Terms</a>
-            <a href={`${basePath}/contact`} class="hover:text-gray-900">Contact</a>
+          <div class="flex items-center gap-6 text-sm text-gray-500">
+            <a href={`${basePath}/privacy`} class="hover:text-gray-900 transition-colors">Privacy Policy</a>
+            <a href={`${basePath}/terms`} class="hover:text-gray-900 transition-colors">Terms of Service</a>
+            <a href={`${basePath}/contact`} class="hover:text-gray-900 transition-colors">Contact</a>
           </div>
         </div>
       </div>
@@ -107,12 +197,22 @@ const basePath = import.meta.env.BASE_URL || '';
         if (button && menu) {
           button.addEventListener('click', function(e) {
             e.stopPropagation();
-            menu.classList.toggle('hidden');
+            menu.classList.toggle('open');
+            button.setAttribute('aria-expanded', menu.classList.contains('open').toString());
           });
 
           document.addEventListener('click', function(e) {
             if (!button.contains(e.target) && !menu.contains(e.target)) {
-              menu.classList.add('hidden');
+              menu.classList.remove('open');
+              button.setAttribute('aria-expanded', 'false');
+            }
+          });
+
+          // Keyboard navigation
+          button.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+              menu.classList.remove('open');
+              button.setAttribute('aria-expanded', 'false');
             }
           });
         }

@@ -6,192 +6,194 @@ const basePath = import.meta.env.BASE_URL || '';
 
 <Layout title="Obstack Pricing — License Bee and Future Components" description="Obstack offers flexible licensing options for Bee and future observability stack components. Choose the plan that fits your needs.">
   <!-- Hero -->
-  <section class="py-20 sm:py-32">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-4xl text-center">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-          Simple, Transparent Pricing
+  <section class="relative section overflow-hidden">
+    <div class="container">
+      <div class="text-center max-w-3xl mx-auto animate-slide-up">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-6">
+          Simple, Transparent <span class="gradient-text">Pricing</span>
         </h1>
-        <p class="mt-6 text-lg text-gray-600">
-          License Obstack components individually or as a bundle. All plans
-          include updates and support.
+        <p class="text-lg text-gray-600 mb-10 max-w-2xl mx-auto">
+          License Obstack components individually or as a bundle. All plans include updates and support.
         </p>
       </div>
     </div>
+    <div class="absolute inset-0 bg-grid opacity-50 pointer-events-none" aria-hidden="true"></div>
   </section>
 
   <!-- Bee Licensing -->
-  <section class="py-16 sm:py-24">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-5xl">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">
+  <section class="section">
+    <div class="container">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-4">
           Obstack Bee Licenses
         </h2>
-        <p class="mt-4 text-center text-lg text-gray-600">
+        <p class="text-lg text-gray-600">
           Per-node licensing for production observability.
         </p>
+      </div>
 
-        <div class="mt-16 grid gap-8 lg:grid-cols-3">
-          <!-- Starter -->
-          <div class="card">
-            <h3 class="text-xl font-semibold text-gray-900">Starter</h3>
-            <p class="mt-2 text-3xl font-bold text-gray-900">
-              $49<span class="text-lg font-medium text-gray-500">/node/mo</span>
-            </p>
-            <p class="mt-4 text-sm text-gray-600">
-              For small deployments and development environments.
-            </p>
-            <ul class="mt-6 space-y-3 text-sm text-gray-600">
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Up to 5 nodes
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                All protocol support
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Node.js profiling
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Email support
-              </li>
-            </ul>
-            <a
-              href={`${basePath}/checkout?plan=bee-starter`}
-              class="mt-6 block w-full bg-indigo-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-indigo-700"
-              >Buy Starter</a
-            >
-          </div>
+      <div class="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <!-- Starter -->
+        <article class="pricing-card">
+          <h3 class="text-xl font-semibold text-gray-900">Starter</h3>
+          <p class="mt-2 text-3xl font-bold text-gray-900">
+            $49<span class="text-lg font-medium text-gray-500">/node/mo</span>
+          </p>
+          <p class="mt-4 text-sm text-gray-600">
+            For small deployments and development environments.
+          </p>
+          <ul class="mt-6 space-y-3 text-sm text-gray-600">
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Up to 5 nodes
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              All protocol support
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Node.js profiling
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Email support
+            </li>
+          </ul>
+          <a
+            href={`${basePath}/checkout?plan=bee-starter`}
+            class="mt-6 block w-full bg-primary px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-hover"
+            >Buy Starter</a
+          >
+        </article>
 
-          <!-- Production -->
-          <div class="card border-2 border-indigo-600">
-            <div class="mb-4 flex justify-center">
-              <span class="inline-block border border-indigo-200 bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-800">
-                Most Popular
-              </span>
-            </div>
-            <h3 class="text-xl font-semibold text-gray-900">Production</h3>
-            <p class="mt-2 text-3xl font-bold text-gray-900">
-              $99<span class="text-lg font-medium text-gray-500">/node/mo</span>
-            </p>
-            <p class="mt-4 text-sm text-gray-600">
-              For production workloads with SLA requirements.
-            </p>
-            <ul class="mt-6 space-y-3 text-sm text-gray-600">
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Unlimited nodes
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                All protocol support
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Node.js profiling
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Priority email support
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                99.9% uptime SLA
-              </li>
-            </ul>
-            <a
-              href={`${basePath}/checkout?plan=bee-production`}
-              class="mt-6 block w-full bg-indigo-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-indigo-700"
-              >Buy Production</a
-            >
+        <!-- Production -->
+        <article class="pricing-card pricing-card-popular relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span class="inline-flex items-center rounded-none border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+              Most Popular
+            </span>
           </div>
+          <h3 class="text-xl font-semibold text-gray-900">Production</h3>
+          <p class="mt-2 text-3xl font-bold text-gray-900">
+            $99<span class="text-lg font-medium text-gray-500">/node/mo</span>
+          </p>
+          <p class="mt-4 text-sm text-gray-600">
+            For production workloads with SLA requirements.
+          </p>
+          <ul class="mt-6 space-y-3 text-sm text-gray-600">
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Unlimited nodes
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              All protocol support
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Node.js profiling
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Priority email support
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              99.9% uptime SLA
+            </li>
+          </ul>
+          <a
+            href={`${basePath}/checkout?plan=bee-production`}
+            class="mt-6 block w-full bg-primary px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-primary-hover"
+            >Buy Production</a
+          >
+        </article>
 
-          <!-- Enterprise -->
-          <div class="card">
-            <h3 class="text-xl font-semibold text-gray-900">Enterprise</h3>
-            <p class="mt-2 text-3xl font-bold text-gray-900">
-              Contact<span class="text-lg font-medium text-gray-500"> us</span>
-            </p>
-            <p class="mt-4 text-sm text-gray-600">
-              Custom licensing for large organizations.
-            </p>
-            <ul class="mt-6 space-y-3 text-sm text-gray-600">
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Unlimited nodes
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                All protocol support
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Node.js profiling
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                24/7 phone & email support
-              </li>
-              <li class="flex items-center">
-                <svg class="mr-2 h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Dedicated account manager
-              </li>
-            </ul>
-            <a
-              href={`${basePath}/demo`}
-              class="mt-6 block w-full border border-gray-300 px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >Contact Sales</a
-            >
-          </div>
-        </div>
+        <!-- Enterprise -->
+        <article class="pricing-card">
+          <h3 class="text-xl font-semibold text-gray-900">Enterprise</h3>
+          <p class="mt-2 text-3xl font-bold text-gray-900">
+            Contact<span class="text-lg font-medium text-gray-500"> us</span>
+          </p>
+          <p class="mt-4 text-sm text-gray-600">
+            Custom licensing for large organizations.
+          </p>
+          <ul class="mt-6 space-y-3 text-sm text-gray-600">
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Unlimited nodes
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              All protocol support
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Node.js profiling
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              24/7 phone & email support
+            </li>
+            <li class="flex items-center">
+              <svg class="mr-2 h-5 w-5 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Dedicated account manager
+            </li>
+          </ul>
+          <a
+            href={`${basePath}/demo`}
+            class="mt-6 block w-full border border-gray-300 px-4 py-2.5 text-center text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >Contact Sales</a
+          >
+        </article>
       </div>
     </div>
   </section>
 
   <!-- Stack Bundle -->
-  <section class="bg-gray-50 py-16 sm:py-24">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-5px">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">
+  <section class="section bg-gray-50">
+    <div class="container">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-4">
           Obstack Stack Bundle
         </h2>
-        <p class="mt-4 text-center text-lg text-gray-600">
+        <p class="text-lg text-gray-600">
           License the entire stack at a discounted rate.
         </p>
+      </div>
 
-        <div class="mt-16 card border-2 border-indigo-600">
-          <div class="flex flex-col items-center justify-between gap-6 sm:flex-row">
+      <div class="max-w-3xl mx-auto">
+        <article class="pricing-card pricing-card-popular">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
               <h3 class="text-2xl font-bold text-gray-900">Full Stack Bundle</h3>
               <p class="mt-2 text-gray-600">
@@ -203,89 +205,120 @@ const basePath = import.meta.env.BASE_URL || '';
             </div>
             <a
               href={`${basePath}/checkout?plan=stack-bundle`}
-              class="rounded-none bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700"
+              class="btn-primary"
               >Buy Bundle</a
             >
           </div>
-        </div>
+        </article>
       </div>
     </div>
   </section>
 
   <!-- FAQ -->
-  <section class="py-16 sm:py-24">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-3px">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">
+  <section class="section">
+    <div class="container">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-4">
           Frequently Asked Questions
         </h2>
+      </div>
 
-        <div class="mt-12 space-y-6">
-          <div class="card">
-            <h3 class="text-lg font-semibold text-gray-900">
-              What is a "node"?
-            </h3>
-            <p class="mt-2 text-sm text-gray-600">
-              A node is a single host (physical or virtual machine) running
-              Obstack Bee. Each licensed node can observe all processes on that
-              host.
+      <div class="max-w-3xl mx-auto space-y-6">
+        <details class="accordion-item group">
+          <summary class="accordion-trigger">
+            What is a "node"?
+            <svg class="h-5 w-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="accordion-content">
+            <p class="pt-4 text-sm text-gray-600">
+              A node is a single host (physical or virtual machine) running Obstack Bee.
+              Each licensed node can observe all processes on that host.
             </p>
           </div>
+        </details>
 
-          <div class="card">
-            <h3 class="text-lg font-semibold text-gray-900">
-              Can I try before I buy?
-            </h3>
-            <p class="mt-2 text-sm text-gray-600">
-              Yes. Request a demo and we'll provide a 14-day evaluation license
-              for your environment.
+        <details class="accordion-item group">
+          <summary class="accordion-trigger">
+            Can I try before I buy?
+            <svg class="h-5 w-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="accordion-content">
+            <p class="pt-4 text-sm text-gray-600">
+              Yes. Request a demo and we'll provide a 14-day evaluation license for your environment.
             </p>
           </div>
+        </details>
 
-          <div class="card">
-            <h3 class="text-lg font-semibold text-gray-900">
-              What's included in the license?
-            </h3>
-            <p class="mt-2 text-sm text-gray-600">
-              All protocol support, Node.js profiling, updates, and support for
-              the licensed period. Future Bee features are included at no extra
-              cost.
+        <details class="accordion-item group">
+          <summary class="accordion-trigger">
+            What's included in the license?
+            <svg class="h-5 w-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="accordion-content">
+            <p class="pt-4 text-sm text-gray-600">
+              All protocol support, Node.js profiling, updates, and support for the licensed period.
+              Future Bee features are included at no extra cost.
             </p>
           </div>
+        </details>
 
-          <div class="card">
-            <h3 class="text-lg font-semibold text-gray-900">
-              Do you offer annual billing?
-            </h3>
-            <p class="mt-2 text-sm text-gray-600">
-              Yes. Annual billing offers a 20% discount compared to monthly
-              billing. Contact us for a custom quote.
+        <details class="accordion-item group">
+          <summary class="accordion-trigger">
+            Do you offer annual billing?
+            <svg class="h-5 w-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="accordion-content">
+            <p class="pt-4 text-sm text-gray-600">
+              Yes. Annual billing offers a 20% discount compared to monthly billing.
+              Contact us for a custom quote.
             </p>
           </div>
-        </div>
+        </details>
+
+        <details class="accordion-item group">
+          <summary class="accordion-trigger">
+            What platforms are supported?
+            <svg class="h-5 w-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="accordion-content">
+            <p class="pt-4 text-sm text-gray-600">
+              Linux x86-64 with kernel 7.0 or newer. Node.js 24 (64-bit V8 ABI) is required for profiling.
+            </p>
+          </div>
+        </details>
       </div>
     </div>
   </section>
 
   <!-- CTA -->
-  <section class="py-20 sm:py-32">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+  <section class="section bg-gray-900">
+    <div class="container">
       <div class="mx-auto max-w-4xl text-center">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-4">
           Have questions?
         </h2>
-        <p class="mt-4 text-lg text-gray-600">
+        <p class="mt-4 text-lg text-gray-300 mb-10">
           Contact our sales team for a custom quote or request a demo.
         </p>
-        <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <a
             href={`${basePath}/demo`}
-            class="rounded-none bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700"
+            class="btn-primary"
             >Request a Demo</a
           >
           <a
             href="mailto:sales@obstack.io"
-            class="rounded-none border border-gray-300 px-8 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
+            class="btn-secondary border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500"
             >Contact Sales</a
           >
         </div>
