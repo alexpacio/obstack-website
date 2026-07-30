@@ -9,7 +9,7 @@ const basePath = import.meta.env.BASE_URL || '';
   <section class="py-20 sm:py-32">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-4xl text-center">
-        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
           Simple, Transparent Pricing
         </h1>
         <p class="mt-6 text-lg text-gray-600">
@@ -33,7 +33,7 @@ const basePath = import.meta.env.BASE_URL || '';
 
         <div class="mt-16 grid gap-8 lg:grid-cols-3">
           <!-- Starter -->
-          <div class="rounded-xl border-2 border-gray-200 bg-white p-8 shadow-sm">
+          <div class="card">
             <h3 class="text-xl font-semibold text-gray-900">Starter</h3>
             <p class="mt-2 text-3xl font-bold text-gray-900">
               $49<span class="text-lg font-medium text-gray-500">/node/mo</span>
@@ -68,16 +68,16 @@ const basePath = import.meta.env.BASE_URL || '';
               </li>
             </ul>
             <a
-              href={`${basePath}/checkout`}?plan=bee-starter"
-              class="mt-6 block w-full rounded-md bg-indigo-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-indigo-700"
+              href={`${basePath}/checkout?plan=bee-starter`}
+              class="mt-6 block w-full bg-indigo-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-indigo-700"
               >Buy Starter</a
             >
           </div>
 
           <!-- Production -->
-          <div class="rounded-xl border-2 border-indigo-600 bg-white p-8 shadow-lg">
+          <div class="card border-2 border-indigo-600">
             <div class="mb-4 flex justify-center">
-              <span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800">
+              <span class="inline-block border border-indigo-200 bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-800">
                 Most Popular
               </span>
             </div>
@@ -121,14 +121,14 @@ const basePath = import.meta.env.BASE_URL || '';
               </li>
             </ul>
             <a
-              href={`${basePath}/checkout`}?plan=bee-production"
-              class="mt-6 block w-full rounded-md bg-indigo-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-indigo-700"
+              href={`${basePath}/checkout?plan=bee-production`}
+              class="mt-6 block w-full bg-indigo-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-indigo-700"
               >Buy Production</a
             >
           </div>
 
           <!-- Enterprise -->
-          <div class="rounded-xl border-2 border-gray-200 bg-white p-8 shadow-sm">
+          <div class="card">
             <h3 class="text-xl font-semibold text-gray-900">Enterprise</h3>
             <p class="mt-2 text-3xl font-bold text-gray-900">
               Contact<span class="text-lg font-medium text-gray-500"> us</span>
@@ -170,7 +170,7 @@ const basePath = import.meta.env.BASE_URL || '';
             </ul>
             <a
               href={`${basePath}/demo`}
-              class="mt-6 block w-full rounded-md border border-gray-300 px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50"
+              class="mt-6 block w-full border border-gray-300 px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50"
               >Contact Sales</a
             >
           </div>
@@ -182,7 +182,7 @@ const basePath = import.meta.env.BASE_URL || '';
   <!-- Stack Bundle -->
   <section class="bg-gray-50 py-16 sm:py-24">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-5xl">
+      <div class="mx-auto max-w-5px">
         <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">
           Obstack Stack Bundle
         </h2>
@@ -190,7 +190,7 @@ const basePath = import.meta.env.BASE_URL || '';
           License the entire stack at a discounted rate.
         </p>
 
-        <div class="mt-16 rounded-xl border-2 border-indigo-600 bg-white p-8 shadow-lg">
+        <div class="mt-16 card border-2 border-indigo-600">
           <div class="flex flex-col items-center justify-between gap-6 sm:flex-row">
             <div>
               <h3 class="text-2xl font-bold text-gray-900">Full Stack Bundle</h3>
@@ -202,8 +202,8 @@ const basePath = import.meta.env.BASE_URL || '';
               </p>
             </div>
             <a
-              href={`${basePath}/checkout`}?plan=stack-bundle"
-              class="rounded-md bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700"
+              href={`${basePath}/checkout?plan=stack-bundle`}
+              class="rounded-none bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700"
               >Buy Bundle</a
             >
           </div>
@@ -215,13 +215,13 @@ const basePath = import.meta.env.BASE_URL || '';
   <!-- FAQ -->
   <section class="py-16 sm:py-24">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-3xl">
+      <div class="mx-auto max-w-3px">
         <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl text-center">
           Frequently Asked Questions
         </h2>
 
         <div class="mt-12 space-y-6">
-          <div class="rounded-lg border border-gray-200 p-6">
+          <div class="card">
             <h3 class="text-lg font-semibold text-gray-900">
               What is a "node"?
             </h3>
@@ -232,7 +232,7 @@ const basePath = import.meta.env.BASE_URL || '';
             </p>
           </div>
 
-          <div class="rounded-lg border border-gray-200 p-6">
+          <div class="card">
             <h3 class="text-lg font-semibold text-gray-900">
               Can I try before I buy?
             </h3>
@@ -242,7 +242,7 @@ const basePath = import.meta.env.BASE_URL || '';
             </p>
           </div>
 
-          <div class="rounded-lg border border-gray-200 p-6">
+          <div class="card">
             <h3 class="text-lg font-semibold text-gray-900">
               What's included in the license?
             </h3>
@@ -253,7 +253,7 @@ const basePath = import.meta.env.BASE_URL || '';
             </p>
           </div>
 
-          <div class="rounded-lg border border-gray-200 p-6">
+          <div class="card">
             <h3 class="text-lg font-semibold text-gray-900">
               Do you offer annual billing?
             </h3>
@@ -280,12 +280,12 @@ const basePath = import.meta.env.BASE_URL || '';
         <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center">
           <a
             href={`${basePath}/demo`}
-            class="rounded-md bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700"
+            class="rounded-none bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700"
             >Request a Demo</a
           >
           <a
             href="mailto:sales@obstack.io"
-            class="rounded-md border border-gray-300 px-8 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
+            class="rounded-none border border-gray-300 px-8 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
             >Contact Sales</a
           >
         </div>

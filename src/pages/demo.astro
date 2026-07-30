@@ -9,7 +9,7 @@ const basePath = import.meta.env.BASE_URL || '';
   <section class="py-20 sm:py-32">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-3xl">
-        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
           Request a Demo
         </h1>
         <p class="mt-6 text-lg text-gray-600">
@@ -24,7 +24,7 @@ const basePath = import.meta.env.BASE_URL || '';
   <section class="py-16 sm:py-24">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-2xl">
-        <div class="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div class="card">
           <h2 class="text-2xl font-bold text-gray-900">Schedule your demo</h2>
           <p class="mt-2 text-sm text-gray-600">
             Fill out the form below and we'll contact you within 1 business day
@@ -42,7 +42,7 @@ const basePath = import.meta.env.BASE_URL || '';
                   id="first-name"
                   name="first_name"
                   required
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  class="mt-1 block w-full"
                 />
               </div>
 
@@ -55,7 +55,7 @@ const basePath = import.meta.env.BASE_URL || '';
                   id="last-name"
                   name="last_name"
                   required
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  class="mt-1 block w-full"
                 />
               </div>
             </div>
@@ -69,7 +69,7 @@ const basePath = import.meta.env.BASE_URL || '';
                 id="email"
                 name="email"
                 required
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                class="mt-1 block w-full"
               />
             </div>
 
@@ -82,7 +82,7 @@ const basePath = import.meta.env.BASE_URL || '';
                 id="company"
                 name="company"
                 required
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                class="mt-1 block w-full"
               />
             </div>
 
@@ -93,7 +93,7 @@ const basePath = import.meta.env.BASE_URL || '';
               <select
                 id="role"
                 name="role"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                class="mt-1 block w-full"
               >
                 <option value="">Select your role</option>
                 <option value="engineering">Engineering</option>
@@ -111,7 +111,7 @@ const basePath = import.meta.env.BASE_URL || '';
               <select
                 id="company-size"
                 name="company_size"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                class="mt-1 block w-full"
               >
                 <option value="">Select company size</option>
                 <option value="1-10">1-10 employees</option>
@@ -131,7 +131,7 @@ const basePath = import.meta.env.BASE_URL || '';
                 name="message"
                 rows="4"
                 placeholder="Tell us about your observability needs, current stack, and pain points..."
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                class="mt-1 block w-full"
               ></textarea>
             </div>
 
@@ -142,7 +142,7 @@ const basePath = import.meta.env.BASE_URL || '';
                   name="consent"
                   type="checkbox"
                   required
-                  class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <label for="consent" class="ml-2 block text-sm text-gray-600">
                   I agree to be contacted by Obstack and accept the
@@ -153,13 +153,13 @@ const basePath = import.meta.env.BASE_URL || '';
 
             <button
               type="submit"
-              class="w-full rounded-md bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-700"
+              class="w-full bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-700"
             >
               Request Demo
             </button>
           </form>
 
-          <div id="form-success" class="mt-6 hidden rounded-md bg-green-50 p-4 text-center">
+          <div id="form-success" class="mt-6 hidden rounded-none bg-green-50 p-4 text-center">
             <p class="text-sm font-medium text-green-800">
               Thank you! Your demo request has been submitted. We'll contact you
               within 1 business day.
@@ -207,19 +207,14 @@ const basePath = import.meta.env.BASE_URL || '';
       form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // In a real implementation, this would POST to your backend
-        // For now, we'll simulate a successful submission
         var formData = new FormData(form);
         var data = Object.fromEntries(formData);
 
-        // Send to backend endpoint (configure this)
         fetch('/api/demo-request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
-        }).catch(function() {
-          // Ignore errors in demo mode
-        });
+        }).catch(function() {});
 
         form.reset();
         form.style.display = 'none';

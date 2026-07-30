@@ -1,1 +1,125 @@
 @import "tailwindcss";
+
+@theme {
+  --font-family-sans: "M Plus 1p", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: "M Plus 1mn", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: #3b82f6;
+  --color-muted: #6b7280;
+  --color-muted-hover: #4b5563;
+  --color-border: #d1d5db;
+  --color-border-dark: #9ca3af;
+  --color-bg: #ffffff;
+  --color-bg-muted: #f9fafb;
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+
+  --radius: 0px;
+  --radius-card: 0px;
+}
+
+/* M+ Fonts */
+@font-face {
+  font-family: "M Plus 1p";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/npm/@fontsource-japanese/mplus1p@latest/files/mplus1p-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "M Plus 1p";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/npm/@fontsource-japanese/mplus1p@latest/files/mplus1p-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "M Plus 1p";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/npm/@fontsource-japanese/mplus1p@latest/files/mplus1p-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "M Plus 1p";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/npm/@fontsource-japanese/mplus1p@latest/files/mplus1p-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "M Plus 1mn";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/npm/@fontsource-japanese/mplus1mn@latest/files/mplus1mn-latin-400-normal.woff2") format("woff2");
+}
+
+@layer base {
+  html {
+    font-family: var(--font-family-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-weight: var(--font-weight-regular);
+    line-height: 1.5;
+  }
+
+  /* Square design - remove all border radius */
+  .rounded-none {
+    border-radius: 0;
+  }
+}
+
+@layer components {
+  /* Square buttons */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-none border px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-hover border-primary;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-muted hover:bg-muted hover:text-muted-hover border-border;
+  }
+
+  /* Square cards */
+  .card {
+    @apply rounded-none border bg-white p-6 shadow-sm;
+  }
+
+  /* Square input fields */
+  input, textarea, select {
+    @apply rounded-none border border-border px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary;
+  }
+
+  /* Dropdown menu */
+  .dropdown-content {
+    @apply absolute z-10 mt-2 min-w-48 border bg-white py-1 shadow-lg;
+  }
+
+  .dropdown-item {
+    @apply block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100;
+  }
+
+  /* Nav link */
+  .nav-link {
+    @apply text-sm font-medium text-gray-700 hover:text-gray-900;
+  }
+}

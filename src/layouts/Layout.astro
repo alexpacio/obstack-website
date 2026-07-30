@@ -23,26 +23,55 @@ const basePath = import.meta.env.BASE_URL || '';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <title>{title}</title>
   </head>
   <body class="bg-white text-gray-900 antialiased">
-    <header class="border-b border-gray-100">
+    <header class="border-b border-gray-200">
       <nav class="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <div class="flex items-center space-x-3">
           <img src="/obstack-transparent.svg" alt="Obstack" class="h-8 w-auto" />
           <span class="text-xl font-bold text-gray-900">Obstack</span>
           <span class="text-sm text-gray-500">Observability Stack</span>
         </div>
-        <div class="hidden space-x-6 text-sm font-medium md:flex">
-          <a href={`${basePath}/`} class="text-gray-700 hover:text-gray-900">Home</a>
-          <a href={`${basePath}/bee`} class="text-gray-700 hover:text-gray-900">Bee</a>
-          <a href={`${basePath}/download`} class="text-gray-700 hover:text-gray-900">Download</a>
-          <a href={`${basePath}/pricing`} class="text-gray-700 hover:text-gray-900">Pricing</a>
-          <a href={`${basePath}/demo`} class="text-gray-700 hover:text-gray-900">Request Demo</a>
+
+        <div class="hidden items-center space-x-8 md:flex">
+          <a href={`${basePath}/`} class="nav-link">Home</a>
+
+          <!-- Products Dropdown -->
+          <div class="relative" id="products-dropdown">
+            <button
+              id="products-dropdown-button"
+              class="nav-link flex items-center gap-1"
+              type="button"
+            >
+              Products
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div
+              id="products-dropdown-menu"
+              class="dropdown-content hidden"
+            >
+              <a href={`${basePath}/bee`} class="dropdown-item">Bee</a>
+              <a href={`${basePath}/download`} class="dropdown-item">Download</a>
+              <a
+                href="#"
+                class="dropdown-item text-gray-400 cursor-not-allowed"
+                >Coming Soon</a
+              >
+            </div>
+          </div>
+
+          <a href={`${basePath}/pricing`} class="nav-link">Pricing</a>
+          <a href={`${basePath}/demo`} class="nav-link">Demo</a>
         </div>
+
         <a
           href={`${basePath}/demo`}
-          class="hidden rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 md:inline-block"
+          class="hidden rounded-none bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 md:inline-block"
           >Request Demo</a
         >
       </nav>
@@ -52,7 +81,7 @@ const basePath = import.meta.env.BASE_URL || '';
       <slot />
     </main>
 
-    <footer class="border-t border-gray-100 py-12">
+    <footer class="border-t border-gray-200 py-12">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col items-center justify-between gap-4 md:flex-row">
           <p class="text-sm text-gray-500">
@@ -68,5 +97,26 @@ const basePath = import.meta.env.BASE_URL || '';
     </footer>
 
     <ChatWidget />
+
+    <script>
+      // Dropdown menu behavior
+      document.addEventListener('DOMContentLoaded', function() {
+        var button = document.getElementById('products-dropdown-button');
+        var menu = document.getElementById('products-dropdown-menu');
+
+        if (button && menu) {
+          button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.classList.toggle('hidden');
+          });
+
+          document.addEventListener('click', function(e) {
+            if (!button.contains(e.target) && !menu.contains(e.target)) {
+              menu.classList.add('hidden');
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>
