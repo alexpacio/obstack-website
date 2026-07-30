@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1600" height="620" viewBox="0 0 1600 620"
+     role="img" aria-labelledby="title desc">
+  <title id="title">OBSTACK logo</title>
+  <desc id="desc">Transparent vector reconstruction of the supplied OBSTACK logo, without the dark blue lower background.</desc>
+
+  <defs>
+    <linearGradient id="gTop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#19B8E2"/>
+      <stop offset="0.52" stop-color="#2ED0C3"/>
+      <stop offset="1" stop-color="#63E8B0"/>
+    </linearGradient>
+
+    <linearGradient id="gFront" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20B8D3"/>
+      <stop offset="1" stop-color="#38D8B1"/>
+    </linearGradient>
+
+    <linearGradient id="gSide" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#139ECC"/>
+      <stop offset="1" stop-color="#2CCCB8"/>
+    </linearGradient>
+
+    <linearGradient id="gArrow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#16B3E0"/>
+      <stop offset="1" stop-color="#64E7AF"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="-35%" y="-35%" width="170%" height="170%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feColorMatrix in="blur" type="matrix"
+        values="0 0 0 0 0.10
+                0 0 0 0 0.82
+                0 0 0 0 0.78
+                0 0 0 .28 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <clipPath id="topClip">
+      <polygon points="168,330 326,238 482,330 326,422"/>
+    </clipPath>
+  </defs>
+
+  <!-- Icon -->
+  <g transform="translate(30,28)" filter="url(#softGlow)">
+    <!-- Box side faces -->
+    <polygon points="168,330 326,422 326,548 168,455" fill="url(#gSide)"/>
+    <polygon points="326,422 482,330 482,455 326,548" fill="url(#gFront)"/>
+
+    <!-- Top face -->
+    <polygon points="168,330 326,238 482,330 326,422"
+             fill="#174D6B" opacity="0.95"
+             stroke="url(#gTop)" stroke-width="9" stroke-linejoin="round"/>
+
+    <!-- Circuit traces -->
+    <g clip-path="url(#topClip)" fill="none" stroke="url(#gTop)"
+       stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M210 341 L265 309 L291 325 L323 306"/>
+      <path d="M229 373 L279 343 L311 361 L353 336"/>
+      <path d="M286 397 L321 376 L347 392 L391 365"/>
+      <path d="M340 279 L367 295 L395 278"/>
+      <path d="M404 337 L439 317"/>
+      <path d="M208 316 L239 298"/>
+    </g>
+
+    <!-- Circuit nodes -->
+    <g fill="#174D6B" stroke="url(#gTop)" stroke-width="6">
+      <circle cx="265" cy="309" r="9"/>
+      <circle cx="229" cy="373" r="9"/>
+      <circle cx="321" cy="376" r="9"/>
+      <circle cx="367" cy="295" r="9"/>
+      <circle cx="439" cy="317" r="9"/>
+      <circle cx="208" cy="316" r="9"/>
+    </g>
+
+    <!-- Arrow -->
+    <path d="M323 373 L366 331 L381 346 L402 302 L356 319 L370 333 L329 374 Z"
+          fill="url(#gArrow)"/>
+
+    <!-- Upper pyramid / beacon -->
+    <polygon points="326,86 418,214 326,270 234,214"
+             fill="url(#gTop)"/>
+    <polygon points="326,86 326,270 234,214"
+             fill="#1AB7D5" opacity="0.62"/>
+    <polygon points="326,86 418,214 326,270"
+             fill="#53DFAF" opacity="0.48"/>
+
+    <!-- Neck -->
+    <polygon points="295,258 357,258 357,319 326,338 295,319"
+             fill="url(#gTop)"/>
+
+    <!-- Eye -->
+    <path d="M268 193
+             C291 165 320 155 351 160
+             C379 164 399 181 414 195
+             C391 220 361 230 330 227
+             C302 225 281 211 268 193 Z"
+          fill="#F7FFFD"/>
+    <path d="M349 166
+             C337 170 329 181 329 194
+             C329 209 341 220 356 220
+             C365 220 374 215 379 207
+             C372 213 365 215 359 213
+             C346 210 341 194 348 182
+             C352 175 357 171 363 169
+             C358 166 354 165 349 166 Z"
+          fill="#2CCBC1"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(560,0)">
+    <text x="0" y="352"
+          font-family="'M PLUS 1p','Mplus 1p','Montserrat','Avenir Next','Helvetica Neue',Arial,sans-serif"
+          font-size="151" font-weight="900" letter-spacing="1"
+          fill="#121826">OBSTACK</text>
+
+    <text x="5" y="414"
+          font-family="'M PLUS 1p','Mplus 1p','Montserrat','Avenir Next','Helvetica Neue',Arial,sans-serif"
+          font-size="42" font-weight="400" letter-spacing="1.7"
+          fill="#929292">POWERFUL HOSTED OBSERVABILITY STACK</text>
+  </g>
+</svg>
