@@ -5,12 +5,16 @@ import {
   STORAGE,
   TERM_DISCOUNT,
   findPlan,
-  formatUsd,
+  formatGb,
+  formatPrice,
+  fxDisclaimer,
+  needsDatacenter,
   normalize,
   pct,
-  regionList,
   volumeBands,
   type Config,
+  type Currency,
+  type Datacenter,
   type Deployment,
   type PlanId,
   type Quote,
@@ -22,29 +26,33 @@ const DEPLOYMENTS: { id: Deployment; label: string; plan: PlanId; note: string }
     id: 'self-hosted',
     label: 'Self-hosted',
     plan: 'stack',
-    note: 'Runs on your servers, air-gapped sites included, under an offline signed license. With the Stack plan we configure the infrastructure, with reference dashboards. Custom work is quoted and billed on time and materials.',
+    note: 'On your servers, air-gapped sites included. Setup, updates, rollout and monitoring of the infrastructure are included. Custom Grafana dashboards, alerts and similar are Professional Services, quoted in advance. Bee is licensed under PolyForm Internal Use; source and updates come with the subscription.',
   },
   {
     id: 'cloud',
     label: 'Obstack Cloud',
     plan: 'cloud',
-    note: 'We deploy, run and upgrade the backend in the region you pick at deployment, with reference dashboards. You install the agents. Custom work is quoted and billed on time and materials.',
+    note: 'You install the agents. We run the backend in the EU or US datacenter you pick. Setup, updates, rollout and monitoring of the infrastructure are included. Custom Grafana dashboards, alerts and similar are Professional Services, quoted in advance.',
   },
 ];
 
-/** Stops on the storage slider; the number field accepts any whole TB. */
-const TB_STEPS = [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 200, 250, 300, 400, 500, 750, 1000];
+/** Stops on the storage slider; the number field accepts any whole GB. */
+const GB_STEPS = [100, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 5000, 7500, 10000, 15000, 20000, 30000, 50000, 75000, 100000, 150000, 250000, 500000, 750000, 1000000];
 const RETENTION_DAYS = [7, 15, 30, 90, 180, 365];
 
-function stepIndex(tb: number): number {
+function stepIndex(gb: number): number {
   let i = 0;
-  while (i < TB_STEPS.length - 1 && TB_STEPS[i + 1] <= tb) i++;
+  while (i < GB_STEPS.length - 1 && GB_STEPS[i + 1] <= gb) i++;
   return i;
 }
 
 /** Number of numbered fieldsets `ConfigFields` renders, so later steps can continue the count. */
 export function configSteps(config: Config): number {
-  return findPlan(config.planId).storage === 'none' ? 3 : 4;
+  const plan = findPlan(config.planId);
+  let n = 4;
+  if (plan.storage !== 'none') n += 1;
+  if (needsDatacenter(config)) n += 1;
+  return n;
 }
 
 interface Props {
@@ -57,24 +65,24 @@ export default function ConfigFields({ config, onChange }: Props) {
   const plan = findPlan(config.planId);
   const plans = PLANS.filter((p) => p.deployment === plan.deployment);
   const deployment = DEPLOYMENTS.find((d) => d.id === plan.deployment)!;
-  const managed = config.storageTb > 0;
+  const managed = config.storageGb > 0;
   // Remembers the chosen size while storage is switched off or the plan has none.
-  const [lastTb, setLastTb] = useState(config.storageTb || 2);
+  const [lastGb, setLastGb] = useState(config.storageGb || 2000);
 
   const update = (patch: Partial<Config>) => onChange(normalize({ ...config, ...patch }));
-  const setTb = (tb: number) => {
-    const next = Math.max(STORAGE.minTb, tb);
-    setLastTb(next);
-    update({ storageTb: next });
+  const setGb = (gb: number) => {
+    const next = Math.max(STORAGE.minGb, gb);
+    setLastGb(next);
+    update({ storageGb: next });
   };
-  const setPlan = (planId: PlanId) => update({ planId, storageTb: config.storageTb || lastTb });
+  const setPlan = (planId: PlanId) => update({ planId, storageGb: config.storageGb || lastGb });
 
   let step = 0;
   const legend = (label: string) => (
     <legend><span className="mono">{++step}</span> {label}</legend>
   );
 
-  const fill = (stepIndex(config.storageTb) / (TB_STEPS.length - 1)) * 100;
+  const fill = (stepIndex(config.storageGb) / (GB_STEPS.length - 1)) * 100;
 
   return (
     <>
@@ -96,7 +104,7 @@ export default function ConfigFields({ config, onChange }: Props) {
                   <span className="co-radio" aria-hidden="true"><span /></span>
                 </span>
                 <span className="co-plan-price">
-                  <strong>{formatUsd(p.price)}</strong>
+                  <strong>{formatPrice(p.price, config.currency)}</strong>
                   <span className="mono">/ node / mo</span>
                 </span>
                 <span className="co-plan-blurb">{p.blurb}</span>
@@ -130,7 +138,7 @@ export default function ConfigFields({ config, onChange }: Props) {
                 { value: 'managed', label: 'Managed bucket' },
                 { value: 'own', label: 'Your own storage' },
               ]}
-              onChange={(v) => (v === 'managed' ? setTb(lastTb) : update({ storageTb: 0 }))}
+              onChange={(v) => (v === 'managed' ? setGb(lastGb) : update({ storageGb: 0 }))}
             />
           )}
           {managed ? (
@@ -139,33 +147,32 @@ export default function ConfigFields({ config, onChange }: Props) {
                 <input
                   type="range"
                   min={0}
-                  max={TB_STEPS.length - 1}
+                  max={GB_STEPS.length - 1}
                   step={1}
-                  value={stepIndex(config.storageTb)}
-                  aria-label="Storage in terabytes"
-                  aria-valuetext={`${config.storageTb} TB`}
+                  value={stepIndex(config.storageGb)}
+                  aria-label="Storage in gigabytes"
+                  aria-valuetext={formatGb(config.storageGb)}
                   style={{ '--fill': `${fill}%` } as CSSProperties}
-                  onChange={(e) => setTb(TB_STEPS[Number(e.target.value)])}
+                  onChange={(e) => setGb(GB_STEPS[Number(e.target.value)])}
                 />
                 <label className="co-tb">
                   <input
                     className="mono"
                     type="number"
-                    min={STORAGE.minTb}
-                    max={STORAGE.maxTb}
-                    value={config.storageTb}
-                    aria-label="Terabytes"
-                    onChange={(e) => setTb(Number.parseInt(e.target.value, 10) || STORAGE.minTb)}
+                    min={STORAGE.minGb}
+                    max={STORAGE.maxGb}
+                    value={config.storageGb}
+                    aria-label="Gigabytes"
+                    onChange={(e) => setGb(Number.parseInt(e.target.value, 10) || STORAGE.minGb)}
                   />
-                  <span className="mono">TB</span>
+                  <span className="mono">GB</span>
                 </label>
               </div>
               <p className="co-paynote">
-                <strong>{config.storageTb} TB on {STORAGE.provider}</strong>, {formatUsd(config.storageTb * STORAGE.pricePerTb)} per month at{' '}
-                {formatUsd(STORAGE.pricePerTb)} per TB, Backblaze's list price with no markup. Egress and API calls included, no early-deletion
-                fees. When it fills, the oldest data expires first, so there is never an overage bill. Region, picked at deployment: {regionList()}.
+                <strong>{formatGb(config.storageGb)} of Obstack storage</strong>, {formatPrice(config.storageGb * STORAGE.pricePerGb, config.currency)} per month
+                at {formatPrice(STORAGE.pricePerGb, config.currency)} per GB. Egress and API calls included. When it fills, the oldest data expires first, so there is never an overage bill.
               </p>
-              <Estimator nodes={config.nodes} onUse={setTb} />
+              <Estimator nodes={config.nodes} onUse={setGb} />
             </>
           ) : (
             <p className="co-paynote">
@@ -175,6 +182,36 @@ export default function ConfigFields({ config, onChange }: Props) {
           )}
         </fieldset>
       )}
+
+      {needsDatacenter(config) && (
+        <fieldset className="co-block">
+          {legend('Datacenter')}
+          <Segmented
+            label="Datacenter"
+            value={config.dc}
+            options={[
+              { value: 'eu', label: 'EU' },
+              { value: 'us', label: 'US' },
+            ]}
+            onChange={(v) => update({ dc: v as Datacenter })}
+          />
+          <p className="small">Telemetry and managed storage stay in the datacenter you pick. EU data stays in the EU.</p>
+        </fieldset>
+      )}
+
+      <fieldset className="co-block">
+        {legend('Currency')}
+        <Segmented
+          label="Currency"
+          value={config.currency}
+          options={[
+            { value: 'usd', label: 'USD ($)' },
+            { value: 'eur', label: 'EUR (€)' },
+          ]}
+          onChange={(v) => update({ currency: v as Currency })}
+        />
+        <p className="small">{fxDisclaimer()}</p>
+      </fieldset>
 
       <fieldset className="co-block">
         {legend('Term')}
@@ -227,16 +264,16 @@ function Stepper({ value, min, max, label, onChange }: { value: number; min: num
   );
 }
 
-function Estimator({ nodes, onUse }: { nodes: number; onUse: (tb: number) => void }) {
+function Estimator({ nodes, onUse }: { nodes: number; onUse: (gb: number) => void }) {
   // Kept as text so decimals can be typed without the field rewriting itself.
   const [gbText, setGbText] = useState('1');
   const [days, setDays] = useState(30);
-  const gb = Math.max(0.1, Number.parseFloat(gbText) || 0.1);
-  const tb = Math.max(STORAGE.minTb, Math.ceil((nodes * gb * days) / 1000));
+  const perDay = Math.max(0.1, Number.parseFloat(gbText) || 0.1);
+  const gb = Math.max(STORAGE.minGb, Math.ceil(nodes * perDay * days));
 
   return (
     <details className="co-est">
-      <summary>Not sure how many terabytes? Estimate from retention</summary>
+      <summary>Not sure how many gigabytes? Estimate from retention</summary>
       <div className="co-est-body">
         <label className="co-field">
           <span>Stored GB per node per day</span>
@@ -250,8 +287,8 @@ function Estimator({ nodes, onUse }: { nodes: number; onUse: (tb: number) => voi
         </label>
       </div>
       <div className="co-est-out">
-        <span className="mono">{nodes} nodes × {gb} GB × {days} days ≈ <strong>{tb} TB</strong></span>
-        <button type="button" className="btn btn-outline btn-sm" onClick={() => onUse(tb)}>Use {tb} TB</button>
+        <span className="mono">{nodes} nodes × {perDay} GB × {days} days ≈ <strong>{formatGb(gb)}</strong></span>
+        <button type="button" className="btn btn-outline btn-sm" onClick={() => onUse(gb)}>Use {formatGb(gb)}</button>
       </div>
       <p className="small">Stored GB is the compressed size on disk. The best input is your current backend's daily volume per host.</p>
     </details>
@@ -261,16 +298,18 @@ function Estimator({ nodes, onUse }: { nodes: number; onUse: (tb: number) => voi
 /** Plain-text lines describing a quote, for order and quote emails. */
 export function quoteText(q: Quote): string[] {
   const lines: (string | null)[] = [
-    `Plan: ${q.plan.name} (${q.plan.deployment === 'cloud' ? 'managed cloud, region chosen at deployment' : 'self-hosted'})`,
-    `Nodes: ${q.nodes} at ${formatUsd(q.plan.price)} per node per month list`,
-    q.volumeSaving > 0 ? `Volume discount: -${formatUsd(q.volumeSaving)} per month` : null,
-    q.termSaving > 0 ? `3-year term discount: -${formatUsd(q.termSaving)} per month` : null,
+    `Plan: ${q.plan.name} (${q.plan.deployment === 'cloud' ? `managed cloud, ${q.dc.toUpperCase()} datacenter` : 'self-hosted'})`,
+    `Nodes: ${q.nodes} at ${formatPrice(q.plan.price, q.currency)} per node per month list`,
+    q.volumeSaving > 0 ? `Volume discount: -${formatPrice(q.volumeSaving, q.currency)} per month` : null,
+    q.termSaving > 0 ? `3-year term discount: -${formatPrice(q.termSaving, q.currency)} per month` : null,
     q.plan.storage === 'none'
       ? null
-      : `Storage: ${q.storageTb > 0 ? `${q.storageTb} TB on ${STORAGE.provider} at ${formatUsd(STORAGE.pricePerTb)} per TB per month (list price, no markup)` : 'customer-provided'}`,
-    `Monthly equivalent: ${formatUsd(q.monthly)}`,
+      : `Storage: ${q.storageGb > 0 ? `${formatGb(q.storageGb)} of Obstack storage at ${formatPrice(STORAGE.pricePerGb, q.currency)} per GB per month` : 'customer-provided'}`,
+    needsDatacenter(q) ? `Datacenter: ${q.dc.toUpperCase()}` : null,
+    `Monthly equivalent: ${formatPrice(q.monthly, q.currency)}`,
     `Term: ${q.term} months, billed yearly`,
-    `Billed yearly: ${formatUsd(q.annual)} (VAT on invoice)`,
+    `Billed yearly: ${formatPrice(q.annual, q.currency)} (VAT on invoice)`,
+    `Currency: ${q.currency.toUpperCase()}. ${fxDisclaimer()}`,
   ];
   return lines.filter((l): l is string => l !== null);
 }
@@ -283,24 +322,26 @@ export function QuoteSummary({ q, eyebrow, children }: { q: Quote; eyebrow: stri
         <strong>{q.plan.name}</strong>
       </div>
       <dl className="co-lines mono">
-        <div><dt>{q.nodes} nodes × {formatUsd(q.plan.price)}</dt><dd>{formatUsd(q.listNodes)} / mo</dd></div>
-        {q.volumeSaving > 0 && <div className="save"><dt>Volume discount</dt><dd>−{formatUsd(q.volumeSaving)} / mo</dd></div>}
-        {q.termSaving > 0 && <div className="save"><dt>3-year term</dt><dd>−{formatUsd(q.termSaving)} / mo</dd></div>}
+        <div><dt>{q.nodes} nodes × {formatPrice(q.plan.price, q.currency)}</dt><dd>{formatPrice(q.listNodes, q.currency)} / mo</dd></div>
+        {q.volumeSaving > 0 && <div className="save"><dt>Volume discount</dt><dd>−{formatPrice(q.volumeSaving, q.currency)} / mo</dd></div>}
+        {q.termSaving > 0 && <div className="save"><dt>3-year term</dt><dd>−{formatPrice(q.termSaving, q.currency)} / mo</dd></div>}
         {q.plan.storage !== 'none' && (
           <div>
-            <dt>{q.storageTb > 0 ? `Storage, ${q.storageTb} TB × ${formatUsd(STORAGE.pricePerTb)}` : 'Storage'}</dt>
-            <dd>{q.storageTb > 0 ? `${formatUsd(q.storageMonthly)} / mo` : 'your own'}</dd>
+            <dt>{q.storageGb > 0 ? `Storage, ${formatGb(q.storageGb)} × ${formatPrice(STORAGE.pricePerGb, q.currency)}` : 'Storage'}</dt>
+            <dd>{q.storageGb > 0 ? `${formatPrice(q.storageMonthly, q.currency)} / mo` : 'your own'}</dd>
           </div>
         )}
-        <div className="sum"><dt>Monthly equivalent</dt><dd>{formatUsd(q.monthly)}</dd></div>
-        <div><dt>Effective per node</dt><dd>{formatUsd(q.perNode)} / mo</dd></div>
+        <div className="sum"><dt>Monthly equivalent</dt><dd>{formatPrice(q.monthly, q.currency)}</dd></div>
+        <div><dt>Effective per node</dt><dd>{formatPrice(q.perNode, q.currency)} / mo</dd></div>
+        {needsDatacenter(q) && <div><dt>Datacenter</dt><dd>{q.dc.toUpperCase()}</dd></div>}
         <div><dt>Term</dt><dd>{q.term === 36 ? '3 years' : '12 months'}</dd></div>
         <div><dt>VAT</dt><dd>on invoice</dd></div>
       </dl>
       <div className="co-total">
         <span>Billed yearly</span>
-        <strong>{formatUsd(q.annual)}</strong>
+        <strong>{formatPrice(q.annual, q.currency)}</strong>
       </div>
+      <p className="small">{fxDisclaimer()}</p>
       <div className="co-actions">{children}</div>
     </aside>
   );

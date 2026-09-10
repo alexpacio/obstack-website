@@ -1,6 +1,7 @@
 ---
 import Logo from './Logo.astro';
-import { url, mailto } from '../lib/url';
+import ObfuscatedEmail from './ObfuscatedEmail.astro';
+import { url } from '../lib/url';
 
 interface Props {
   active?: 'bee' | 'stack' | 'pricing' | 'buy';
@@ -18,13 +19,14 @@ const links = [
 ---
 
 <header class="site-header">
+  <div class="aurora" aria-hidden="true"></div>
   <div class="wrap bar">
-    <a href={url('/')} class="home" aria-label="Obstack home"><Logo /></a>
+    <a href={url('/')} class="home" aria-label="Obstack home"><Logo size={28} /></a>
 
     {checkout ? (
       <div class="secure">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#63E8B0" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="5" y="11" width="14" height="10"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
-        <span>Secure checkout · <a href={mailto()}>info@obstack.it</a></span>
+        <span>Secure checkout · <ObfuscatedEmail /></span>
       </div>
     ) : (
       <>
@@ -32,7 +34,7 @@ const links = [
           {links.map((l) => (
             <a href={l.href} class:list={['nl', { on: active === l.id }]} aria-current={active === l.id ? 'page' : undefined}>{l.label}</a>
           ))}
-          <a class="nl" href={mailto()}>Contact</a>
+          <ObfuscatedEmail label="Contact" class="nl" />
         </nav>
         <div class="right">
           <a class="btn btn-primary btn-sm" href={url('/pricing#configure')}>Get a quote</a>
@@ -42,7 +44,8 @@ const links = [
             </summary>
             <nav aria-label="Mobile">
               {links.map((l) => <a href={l.href}>{l.label}</a>)}
-              <a href={mailto()}>Contact</a>
+              <ObfuscatedEmail label="Contact" class="nl" />
+              <a href={url('/pricing#configure')}>Get a quote</a>
             </nav>
           </details>
         </div>
@@ -53,33 +56,82 @@ const links = [
 
 <style>
   .site-header {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
     z-index: 50;
-    background: rgba(3, 6, 7, 0.96);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--on-dark-line);
+    isolation: isolate;
+    overflow: visible;
+    background: #010302;
+    border-bottom: 1px solid rgba(28, 72, 48, 0.45);
+    box-shadow: 0 10px 32px -20px rgba(4, 24, 12, 0.9);
   }
-  .bar { display: flex; align-items: center; justify-content: space-between; height: 76px; gap: 24px; }
-  .home { text-decoration: none; }
+  .aurora {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .aurora::before,
+  .aurora::after {
+    content: "";
+    position: absolute;
+    inset: -60% -25%;
+    pointer-events: none;
+  }
+  .aurora::before {
+    background:
+      radial-gradient(ellipse 16% 160% at 12% 85%, rgba(24, 80, 52, 0.4), transparent 72%),
+      radial-gradient(ellipse 12% 180% at 38% 10%, rgba(10, 36, 22, 0.6), transparent 70%),
+      radial-gradient(ellipse 18% 150% at 58% 110%, rgba(32, 96, 60, 0.28), transparent 72%),
+      radial-gradient(ellipse 14% 190% at 82% 25%, rgba(6, 22, 14, 0.75), transparent 68%),
+      radial-gradient(ellipse 20% 140% at 94% 80%, rgba(40, 110, 68, 0.22), transparent 68%),
+      linear-gradient(180deg, #06140c 0%, #010302 100%);
+    animation: aurora-shift 22s ease-in-out infinite alternate;
+  }
+  .aurora::after {
+    background:
+      linear-gradient(105deg, transparent 10%, rgba(16, 56, 36, 0.3) 34%, rgba(28, 88, 54, 0.18) 52%, rgba(6, 20, 12, 0.45) 72%, rgba(36, 100, 64, 0.12) 86%, transparent 97%),
+      radial-gradient(ellipse 24% 220% at 42% 50%, rgba(20, 72, 44, 0.22), transparent 74%),
+      radial-gradient(ellipse 20% 240% at 76% 48%, rgba(12, 48, 30, 0.3), transparent 72%);
+    mix-blend-mode: screen;
+    animation: aurora-shift 28s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes aurora-shift {
+    from { transform: translateX(-6%) rotate(-2deg) scale(1.05); }
+    to { transform: translateX(7%) rotate(2deg) scale(1.12); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aurora::before,
+    .aurora::after { animation: none; }
+  }
+  .bar { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; height: 52px; gap: 24px; min-width: 0; }
+  .home { text-decoration: none; min-width: 0; flex: 1 1 auto; }
+  .home :global(.logo) { max-width: 100%; }
   .links { display: flex; gap: 36px; align-items: center; }
-  .nl { color: #B9CCD3; text-decoration: none; font-size: 14px; font-weight: 500; padding: 6px 0; border-bottom: 2px solid transparent; }
-  .nl:hover { color: #fff; }
+  .nl, .links :global(.nl) { color: #B9CCD3; text-decoration: none; font-size: 14px; font-weight: 500; padding: 6px 0; border-bottom: 2px solid transparent; }
+  .nl:hover, .links :global(.nl:hover) { color: #fff; }
   .nl.on { color: #fff; font-weight: 700; border-bottom-color: var(--mint); }
-  .right { display: flex; align-items: center; gap: 12px; }
+  .right { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-shrink: 0; }
   .secure { display: flex; align-items: center; gap: 10px; color: var(--on-dark-2); font-size: 14px; }
-  .secure a { color: var(--on-dark); }
+  .secure :global(a) { color: var(--on-dark); }
 
-  .mnav { display: none; position: relative; }
-  .mnav summary { list-style: none; cursor: pointer; color: var(--on-dark); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(232, 241, 242, 0.28); }
+  .mnav { display: none; position: relative; flex-shrink: 0; }
+  .mnav summary { list-style: none; cursor: pointer; color: #F6FBFB; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(232, 241, 242, 0.55); background: rgba(0,0,0,0.2); }
   .mnav summary::-webkit-details-marker { display: none; }
-  .mnav nav { position: absolute; right: 0; top: 48px; min-width: 200px; background: #0A0F12; border: 1px solid var(--on-dark-line); display: flex; flex-direction: column; padding: 6px; }
-  .mnav nav a { color: var(--on-dark); text-decoration: none; padding: 12px 14px; font-size: 15px; }
-  .mnav nav a:hover { background: rgba(99, 232, 176, 0.08); }
+  .mnav nav { position: absolute; right: 0; top: 40px; width: 240px; max-width: 100%; background: #0A0F12; border: 1px solid var(--on-dark-line); display: flex; flex-direction: column; padding: 6px; z-index: 60; box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
+  .mnav nav :global(a) { color: var(--on-dark); text-decoration: none; padding: 14px 16px; font-size: 16px; font-family: var(--font-sans); }
+  .mnav nav :global(a:hover) { background: rgba(99, 232, 176, 0.08); }
 
   @media (max-width: 800px) {
+    .bar { gap: 12px; height: 48px; }
     .links { display: none; }
     .mnav { display: block; }
+    .right .btn { display: none; }
+    .secure { font-size: 13px; }
     .secure span { display: none; }
   }
 </style>

@@ -6,4 +6,11 @@ import react from '@astrojs/react';
 export default defineConfig({
   site: 'https://obstack.it',
   integrations: [react()],
+  vite: {
+    // `astro build` prebundles the production JSX runtime, where jsxDEV is
+    // undefined. Exclude it so `astro dev` cannot pick up that stub.
+    optimizeDeps: {
+      exclude: ['react/jsx-dev-runtime'],
+    },
+  },
 });

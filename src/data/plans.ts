@@ -7,7 +7,7 @@ export interface Plan {
   deployment: Deployment;
   name: string;
   short: string;
-  /** USD per node per month on a 12-month term, before volume and term discounts. */
+  /** Euro list per node per month on a 12-month term, before volume and term discounts. USD is list × USD_MARKUP. */
   price: number;
   /** Smallest node count the plan is sold for. */
   minNodes: number;
@@ -19,12 +19,6 @@ export interface Plan {
    * the backend, so the order always includes storage.
    */
   storage: 'none' | 'optional' | 'required';
-  /**
-   * Optional hosted payment page (for example a Stripe Payment Link) for plain
-   * orders at list price. When set, card checkout continues there; otherwise
-   * the order is sent by email.
-   */
-  paymentLink?: string;
 }
 
 export const PLANS: Plan[] = [
@@ -35,10 +29,14 @@ export const PLANS: Plan[] = [
     short: 'Bee',
     price: 15,
     minNodes: 1,
-    blurb: 'The eBPF agent on its own, exporting to the collector you already run.',
-    features: ['HTTP, gRPC, TLS, MySQL, Redis and named Node.js awaits', 'OTLP to any OpenTelemetry collector', 'Email support, next business day'],
+    blurb: 'Distributed tracing and profiling, inside the service and on the host, exporting to the collector you already run.',
+    features: [
+      'Distributed tracing and profiling, intra-service and intra-host',
+      'HTTP, gRPC, TLS, MySQL, Redis and named Node.js awaits',
+      'OTLP to any OpenTelemetry collector',
+      'Email support, next business day',
+    ],
     storage: 'none',
-    paymentLink: import.meta.env.PUBLIC_PAYMENT_LINK_BEE,
   },
   {
     id: 'stack',
@@ -49,14 +47,13 @@ export const PLANS: Plan[] = [
     minNodes: 3,
     blurb: 'The complete stack on your servers, air-gapped sites included.',
     features: [
-      'Bee, Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep',
-      'Infrastructure configured by us, with reference Grafana dashboards',
-      'Custom dashboards, alerts and migration quoted, billed on time and materials',
+      'Bee plus Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep',
+      'Setup, updates, ongoing rollout and monitoring of the infrastructure included',
       'Unlimited users, dashboards and alert rules',
-      'One support contract, P1 answered in 4 business hours',
+      'P1 answered in 4 business hours',
+      'Custom Grafana dashboards, alerts and similar: Professional Services, quoted in advance',
     ],
     storage: 'optional',
-    paymentLink: import.meta.env.PUBLIC_PAYMENT_LINK_STACK,
   },
   {
     id: 'cloud',
@@ -67,36 +64,38 @@ export const PLANS: Plan[] = [
     minNodes: 3,
     blurb: 'The same stack, operated by us in the region you choose. You install the agents; we run the rest.',
     features: [
-      'Managed Vector, GreptimeDB, Grafana and Keep, upgrades included',
-      'Setup by us, with reference Grafana dashboards',
-      'Custom dashboards, alerts and migration quoted, billed on time and materials',
-      'Any region, chosen at deployment',
-      '99.9% uptime SLA, P1 answered in 1 hour, 24/7',
+      'Same stack, operated by us; you install the agents',
+      'Setup, updates, ongoing rollout and monitoring of the infrastructure included',
+      'Datacenter in the EU or the US, you choose',
+      '99.9% SLA, P1 answered in 1 hour, 24/7',
+      'Custom Grafana dashboards, alerts and similar: Professional Services, quoted in advance',
     ],
     storage: 'required',
   },
 ];
 
 /**
- * Object storage we provision and bill with the plan: Backblaze B2, resold at
- * its own list price with no markup. API calls are free, egress is free up to
- * 3× the data stored and there is no minimum storage duration, which matters
- * because retention deletes telemetry every day. A B2 account lives in a single
- * region, so each deployment gets an account in the region the customer picks.
+ * Object storage we provision and bill with the plan. Priced per GB of
+ * compressed data at rest. Egress and API calls are included; there is no
+ * minimum storage duration, which matters because retention deletes telemetry
+ * every day. Each deployment lands in the region the customer picks.
  */
 export const STORAGE = {
-  provider: 'Backblaze B2',
-  /** USD per TB per month: Backblaze's pay-as-you-go list price, reviewed September 2026. */
-  pricePerTb: 6.95,
-  regions: ['US West', 'US East', 'EU Central (Amsterdam)', 'Canada East (Toronto)'],
-  minTb: 1,
-  maxTb: 1000,
+  /** USD per GB per month of compressed data at rest. */
+  pricePerGb: 0.007,
+  regions: ['EU', 'US'] as const,
+  minGb: 100,
+  maxGb: 1_000_000,
 };
 
-/** The storage regions as prose, for example "US West, US East or Canada East". */
+export type Datacenter = 'eu' | 'us';
+export const DATACENTER = {
+  eu: { id: 'eu', label: 'EU', name: 'EU' },
+  us: { id: 'us', label: 'US', name: 'US' },
+} as const;
+
 export function regionList(): string {
-  const r = STORAGE.regions;
-  return `${r.slice(0, -1).join(', ')} or ${r[r.length - 1]}`;
+  return 'EU or US';
 }
 
 /** Graduated: each node is priced by the band it falls in, so adding a node never lowers the total. */
@@ -118,15 +117,57 @@ export const BASELINE = {
   detail: 'Infrastructure Pro + APM Pro list price, billed annually, before logs, indexed spans and custom metrics',
 };
 
+/** List amounts in this file are euros. USD is always this factor above EUR. */
+export const USD_MARKUP = 1.25;
+
+export const CURRENCY = {
+  usd: { code: 'USD', locale: 'en-US' },
+  eur: { code: 'EUR', locale: 'en-IE' },
+} as const;
+export type Currency = keyof typeof CURRENCY;
+
+const EURO_LANGS = new Set([
+  'it', 'de', 'fr', 'es', 'nl', 'pt', 'fi', 'el', 'sk', 'sl', 'et', 'lv', 'lt', 'ga', 'mt', 'lb', 'ca', 'eu', 'gl', 'hr',
+]);
+const EURO_REGIONS = new Set([
+  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU',
+  'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'IS', 'LI', 'NO', 'CH', 'AD', 'MC', 'SM', 'VA', 'GB',
+]);
+
+/** EUR for euro-area and European locales; USD otherwise. */
+export function currencyFromLocales(locales: readonly string[]): Currency {
+  for (const raw of locales) {
+    const tag = raw.trim().replace('_', '-');
+    if (!tag) continue;
+    const parts = tag.split('-');
+    const lang = parts[0].toLowerCase();
+    const region = parts.slice(1).map((p) => p.toUpperCase()).find((p) => p.length === 2) ?? '';
+    if (region) {
+      if (EURO_REGIONS.has(region)) return 'eur';
+      continue;
+    }
+    if (EURO_LANGS.has(lang)) return 'eur';
+  }
+  return 'usd';
+}
+
+export function currencyFromBrowser(): Currency {
+  if (typeof navigator === 'undefined') return 'usd';
+  const list = (navigator.languages?.length ? navigator.languages : [navigator.language]).filter(Boolean);
+  return currencyFromLocales(list);
+}
+
 export interface Config {
   planId: PlanId;
   nodes: number;
   /** 0 means the customer brings their own storage (self-hosted Stack only). */
-  storageTb: number;
+  storageGb: number;
+  dc: Datacenter;
   term: Term;
+  currency: Currency;
 }
 
-export const DEFAULT_CONFIG: Config = { planId: 'cloud', nodes: 10, storageTb: 2, term: 12 };
+export const DEFAULT_CONFIG: Config = { planId: 'cloud', nodes: 10, storageGb: 2000, dc: 'eu', term: 12, currency: 'usd' };
 
 export interface Quote extends Config {
   plan: Plan;
@@ -157,14 +198,21 @@ const clampInt = (n: number, min: number, max: number) => Math.min(max, Math.max
 /** Clamps a configuration to what its plan allows. */
 export function normalize(config: Config): Config {
   const plan = findPlan(config.planId);
-  const storageTb =
-    plan.storage === 'none' ? 0 : clampInt(config.storageTb, plan.storage === 'required' ? STORAGE.minTb : 0, STORAGE.maxTb);
+  const storageGb =
+    plan.storage === 'none' ? 0 : clampInt(config.storageGb, plan.storage === 'required' ? STORAGE.minGb : 0, STORAGE.maxGb);
   return {
     planId: plan.id,
     nodes: clampInt(config.nodes, plan.minNodes, MAX_NODES),
-    storageTb,
+    storageGb,
+    dc: config.dc === 'us' ? 'us' : 'eu',
     term: config.term === 36 ? 36 : 12,
+    currency: config.currency || 'usd',
   };
+}
+
+export function needsDatacenter(config: Config): boolean {
+  const plan = findPlan(config.planId);
+  return plan.storage === 'required' || config.storageGb > 0;
 }
 
 /** Node fees per month, before the term discount. */
@@ -178,7 +226,7 @@ export function quote(config: Config): Quote {
   const listNodes = plan.price * c.nodes;
   const afterVolume = nodeFees(plan.price, c.nodes);
   const nodesMonthly = round2(afterVolume * (1 - TERM_DISCOUNT[c.term]));
-  const storageMonthly = round2(c.storageTb * STORAGE.pricePerTb);
+  const storageMonthly = round2(c.storageGb * STORAGE.pricePerGb);
   const monthly = round2(nodesMonthly + storageMonthly);
   return {
     ...c,
@@ -194,24 +242,41 @@ export function quote(config: Config): Quote {
   };
 }
 
-/** Reads `?plan=&nodes=&tb=&term=`, as written by `configQuery`. */
+/** Reads `?plan=&nodes=&gb=&term=`, as written by `configQuery`. `tb=` is treated as thousands of GB. */
 export function configFromSearch(search: string): Config {
   const params = new URLSearchParams(search);
   const num = (key: string, fallback: number) => {
     const n = Number.parseInt(params.get(key) ?? '', 10);
     return Number.isFinite(n) ? n : fallback;
   };
+  const currencyParam = params.get('currency');
+  const currency = currencyParam === 'eur' || currencyParam === 'usd' ? currencyParam : currencyFromBrowser();
+  const dc = params.get('dc') === 'us' ? 'us' : 'eu';
+  const gb = params.has('gb')
+    ? num('gb', DEFAULT_CONFIG.storageGb)
+    : params.has('tb')
+      ? num('tb', 2) * 1000
+      : DEFAULT_CONFIG.storageGb;
   return normalize({
     planId: findPlan(params.get('plan')).id,
     nodes: num('nodes', DEFAULT_CONFIG.nodes),
-    storageTb: num('tb', DEFAULT_CONFIG.storageTb),
+    storageGb: gb,
+    dc,
     term: num('term', DEFAULT_CONFIG.term) === 36 ? 36 : 12,
+    currency,
   });
 }
 
 export function configQuery(config: Config): string {
   const c = normalize(config);
-  return new URLSearchParams({ plan: c.planId, nodes: String(c.nodes), tb: String(c.storageTb), term: String(c.term) }).toString();
+  return new URLSearchParams({
+    plan: c.planId,
+    nodes: String(c.nodes),
+    gb: String(c.storageGb),
+    dc: c.dc,
+    term: String(c.term),
+    currency: c.currency,
+  }).toString();
 }
 
 export function pct(fraction: number): string {
@@ -225,9 +290,29 @@ export function volumeBands(): string[] {
   );
 }
 
-/** Whole dollars when the amount is whole, cents otherwise. */
-export function formatUsd(amount: number): string {
-  const cents = round2(amount);
-  const digits = Number.isInteger(cents) ? 0 : 2;
-  return `$${cents.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+/** Converts a euro list amount for display. Quote math stays in EUR; USD is marked up. */
+export function toDisplayAmount(amountEur: number, currency: Currency): number {
+  return currency === 'usd' ? amountEur * USD_MARKUP : amountEur;
+}
+
+export function fxDisclaimer(): string {
+  return `USD prices are ${Math.round((USD_MARKUP - 1) * 100)}% above EUR. The invoice is issued in the currency you pick.`;
+}
+
+/** Whole dollars (or euros) when the amount is whole, cents otherwise. */
+export function formatGb(gb: number): string {
+  return `${gb.toLocaleString('en-US')} GB`;
+}
+
+export function formatPrice(amountEur: number, currency: Currency = 'usd'): string {
+  const raw = toDisplayAmount(amountEur, currency);
+  const digits = raw > 0 && raw < 0.01 ? 5 : Math.abs(raw - Math.round(raw)) < 1e-9 ? 0 : 2;
+  const value = Number(raw.toFixed(digits));
+  const { code, locale } = CURRENCY[currency];
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: code,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value);
 }

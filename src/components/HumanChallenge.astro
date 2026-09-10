@@ -1,0 +1,143 @@
+---
+/**
+ * HumanChallenge — Cloudflare-style anti-spam widget.
+ * Shown only after a mailto click. Success dispatches `obstack:humanVerified`.
+ *
+ * Real Cloudflare Turnstile: set PUBLIC_TURNSTILE_SITEKEY in .env.
+ */
+interface Props {
+  sitekey?: string;
+  lang?: 'en';
+}
+const { sitekey } = Astro.props;
+const isTurnstile = Boolean(sitekey);
+---
+
+{isTurnstile ? (
+  <>
+    <div
+      class="cf-turnstile"
+      data-sitekey={sitekey}
+      data-callback="onObstackTurnstileVerified"
+      data-theme="dark"
+      data-size="normal"
+    ></div>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline></script>
+    <script is:inline>
+      window.onObstackTurnstileVerified = function (token) {
+        window.dispatchEvent(new CustomEvent('obstack:humanVerified', { detail: { token, provider: 'turnstile' } }));
+        const w = document.querySelector('[data-cf-widget]');
+        if (w) {
+          w.dataset.verified = '1';
+          const msg = w.querySelector('.cf-msg');
+          if (msg) msg.textContent = 'Verified ✓ — email unlocked';
+        }
+      };
+    </script>
+  </>
+) : (
+  <>
+    <div
+      class="cf-challenge"
+      data-cf-widget
+      role="status"
+      aria-live="polite"
+      aria-label="Human verification anti-spam"
+    >
+      <div class="cf-box">
+        <div class="cf-left">
+          <button type="button" class="cf-checkbox" aria-label="Click to verify you are human">
+            <span class="cf-spinner" aria-hidden="true"></span>
+            <span class="cf-check" aria-hidden="true">✓</span>
+          </button>
+          <span class="cf-label">Verify you are human</span>
+        </div>
+        <div class="cf-right">
+          <span class="cf-logo">Obstack Shield</span>
+          <span class="cf-sub">Anti-spam protection</span>
+        </div>
+      </div>
+      <span class="cf-msg">Click the box to show the address</span>
+    </div>
+    <script is:inline>
+      (() => {
+        const widget = document.querySelector('[data-cf-widget]');
+        if (!widget) return;
+        const btn = widget.querySelector('.cf-checkbox');
+        btn?.addEventListener('click', () => {
+          if (widget.dataset.verified === '1' || widget.dataset.checking === '1') return;
+          widget.dataset.checking = '1';
+          const msg = widget.querySelector('.cf-msg');
+          if (msg) msg.textContent = 'Verifying you are human…';
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('obstack:humanVerified', { detail: { provider: 'click-challenge' } }));
+          }, 700);
+        });
+      })();
+    </script>
+  </>
+)}
+
+<style>
+  .cf-challenge {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    background: #0a0f12;
+    border: 1px solid rgba(232, 241, 242, 0.12);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    max-width: 320px;
+    user-select: none;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  }
+  .cf-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .cf-left { display: flex; align-items: center; gap: 10px; }
+  .cf-checkbox {
+    width: 28px; height: 28px;
+    border: 2px solid #2a3a42;
+    background: #071016;
+    display: grid; place-items: center;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    padding: 0;
+  }
+  .cf-checkbox:focus-visible { outline: 2px solid #19B8E2; outline-offset: 2px; }
+  .cf-spinner {
+    display: none;
+    width: 16px; height: 16px;
+    border: 2px solid #2a3a42;
+    border-top-color: #63E8B0;
+    border-radius: 50%;
+    animation: cf-spin 0.8s linear infinite;
+  }
+  .cf-check {
+    display: none;
+    color: #63E8B0;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .cf-challenge[data-checking="1"] .cf-spinner { display: block; }
+  .cf-challenge[data-checking="1"] .cf-checkbox { cursor: wait; }
+  .cf-challenge[data-verified="1"] .cf-spinner { display: none; }
+  .cf-challenge[data-verified="1"] .cf-check { display: block; }
+  .cf-challenge[data-verified="1"] .cf-checkbox {
+    border-color: rgba(99, 232, 176, 0.45);
+    background: rgba(99, 232, 176, 0.08);
+    cursor: default;
+  }
+  .cf-label { font-size: 13px; color: #F6FBFB; font-weight: 500; font-family: var(--font-sans, system-ui, sans-serif); }
+  .cf-right { text-align: right; display: flex; flex-direction: column; gap: 1px; }
+  .cf-logo { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #63E8B0; font-weight: 700; }
+  .cf-sub { font-size: 9px; letter-spacing: 0.08em; color: #7FA3B3; }
+  .cf-msg { font-size: 10px; color: #7A8B94; letter-spacing: 0.04em; }
+  .cf-challenge[data-verified="1"] .cf-msg { color: #63E8B0; }
+  @keyframes cf-spin { to { transform: rotate(360deg); } }
+</style>

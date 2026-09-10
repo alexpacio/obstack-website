@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import HumanChallenge from '../components/HumanChallenge.astro';
 import { url } from '../lib/url';
 
 interface Props {
@@ -17,6 +18,8 @@ const {
   active,
   checkout = false,
 } = Astro.props;
+
+const turnstileSitekey = (import.meta.env.PUBLIC_TURNSTILE_SITEKEY as string | undefined) || undefined;
 ---
 
 <!doctype html>
@@ -31,7 +34,7 @@ const {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=M+PLUS+1+Code:wght@400;500;700&family=M+PLUS+1p:wght@400;500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=M+PLUS+1+Code:wght@400;500;700&display=swap"
     />
     <title>{title}</title>
   </head>
@@ -41,5 +44,152 @@ const {
       <slot />
     </main>
     <Footer />
+    <div id="obstack-human-layer" style="display:none;">
+      <HumanChallenge lang="en" sitekey={turnstileSitekey} />
+    </div>
+    <script is:inline>
+      (() => {
+        // Reversed base64 — decoded only after human verification.
+        const encoded = "0lmLrNWY0NnYvB0bm5Wa";
+        const decode = (s) => {
+          try { return atob(s.split("").reverse().join("")); }
+          catch { return ""; }
+        };
+        const getEmail = () => decode(encoded);
+        const buildMailto = (email, subject, body) => {
+          if (!email) return "";
+          const params = new URLSearchParams();
+          if (subject) params.set("subject", subject);
+          if (body) params.set("body", body);
+          const query = params.toString().replace(/\+/g, "%20");
+          return `mailto:${email}${query ? `?${query}` : ""}`;
+        };
+        const mailtoForEl = (el, email) =>
+          buildMailto(email, el.getAttribute("data-subject"), el.getAttribute("data-body"));
+
+        let humanVerified = false;
+        let pendingTarget = null;
+        let pendingMailto = null;
+
+        const isBotSignal = () => {
+          try {
+            if (navigator.webdriver) return true;
+            if (/HeadlessChrome|PhantomJS|bot|crawler|spider/i.test(navigator.userAgent)) return true;
+            return false;
+          } catch { return false; }
+        };
+
+        const revealAll = (email) => {
+          document.querySelectorAll("a.obf-email").forEach((el) => {
+            if (el.dataset.decoded === "1") return;
+            el.setAttribute("href", mailtoForEl(el, email));
+            if (!el.getAttribute("data-label")) {
+              el.textContent = (el.getAttribute("data-prefix") || "") + email;
+            }
+            el.dataset.decoded = "1";
+            el.classList.add("is-verified");
+          });
+        };
+
+        const markVerified = (provider) => {
+          if (humanVerified) return;
+          if (isBotSignal()) return;
+          humanVerified = true;
+          const email = getEmail();
+          if (!email) return;
+          const layer = document.getElementById("obstack-human-layer");
+          const widget = document.querySelector("[data-cf-widget]");
+          if (widget) {
+            widget.dataset.verified = "1";
+            widget.dataset.checking = "";
+            const msg = widget.querySelector(".cf-msg");
+            if (msg) msg.textContent = "Verified ✓ — email unlocked";
+          }
+          revealAll(email);
+          window.dispatchEvent(new CustomEvent("obstack:humanVerified", { detail: { provider, email } }));
+          if (pendingMailto) {
+            const href = buildMailto(email, pendingMailto.subject, pendingMailto.body);
+            const cb = pendingMailto.onOpened;
+            pendingMailto = null;
+            setTimeout(() => {
+              window.location.href = href;
+              if (cb) cb(href, email);
+            }, 300);
+          } else if (pendingTarget) {
+            const href = pendingTarget.getAttribute("href");
+            pendingTarget = null;
+            if (href && href.startsWith("mailto:")) {
+              setTimeout(() => { window.location.href = href; }, 300);
+            }
+          }
+          if (layer) setTimeout(() => { layer.style.display = "none"; }, 1800);
+        };
+
+        const startChallenge = () => {
+          const layer = document.getElementById("obstack-human-layer");
+          if (layer) {
+            layer.style.display = "block";
+            layer.style.outline = "2px solid #63E8B0";
+            setTimeout(() => { layer.style.outline = "none"; }, 1500);
+          }
+          const widget = document.querySelector("[data-cf-widget]");
+          if (widget && widget.dataset.verified !== "1") {
+            const msg = widget.querySelector(".cf-msg");
+            if (msg) msg.textContent = "Click the box to show the address";
+          }
+        };
+
+        const onEmailActivate = (e) => {
+          const el = e.currentTarget;
+          if (el.dataset.decoded === "1") return;
+          e.preventDefault();
+          if (humanVerified) {
+            const email = getEmail();
+            el.setAttribute("href", mailtoForEl(el, email));
+            if (!el.getAttribute("data-label")) {
+              el.textContent = (el.getAttribute("data-prefix") || "") + email;
+            }
+            el.dataset.decoded = "1";
+            window.location.href = mailtoForEl(el, email);
+            return;
+          }
+          pendingTarget = el;
+          startChallenge();
+        };
+
+        window.__obstackContactEmail = () => (humanVerified ? getEmail() : "");
+        window.__obstackOpenMailto = (opts) => {
+          const subject = opts && opts.subject;
+          const body = opts && opts.body;
+          const onOpened = opts && opts.onOpened;
+          if (humanVerified) {
+            const email = getEmail();
+            const href = buildMailto(email, subject, body);
+            window.location.href = href;
+            if (onOpened) onOpened(href, email);
+            return;
+          }
+          pendingMailto = { subject, body, onOpened };
+          startChallenge();
+        };
+
+        const boot = () => {
+          document.querySelectorAll("a.obf-email").forEach((el) => {
+            el.addEventListener("click", onEmailActivate);
+            el.addEventListener("keydown", (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onEmailActivate(e);
+              }
+            });
+          });
+          window.addEventListener("obstack:humanVerified", (e) => {
+            if (!humanVerified) markVerified((e.detail && e.detail.provider) || "challenge");
+          });
+        };
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+        else boot();
+      })();
+    </script>
   </body>
 </html>

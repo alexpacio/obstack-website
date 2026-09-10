@@ -17,8 +17,15 @@ const src = markOnly ? '/logo-obstack-mark.svg' : `/logo-obstack-${variant}.svg`
 const ratio = markOnly ? 338 / 325 : 1381 / 325;
 ---
 
-<img class="logo" src={url(src)} alt="obstack" height={size} width={Math.round(size * ratio)} />
+<img
+  class="logo"
+  src={url(src)}
+  alt="obstack"
+  height={size}
+  width={Math.round(size * ratio)}
+  style={`height:${size}px;width:${Math.round(size * ratio)}px;max-width:min(${Math.round(size * ratio)}px,52vw)`}
+/>
 
 <style>
-  .logo { display: block; width: auto; }
+  .logo { display: block; height: auto; object-fit: contain; object-position: left center; }
 </style>

@@ -28,7 +28,7 @@
   --on-dark-3: #7FA3B3;
   --on-dark-line: rgba(232, 241, 242, 0.1);
 
-  --font-sans: "M PLUS 1p", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
   --font-mono: "M PLUS 1 Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
   --gutter: 64px;
@@ -37,29 +37,71 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; -webkit-text-size-adjust: 100%; max-width: 100%; }
 
 body {
   margin: 0;
+  padding-top: 52px;
+  min-width: 0;
+  max-width: 100%;
   background: var(--paper);
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.6;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, p { margin: 0; text-wrap: pretty; }
-img, svg { display: block; max-width: 100%; }
+h1, h2, h3, h4, p { margin: 0; text-wrap: wrap; overflow-wrap: break-word; }
+.display, .h2 { overflow-wrap: break-word; }
+img, svg { display: block; max-width: 100%; height: auto; }
 
 a { color: var(--link); }
+
+.site-footer .col a {
+  color: #B4BCBF;
+  text-decoration: none;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.5;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.site-footer .col a:hover { color: #fff; }
 a:hover { color: var(--link-hover); }
 
 ::selection { background: var(--mint); color: var(--ink); }
 :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 
 .mono { font-family: var(--font-mono); }
+
+#obstack-human-layer {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 9999;
+  max-width: calc(100vw - 32px);
+}
+#obstack-human-layer .cf-challenge {
+  max-width: min(320px, 100%);
+}
+@media (max-width: 480px) {
+  #obstack-human-layer {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    max-width: none;
+  }
+  #obstack-human-layer .cf-challenge {
+    max-width: none;
+    width: 100%;
+  }
+}
 
 /* Layout */
 .wrap {
@@ -68,7 +110,11 @@ a:hover { color: var(--link-hover); }
   margin: 0 auto;
   padding-left: var(--gutter);
   padding-right: var(--gutter);
+  min-width: 0;
+  box-sizing: border-box;
 }
+
+main { overflow-x: clip; max-width: 100%; }
 
 .section { padding-top: 112px; padding-bottom: 112px; }
 .section-tight { padding-top: 0; padding-bottom: 112px; }
@@ -226,6 +272,12 @@ a:hover { color: var(--link-hover); }
 .panel { background: var(--white); border: 1px solid var(--line); }
 .rule-top { border-top: 2px solid var(--ink); }
 
+.pt-wrap, .cmp-wrap, .diagram-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .tile-grid { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); }
 .tile-grid > * { background: var(--white); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
 .tile-meta { font-family: var(--font-mono); font-size: 12px; color: var(--link); margin-top: auto; padding-top: 8px; }
@@ -278,12 +330,28 @@ a:hover { color: var(--link-hover); }
 
 @media (max-width: 800px) {
   :root { --gutter: 20px; }
+  body { padding-top: 48px; }
   .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: minmax(0, 1fr); row-gap: 32px; }
-  .section { padding-top: 64px; padding-bottom: 64px; }
-  .section-tight { padding-bottom: 64px; }
-  .section-head { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 36px; }
-  .cta-band { grid-template-columns: minmax(0, 1fr); padding-top: 64px; padding-bottom: 64px; }
+  .section { padding-top: 56px; padding-bottom: 56px; }
+  .section-tight { padding-bottom: 56px; }
+  .section-head { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 28px; }
+  .cta-band { grid-template-columns: minmax(0, 1fr); padding-top: 56px; padding-bottom: 56px; }
   .cta-band .btn-row { justify-content: flex-start; }
-  .lead { font-size: 17px; }
-  .tile-grid > * { padding: 24px; }
+  .lead { font-size: 17px; max-width: none; }
+  .display { font-size: clamp(28px, 8.4vw, 40px); overflow-wrap: anywhere; }
+  .h2 { font-size: clamp(24px, 6.5vw, 34px); overflow-wrap: anywhere; }
+  .lead, .body-2 { overflow-wrap: anywhere; }
+  .h3 { font-size: 20px; }
+  .tile-grid > * { padding: 22px; }
+  .hero::after { height: 64px; }
+  .hero-grid { padding-top: 40px; padding-bottom: 48px; gap: 32px; }
+  .btn-row { width: 100%; }
+  .btn-row > .btn { flex: 1 1 100%; }
+  .code { font-size: 12px; padding: 16px; }
+}
+
+@media (max-width: 480px) {
+  :root { --gutter: 16px; }
+  .display { font-size: clamp(26px, 7.4vw, 32px); }
+  .h2 { font-size: clamp(22px, 6vw, 28px); }
 }

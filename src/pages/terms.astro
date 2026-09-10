@@ -1,13 +1,14 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import PriceTable from '../components/PriceTable.astro';
-import { STORAGE, TERM_DISCOUNT, findPlan, formatUsd, pct, regionList, volumeBands } from '../data/plans';
-import { url, mailto } from '../lib/url';
+import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
+import { STORAGE, TERM_DISCOUNT, findPlan, formatPrice, pct, volumeBands } from '../data/plans';
+import { url } from '../lib/url';
 
 const bee = findPlan('bee');
 const stack = findPlan('stack');
 const cloud = findPlan('cloud');
-const tb = formatUsd(STORAGE.pricePerTb);
+const gb = formatPrice(STORAGE.pricePerGb, 'usd');
 
 interface Section {
   id: string;
@@ -23,16 +24,16 @@ const sections: Section[] = [
     title: 'Scope',
     paras: [
       'These terms cover Obstack subscriptions bought on obstack.it or through a quote from us. Obstack is sold by Netter srl, P.IVA IT03569900545, Via Indipendenza, 06081 Assisi (PG), Italy. Where a signed order form or master agreement differs, that document prevails.',
-      'Prices are in US dollars and exclude VAT. VAT is added where it applies; business customers in other EU countries with a valid VAT number are invoiced under reverse charge.',
+      'List prices are in euros. US dollar prices are 25% above the euro list. Prices exclude VAT. VAT is added where it applies; business customers in other EU countries with a valid VAT number are invoiced under reverse charge. The invoice is issued in the currency chosen at checkout.',
     ],
   },
   {
     id: 'plans',
     title: 'Plans',
     paras: [
-      `${bee.name}, ${formatUsd(bee.price)} per node per month: the application agent under a self-hosted license. It exports to a collector you run and stores nothing itself.`,
-      `${stack.name}, ${formatUsd(stack.price)} per node per month: Bee plus our support for Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep, on your infrastructure. We deploy and configure the infrastructure, with reference Grafana dashboards. Storage is your own, or a managed ${STORAGE.provider} bucket at ${tb} per TB per month.`,
-      `${cloud.name}, ${formatUsd(cloud.price)} per node per month: we deploy and operate the backend in the region you choose at deployment, with the same setup, and you run the agents. Storage is bought by the terabyte, from ${STORAGE.minTb} TB.`,
+      `${bee.name}, ${formatPrice(bee.price, 'usd')} per node per month: the application agent, released under the PolyForm Internal Use License. Source and updates come with the subscription. It exports to a collector you run and stores nothing itself.`,
+      `${stack.name}, ${formatPrice(stack.price, 'usd')} per node per month: Bee plus our support for Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep, on your infrastructure. We deploy and configure the infrastructure, with reference Grafana dashboards. Storage is your own, or Obstack storage at ${gb} per GB per month.`,
+      `${cloud.name}, ${formatPrice(cloud.price, 'usd')} per node per month: we deploy and operate the backend in the EU or US datacenter you choose, with the same setup, and you run the agents. Storage is bought by the gigabyte, from ${STORAGE.minGb} GB.`,
       `${stack.name} and ${cloud.name} start at ${stack.minNodes} nodes. Enterprise terms are agreed per contract.`,
     ],
   },
@@ -57,8 +58,8 @@ const sections: Section[] = [
     id: 'storage',
     title: 'Storage',
     paras: [
-      `Managed storage is an S3-compatible bucket on ${STORAGE.provider}, in the region you choose at deployment: ${regionList()}. It is priced by capacity at ${STORAGE.provider}'s pay-as-you-go list price, ${tb} per TB per month, without markup, measured as compressed data at rest.`,
-      'Egress, API requests and early deletion are included. We never pass provider fees through.',
+      `Managed storage is Obstack object storage, in the EU or US datacenter you choose. It is priced by capacity at ${gb} per GB per month, measured as compressed data at rest.`,
+      'Egress, API requests and early deletion are included.',
       'When your capacity is full, the oldest data expires first. We warn you at 80% and 95%. You are never billed for overage.',
       'Increase capacity at any time, prorated to your renewal date; reduce it at renewal. Self-hosted customers can use any S3-compatible bucket or local disk instead, at no charge from us.',
     ],
@@ -82,8 +83,8 @@ const sections: Section[] = [
     id: 'billing',
     title: 'Billing and payment',
     paras: [
-      'Subscriptions are billed yearly in advance, 3-year terms included. Pay by card, or by bank transfer within 30 days of the invoice date.',
-      'If an invoice is more than 30 days overdue, Cloud access may be suspended after 14 days’ written notice. Self-hosted licenses already issued stay valid until they expire.',
+      'Subscriptions are billed yearly in advance, 3-year terms included. Pay by bank transfer within 30 days of the invoice date. Card payments are not accepted.',
+      'If an invoice is more than 30 days overdue, Cloud access may be suspended after 14 days’ written notice. Self-hosted source and update access is suspended the same way; copies you already have remain usable under the PolyForm Internal Use License for internal business operations.',
     ],
   },
   {
@@ -130,8 +131,8 @@ const sections: Section[] = [
     id: 'licenses',
     title: 'Self-hosted licenses',
     paras: [
-      'Licenses are Ed25519-signed files stating the customer ID, node count and expiry. They work offline, are bound to no machine and never phone home.',
-      'Renewal licenses are issued at least 14 days before the current one expires, once the renewal invoice is paid or a purchase order is received.',
+      'Bee is released under the PolyForm Internal Use License 1.0.0. You may use and modify it for the internal business operations of you and your company. You may not distribute it, sublicense it or transfer the license.',
+      'An active paid subscription is how you get the Bee source and every update. When the subscription ends, we stop sending source and updates. Copies you already have remain usable under that license for internal use.',
       'The open-source components of the stack (Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep) stay under their own licenses. The subscription pays for Bee, our integration work and our support.',
     ],
   },
@@ -139,7 +140,7 @@ const sections: Section[] = [
     id: 'data',
     title: 'Your data',
     paras: [
-      'You own your telemetry. On Obstack Cloud we process it only to run the service, in the region you chose at deployment, under a data processing agreement per Article 28 GDPR, available on request with the list of sub-processors.',
+      'You own your telemetry. On Obstack Cloud we process it only to run the service, in the EU or US datacenter you chose, under a data processing agreement per Article 28 GDPR, available on request with the list of sub-processors.',
       'Export at any time with SQL, PromQL or the raw Parquet files. When a Cloud subscription ends you have 30 days to export; we then delete tenant data within a further 30 days.',
     ],
   },
@@ -186,7 +187,7 @@ const sections: Section[] = [
         <div class="panel contact">
           <p class="body-2">Questions about these terms, or need an order form and DPA for procurement?</p>
           <div class="btn-row">
-            <a class="btn btn-dark" href={mailto('Commercial terms')}>info@obstack.it</a>
+            <ObfuscatedEmail class="btn btn-dark" label="Email us" subject="Commercial terms" />
             <a class="btn btn-outline" href={url('/pricing#configure')}>Configure a quote</a>
           </div>
         </div>
@@ -198,12 +199,12 @@ const sections: Section[] = [
 <style>
   .terms-hero { padding-top: 88px; padding-bottom: 88px; }
   .terms { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 72px; align-items: start; }
-  .toc { position: sticky; top: 108px; display: flex; flex-direction: column; border-top: 2px solid var(--ink); font-size: 13px; }
+  .toc { position: sticky; top: 64px; display: flex; flex-direction: column; border-top: 2px solid var(--ink); font-size: 13px; }
   .toc a { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); color: var(--text-2); text-decoration: none; }
   .toc a:hover { color: var(--ink); }
   .toc span { color: var(--link); }
   .body { display: flex; flex-direction: column; gap: 56px; max-width: 860px; }
-  .clause { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 100px; }
+  .clause { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 64px; }
   .clause h2 { display: flex; gap: 14px; align-items: baseline; padding-bottom: 12px; border-bottom: 2px solid var(--ink); }
   .clause h2 .mono { font-size: 13px; color: var(--link); }
   .contact { padding: 32px; display: flex; flex-direction: column; gap: 20px; }

@@ -4,12 +4,19 @@ export function url(path = '/'): string {
   return base + (path.startsWith('/') ? path : `/${path}`);
 }
 
-export const CONTACT_EMAIL = 'info@obstack.it';
+export type MailtoOpened = (href: string, email: string) => void;
 
-export function mailto(subject?: string, body?: string): string {
-  const params = new URLSearchParams();
-  if (subject) params.set('subject', subject);
-  if (body) params.set('body', body);
-  const query = params.toString().replace(/\+/g, '%20');
-  return `mailto:${CONTACT_EMAIL}${query ? `?${query}` : ''}`;
+/**
+ * Open a contact mailto after human verification.
+ * The address is not decoded until the challenge succeeds.
+ */
+export function openMailto(subject?: string, body?: string, onOpened?: MailtoOpened): void {
+  if (typeof window === 'undefined') return;
+  window.__obstackOpenMailto?.({ subject, body, onOpened });
+}
+
+/** Contact address, only after human verification. Empty otherwise. */
+export function contactEmail(): string {
+  if (typeof window === 'undefined') return '';
+  return window.__obstackContactEmail?.() ?? '';
 }

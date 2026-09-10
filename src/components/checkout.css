@@ -156,8 +156,9 @@
 .co-field.err input { border-color: #C2412D; box-shadow: inset 0 0 0 1px #C2412D; }
 .co-field small { color: #C2412D; font-weight: 500; font-size: 13px; }
 
-.co-seg { display: flex; flex-wrap: wrap; }
+.co-seg { display: flex; flex-wrap: wrap; max-width: 100%; }
 .co-seg button {
+  min-width: 0;
   font: inherit;
   height: 48px;
   padding: 0 22px;
@@ -176,7 +177,7 @@
 
 .co-summary {
   position: sticky;
-  top: 100px;
+  top: 68px;
   background: var(--white);
   border: 2px solid var(--ink);
   box-shadow: 10px 10px 0 var(--mint);
@@ -231,11 +232,19 @@
 }
 
 @media (max-width: 800px) {
-  .co { padding-top: 40px; padding-bottom: 72px; gap: 40px; }
+  .co { padding-top: 28px; padding-bottom: 56px; gap: 32px; }
+  .co-main { gap: 32px; }
   .co-plans, .co-fields, .co-est-body { grid-template-columns: minmax(0, 1fr); }
   .co-nodes { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .co-range { flex-direction: column; align-items: stretch; gap: 20px; }
-  .co-tb { align-self: flex-start; }
-  .co-done { padding: 28px; }
-  .co-done-wrap { padding-top: 48px; padding-bottom: 72px; }
+  .co-range { flex-direction: column; align-items: stretch; gap: 16px; }
+  .co-tb { align-self: stretch; }
+  .co-tb input { flex: 1; width: auto; }
+  .co-seg { width: 100%; }
+  .co-seg button { flex: 1 1 0; padding: 0 10px; font-size: 13px; }
+  .co-paynote { padding: 16px; font-size: 14px; }
+  .co-sum-head, .co-lines, .co-total, .co-actions { padding-left: 20px; padding-right: 20px; }
+  .co-total strong { font-size: 26px; }
+  .co-lines dd, .co-vs dd { white-space: normal; }
+  .co-done { padding: 24px; box-shadow: 6px 6px 0 var(--mint); }
+  .co-done-wrap { padding-top: 40px; padding-bottom: 56px; }
 }

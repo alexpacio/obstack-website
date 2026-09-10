@@ -1,9 +1,17 @@
-interface ImportMetaEnv {
-  /** Optional hosted payment pages (e.g. Stripe Payment Links) for list-price self-hosted orders. */
-  readonly PUBLIC_PAYMENT_LINK_BEE?: string;
-  readonly PUBLIC_PAYMENT_LINK_STACK?: string;
+/// <reference types="astro/client" />
+
+interface ObstackMailtoRequest {
+  subject?: string;
+  body?: string;
+  onOpened?: (href: string, email: string) => void;
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+interface Window {
+  __obstackOpenMailto?: (opts?: ObstackMailtoRequest) => void;
+  __obstackContactEmail?: () => string;
+  onObstackTurnstileVerified?: (token: string) => void;
+}
+
+interface ImportMetaEnv {
+  readonly PUBLIC_TURNSTILE_SITEKEY?: string;
 }

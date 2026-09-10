@@ -4,16 +4,17 @@ import PricingTable from '../components/PricingTable.astro';
 import PriceTable from '../components/PriceTable.astro';
 import Configurator from '../components/Configurator';
 import Arrow from '../components/Arrow.astro';
-import { STORAGE, findPlan, formatUsd, regionList } from '../data/plans';
-import { url, mailto } from '../lib/url';
+import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
+import { STORAGE, findPlan, formatPrice } from '../data/plans';
+import { url } from '../lib/url';
 
 const bee = findPlan('bee');
 const cloud = findPlan('cloud');
-const tb = formatUsd(STORAGE.pricePerTb);
+const gb = formatPrice(STORAGE.pricePerGb, 'usd');
 
 const vendorHead = ['', 'Pricing model', 'Per host', 'Logs and traces', 'Stored data', 'Users', 'During an incident'];
 const vendors = [
-  ['Obstack', 'Flat per node, storage by the terabyte', `${formatUsd(bee.price)}–${formatUsd(cloud.price)} / node / month`, 'Included, not metered', `${tb} / TB / month, capacity you choose`, 'Unlimited, included', 'Unchanged'],
+  ['Obstack', 'Flat per node, storage by the gigabyte', `${formatPrice(bee.price, 'usd')}–${formatPrice(cloud.price, 'usd')} / node / month`, 'Included, not metered', `${gb} / GB / month, capacity you choose`, 'Unlimited, included', 'Unchanged'],
   ['Datadog', 'Per host, plus per GB and per event', '$46 / host / month for Infrastructure Pro + APM Pro', '$0.10 / GB ingested, plus $1.70 per million log events indexed', 'Priced into indexing; longer retention costs more', 'Included', 'Host, span and log meters rise'],
   ['Dynatrace', 'Per memory GiB-hour, plus per GiB ingested', '≈ $58 / month for an 8 GiB host on Full-Stack', '$0.20 / GiB ingested', 'Retention billed per GiB-day', 'Included', 'Ingest rises; bigger hosts cost more'],
   ['Grafana Cloud', '$19 platform fee plus usage', '$0.025 / host-hour, ≈ $18 / host / month', '$0.45 / GB written', '$0.10 / GB / month, ≈ $100 / TB', 'Varies by plan', 'Series, GB written and retention rise'],
@@ -22,42 +23,42 @@ const vendors = [
 ];
 
 const whyStorage = [
-  ['List price, no markup', `You pay Backblaze's own price, ${tb} per TB per month. We add nothing on top, and egress and API calls stay included.`],
-  ['Requests that cost nothing', 'GreptimeDB writes, compacts and reads Parquet files all day. Through Obstack those requests are included, so that activity never reaches your bill.'],
-  ['No minimum storage duration', 'Retention deletes telemetry every day. Backblaze B2 bills no minimum duration, so you never pay for data already gone.'],
-  ['Your region, picked at deployment', `${regionList()}. Choose where your telemetry lives when we deploy; EU customers keep it in the EU.`],
+  ['Priced per gigabyte', `Obstack storage is ${gb} per GB per month of compressed data at rest. Egress and API calls are included.`],
+  ['Requests that cost nothing', 'GreptimeDB writes, compacts and reads Parquet files all day. Those requests are included, so that activity never reaches your bill.'],
+  ['No minimum storage duration', 'Retention deletes telemetry every day. You only pay for what is stored, not for data already gone.'],
+  ['Your datacenter, EU or US', 'Choose EU or US in the configurator. Telemetry and managed storage stay there; EU data stays in the EU.'],
 ];
 
 const keyTerms = [
-  ['Billing', 'Yearly in advance, in USD, VAT on invoice. Card, or bank transfer within 30 days.'],
-  ['Changes', 'Add nodes or terabytes any time, prorated to your renewal date. Reduce at renewal.'],
+  ['Billing', 'Yearly in advance, in USD or EUR. USD is 25% above the euro list. VAT on invoice. Bank transfer within 30 days. Card payments are not accepted.'],
+  ['Changes', 'Add nodes or gigabytes any time, prorated to your renewal date. Reduce at renewal.'],
   ['Renewal', 'Renews for the same term unless cancelled 30 days before. 1-year renewals rise at most 5%; 3-year terms are locked.'],
   ['Refund', 'Full refund within 30 days of your first order. Cloud outages earn service credits.'],
 ];
 
 const faqs = [
   ['What counts as a node?', 'One Linux host, VM or Kubernetes worker node running an Obstack agent. Pods and containers are not counted, and autoscaling bursts of up to 20% for a few days a month are covered.'],
+  ['Self-hosted or Cloud?', 'Self-hosted runs on your servers, air-gapped sites included. Bee is licensed under PolyForm Internal Use; source and updates come with the subscription. Obstack Cloud is the same stack operated by us: you install the agents, we run and upgrade the rest. Data exports in open formats either way.'],
+  ['Do you set it up for us?', 'Yes. Obstack Stack on-prem and Obstack Cloud both include first setup, the release of updates, and the ongoing rollout and monitoring of the infrastructure.'],
+  ['What about custom work?', 'Custom Grafana dashboards, alert setup and anything else tailored to your environment are Professional Services, quoted in advance. We send a written quote you approve before we start, then invoice the time spent.'],
   ['Is anything metered?', 'No. Ingest, egress, queries and users are free. Storage is a capacity you choose: when it fills, the oldest data expires first and we warn you at 80%. There is never an overage bill.'],
-  ['Self-hosted or Cloud?', 'Self-hosted runs on your servers under an offline license, air-gapped sites included, and you run the backend. Obstack Cloud is the same stack operated by us: you install the agents, we run and upgrade the rest. Your data exports in open formats either way.'],
-  ['Where does our data live?', `In the region you pick when we deploy. Managed storage is ${STORAGE.provider} in ${regionList()}, at Backblaze's list price of ${tb} per TB per month with no markup. Self-hosted customers can use their own S3-compatible bucket or local disk instead.`],
-  ['Do you set it up for us?', 'Yes. With the Stack and Cloud plans we deploy and configure the whole infrastructure, with reference Grafana dashboards, as part of the subscription.'],
-  ['What about custom work?', 'Anything tailored to your environment, such as building dashboards for your services, setting up alert rules and routing, or migrating your current dashboards, alerts, workflows and incidents, is billed on time and materials. We estimate it in a written quote you approve before any work starts, then invoice the time actually spent.'],
-  ['How much storage do I need?', 'Nodes × stored GB per node per day × retention days. The configurator does the arithmetic. Start with the retention you need today; you can add terabytes at any time.'],
-  ['How is a self-hosted license delivered?', 'As an Ed25519-signed file sent by email. It works offline, is bound to no machine and needs no license server.'],
-  ['Can we try it first?', 'Yes. Ask info@obstack.it for a 30-day evaluation license, or a 30-day Cloud trial with 1 TB of storage.'],
+  ['How much storage do I need?', 'Nodes × stored GB per node per day × retention days. The configurator does the arithmetic. Start with the retention you need today; you can add gigabytes at any time.'],
+  ['Where does our data live?', `In the EU or US datacenter you pick in the configurator. Managed storage is Obstack storage at ${gb} per GB per month. Self-hosted customers can use their own S3-compatible bucket or local disk instead.`],
+  ['How is Bee licensed?', 'Under the PolyForm Internal Use License: use and modify it for your own operations; do not distribute it. Pay the subscription and you get the source and every update. Stop paying and updates stop.'],
+  ['Can we try it first?', 'Yes. Ask for a 30-day evaluation license, or a 30-day Cloud trial with 1,000 GB of storage.'],
 ];
 ---
 
 <Layout
   title="Pricing · Obstack"
-  description={`Obstack pricing: self-hosted from ${formatUsd(bee.price)} per node per month, Obstack Cloud from ${formatUsd(cloud.price)} per node plus Backblaze B2 storage at ${tb} per TB, no markup. No ingest, egress, query or user meters.`}
+  description={`Obstack pricing: self-hosted from ${formatPrice(bee.price, 'usd')} per node per month, Obstack Cloud from ${formatPrice(cloud.price, 'usd')} per node plus storage at ${gb} per GB. No ingest, egress, query or user meters.`}
   active="pricing"
 >
   <section class="hero">
     <div class="wrap price-hero">
       <div class="stack" style="gap: 22px; max-width: 880px">
         <div class="eyebrow rise">Pricing</div>
-        <h1 class="display rise">Flat per node. Storage by the terabyte. Nothing metered.</h1>
+        <h1 class="display rise">Flat per node. Storage by the gigabyte. Nothing metered.</h1>
         <p class="lead rise-2" style="max-width: 680px">Run Obstack on your servers or let us run it in the region you choose. Either way your bill looks the same during an incident as it does on a quiet Sunday.</p>
         <div class="btn-row rise-2" style="padding-top: 8px">
           <a class="btn btn-primary" href="#configure">Configure a quote <Arrow /></a>
@@ -69,6 +70,13 @@ const faqs = [
 
   <section class="section">
     <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">01 / Plans</div>
+          <h2 class="h2">Three products, one price model.</h2>
+        </div>
+        <p class="body-2">Per node, per month. Stack on-prem and Cloud include setup, updates, rollout and monitoring. Custom Grafana dashboards and alerts are Professional Services, quoted in advance.</p>
+      </div>
       <PricingTable variant="all" />
     </div>
   </section>
@@ -77,32 +85,12 @@ const faqs = [
     <div class="wrap">
       <div class="section-head">
         <div class="stack">
-          <div class="eyebrow">01 / Configurator</div>
-          <h2 class="h2">Pick the deployment, the nodes and the terabytes.</h2>
+          <div class="eyebrow">02 / Quote</div>
+          <h2 class="h2">Pick the deployment, the nodes and the gigabytes.</h2>
         </div>
-        <p class="body-2">Discounts apply as you go. Take the quote straight to checkout, or send it to sales for a purchase order.</p>
+        <p class="body-2">Discounts apply as you go. Take the quote to checkout, or send it to sales for a purchase order.</p>
       </div>
       <Configurator client:load />
-    </div>
-  </section>
-
-  <section class="dark">
-    <div class="wrap section">
-      <div class="section-head">
-        <div class="stack">
-          <div class="eyebrow">02 / Storage</div>
-          <h2 class="h2">Why your terabytes live on Backblaze B2.</h2>
-        </div>
-        <p class="body-2">An observability workload pays for capacity, requests, deletions and egress. Backblaze B2 is predictable on all four, and we pass it on at cost.</p>
-      </div>
-      <div class="grid-4 why">
-        {whyStorage.map(([t, d]) => (
-          <div class="stack">
-            <h3 class="h3" style="font-size: 18px">{t}</h3>
-            <p class="body-2" style="font-size: 15px">{d}</p>
-          </div>
-        ))}
-      </div>
     </div>
   </section>
 
@@ -120,11 +108,31 @@ const faqs = [
     </div>
   </section>
 
-  <section class="section-tight">
+  <section class="dark">
+    <div class="wrap section">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">04 / Storage</div>
+          <h2 class="h2">Why storage is billed by the gigabyte.</h2>
+        </div>
+        <p class="body-2">An observability workload pays for capacity, requests, deletions and egress. Obstack storage is predictable on all four.</p>
+      </div>
+      <div class="grid-4 why">
+        {whyStorage.map(([t, d]) => (
+          <div class="stack">
+            <h3 class="h3" style="font-size: 18px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
     <div class="wrap">
       <div class="section-head">
         <div class="stack">
-          <div class="eyebrow">04 / Terms in brief</div>
+          <div class="eyebrow">05 / Terms in brief</div>
           <h2 class="h2">The commercial terms, in four lines.</h2>
         </div>
         <a class="text-link" href={url('/terms')}>Read the full terms <Arrow size={16} /></a>
@@ -143,9 +151,9 @@ const faqs = [
   <section class="section-tight">
     <div class="wrap grid-2 faq">
       <div class="stack" style="gap: 16px">
-        <div class="eyebrow">Questions</div>
+        <div class="eyebrow">06 / Questions</div>
         <h2 class="h2">Before you buy.</h2>
-        <p class="body-2">Anything else: <a href={mailto('Pricing question')}>info@obstack.it</a></p>
+        <p class="body-2">Anything else: <ObfuscatedEmail label="email us" class="mono" subject="Pricing question" /></p>
       </div>
       <dl>
         {faqs.map(([q, a]) => (
@@ -161,7 +169,7 @@ const faqs = [
 
 <style>
   .price-hero { padding-top: 88px; padding-bottom: 96px; }
-  #configure { scroll-margin-top: 96px; }
+  #configure, #compare { scroll-margin-top: 64px; }
   .why { gap: 48px; }
   .why .stack { gap: 12px; padding-top: 20px; border-top: 2px solid var(--mint); }
   .note { font-size: 12px; color: var(--muted); margin-top: 20px; max-width: 980px; line-height: 1.6; }
@@ -172,5 +180,5 @@ const faqs = [
   dt { font-weight: 800; font-size: 17px; margin-bottom: 6px; }
   dd { margin: 0; color: var(--text-2); font-size: 15px; line-height: 1.65; }
   @media (max-width: 1100px) { .faq { gap: 32px; } .why { gap: 32px; } }
-  @media (max-width: 800px) { .price-hero { padding-top: 64px; padding-bottom: 64px; } }
+  @media (max-width: 800px) { .price-hero { padding-top: 48px; padding-bottom: 48px; } }
 </style>

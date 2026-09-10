@@ -1,10 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { DEFAULT_CONFIG, configFromSearch, formatUsd, quote, type Config } from '../data/plans';
-import { mailto, url } from '../lib/url';
+import { DEFAULT_CONFIG, configFromSearch, formatPrice, quote, type Config } from '../data/plans';
+import { openMailto, url } from '../lib/url';
 import ConfigFields, { QuoteSummary, configSteps, quoteText } from './ConfigFields';
 import './checkout.css';
-
-type PayMethod = 'card' | 'transfer';
 
 interface Details {
   company: string;
@@ -29,20 +27,16 @@ function Check() {
 
 export default function Checkout() {
   const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
-  const [pay, setPay] = useState<PayMethod>('card');
   const [details, setDetails] = useState<Details>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Details, string>>>({});
-  const [sent, setSent] = useState<null | { orderMail: string }>(null);
+  const [sent, setSent] = useState<null | { orderMail: string; email: string }>(null);
 
   const q = quote(config);
   const cloud = q.plan.deployment === 'cloud';
   const step = configSteps(config);
-  // A hosted payment link carries a fixed list price, so it only covers orders without discounts or storage.
-  const payLink = q.storageTb === 0 && q.volumeSaving === 0 && q.termSaving === 0 ? q.plan.paymentLink : undefined;
   const contactLabel = cloud ? 'Technical contact email' : 'License contact email';
   const idLabel = cloud ? 'Tenant name' : 'Customer ID on the license';
 
-  // Preselect from ?plan=&nodes=&tb=&term= (set by the pricing page).
   useEffect(() => {
     setConfig(configFromSearch(window.location.search));
   }, []);
@@ -54,7 +48,7 @@ export default function Checkout() {
 
   const orderText = [
     ...quoteText(q),
-    `Payment: ${pay === 'card' ? 'card' : 'bank transfer (pro-forma invoice)'}`,
+    'Payment: bank transfer (pro-forma invoice)',
     '',
     `Company: ${details.company}`,
     `VAT number: ${details.vat || '-'}`,
@@ -77,17 +71,10 @@ export default function Checkout() {
     e.preventDefault();
     if (!validate()) return;
 
-    if (pay === 'card' && payLink) {
-      const target = new URL(payLink);
-      target.searchParams.set('prefilled_email', details.billingEmail);
-      window.location.href = target.toString();
-      return;
-    }
-
-    const subject = `Order: ${q.plan.name}, ${q.nodes} nodes${q.storageTb > 0 ? `, ${q.storageTb} TB` : ''}`;
-    const orderMail = mailto(subject, orderText);
-    window.location.href = orderMail;
-    setSent({ orderMail });
+    const subject = `Order: ${q.plan.name}, ${q.nodes} nodes${q.storageGb > 0 ? `, ${q.storageGb} GB` : ''}`;
+    openMailto(subject, orderText, (orderMail, email) => {
+      setSent({ orderMail, email });
+    });
   }
 
   if (sent) {
@@ -99,11 +86,10 @@ export default function Checkout() {
           </div>
           <h1 className="h2">One last step: send the order email.</h1>
           <p className="body-2">
-            Your email app opened with the order addressed to info@obstack.it. Send it and we reply with{' '}
-            {pay === 'card' ? 'a secure payment link' : 'a pro-forma invoice with our bank details'}. Once payment clears,{' '}
+            Your email app opened with the order addressed to {sent.email || 'us'}. Send it and we reply with a pro-forma invoice with our bank details. Once the transfer arrives,{' '}
             {cloud
               ? `the OTLP endpoint and Grafana login for your tenant go to ${details.licenseEmail}.`
-              : `the signed license for ${q.nodes} nodes goes to ${details.licenseEmail}.`}
+              : `Bee source, updates and Ubuntu packages for ${q.nodes} nodes go to ${details.licenseEmail}.`}
           </p>
           <pre className="co-order mono">{orderText}</pre>
           <div className="btn-row">
@@ -112,7 +98,7 @@ export default function Checkout() {
           </div>
           {!cloud && (
             <p className="small">
-              When the license arrives, install it with <code className="mono">sudo install -m 600 license.json /etc/obstack-bee/</code>
+              Bee is licensed under the PolyForm Internal Use License. An active subscription is how you get the source and every update.
             </p>
           )}
         </div>
@@ -148,48 +134,50 @@ export default function Checkout() {
           <p className="small">
             {cloud
               ? 'Tenant credentials go to the technical contact. The tenant name becomes part of your endpoint address.'
-              : 'The signed license file goes to the license contact. The customer ID is written into it.'}
+              : 'Source access and Ubuntu packages go to the license contact. The customer ID is how we label the subscription.'}
           </p>
         </fieldset>
 
         <fieldset className="co-block">
           <legend><span className="mono">{step + 2}</span> Payment</legend>
-          <div className="co-seg" role="radiogroup" aria-label="Payment method">
-            <button type="button" role="radio" aria-checked={pay === 'card'} className={pay === 'card' ? 'on' : ''} onClick={() => setPay('card')}>Card</button>
-            <button type="button" role="radio" aria-checked={pay === 'transfer'} className={pay === 'transfer' ? 'on' : ''} onClick={() => setPay('transfer')}>Bank transfer</button>
-          </div>
           <p className="co-paynote">
-            {pay === 'card'
-              ? payLink
-                ? 'You continue to our payment provider to pay by card. Your order is fulfilled as soon as payment completes.'
-                : 'We confirm your order and reply with a secure card payment link. Your order is fulfilled as soon as payment completes.'
-              : 'We email a pro-forma invoice with our bank details, payable within 30 days. Your order is fulfilled as soon as the transfer arrives.'}
+            We email a pro-forma invoice with our bank details, payable within 30 days. USD prices are 25% above EUR; the invoice is issued in the currency you pick. Your order is fulfilled as soon as the transfer arrives. No card payments accepted.
           </p>
         </fieldset>
       </div>
 
       <QuoteSummary q={q} eyebrow="Order summary">
         <button type="submit" className="btn btn-primary co-pay">
-          {pay === 'card' ? (payLink ? `Pay ${formatUsd(q.annual)}` : `Place order · ${formatUsd(q.annual)}`) : `Request invoice · ${formatUsd(q.annual)}`}
+          Request invoice · {formatPrice(q.annual, q.currency)}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </button>
         <ul className="co-perks">
           {cloud ? (
             <>
-              <li><Check /><span>Tenant in the region you choose, with OTLP endpoint and Grafana login</span></li>
+              <li><Check /><span>Tenant in the {q.dc.toUpperCase()} datacenter, with OTLP endpoint and Grafana login</span></li>
               <li><Check /><span>No meters on ingest, egress, queries or users</span></li>
             </>
           ) : (
             <>
-              <li><Check /><span>Signed offline license by email, with .deb, .rpm and Docker downloads</span></li>
-              <li><Check /><span>No license server, no machine binding, no phone-home</span></li>
+              <li><Check /><span>Bee source and updates for the term of the subscription, under PolyForm Internal Use</span></li>
+              <li><Check /><span>.deb packages for Ubuntu 24.04 and 26.04, no license server, no phone-home</span></li>
             </>
           )}
-          <li><Check /><span>Add nodes or terabytes any time, prorated at your rate</span></li>
+          <li><Check /><span>Add nodes or gigabytes any time, prorated at your rate</span></li>
           <li><Check /><span>Full refund within 30 days of your first order</span></li>
         </ul>
         <p className="small">
-          More than three years, air-gapped delivery or a security review pack? <a href={mailto('Enterprise')}>Ask about Enterprise</a>.
+          More than three years, air-gapped delivery or a security review pack?{' '}
+          <a
+            className="text-link"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              openMailto('Enterprise');
+            }}
+          >
+            Ask about Enterprise
+          </a>.
         </p>
         <p className="small co-back">
           <a href={url('/pricing')}>Compare plans</a> · <a href={url('/terms')}>Commercial terms</a>

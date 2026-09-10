@@ -6,6 +6,8 @@ const rows: [string, string, string, string, string][] = [
   ['Application code changes', 'None', 'None', 'None, but OneAgent is injected into your processes', 'A tracer library in each service for APM spans'],
   ['Where telemetry goes', 'Any OpenTelemetry collector that accepts OTLP over HTTP', 'Your OTLP or Prometheus backend', 'Dynatrace SaaS or a vendor-run Managed cluster', 'Datadog SaaS'],
   ['Air-gapped operation', 'Yes, licensing included', 'Possible; you assemble the stack', 'Managed option, still vendor-operated', 'No'],
+  ['Distributed tracing', 'Intra-service, intra-host and cross-host, no coordinator', 'Propagated context; you assemble the backend', 'In-process agent plus a Dynatrace cluster', 'Tracer libraries plus Datadog APM'],
+  ['Profiling', 'Tied to the same request as the trace', 'Not a first-class profiler', 'Code-level through the in-process agent', 'Separate profiler product'],
   ['Named Node.js async waits', 'Yes, tied to the exact request that caused them', 'No, generic transactions', 'Method-level through the in-process agent', 'Through tracer and profiler integrations'],
   ['Full MySQL query text', 'Yes, with typed prepared-statement parameters', 'Generic SQL metadata', 'Through the in-process agent', 'Through tracer libraries'],
   ['Trace correlation', 'Evidence only; refuses to guess', 'Heuristics plus propagated context', 'In-process agent context', 'Tracer-propagated context'],
@@ -35,7 +37,7 @@ const rows: [string, string, string, string, string][] = [
 </div>
 
 <style>
-  .cmp-wrap { overflow-x: auto; }
+  .cmp-wrap { overflow-x: auto; max-width: 100%; }
   .cmp { border-collapse: collapse; width: 100%; min-width: 980px; }
   .cmp th, .cmp td { text-align: left; vertical-align: top; padding: 18px 20px; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.55; }
   thead th { background: var(--paper); font-weight: 700; width: 19%; }

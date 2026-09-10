@@ -1,6 +1,7 @@
 ---
-import { PLANS, STORAGE, TERM_DISCOUNT, formatUsd, pct, volumeBands, type Deployment } from '../data/plans';
-import { url, mailto } from '../lib/url';
+import { PLANS, STORAGE, TERM_DISCOUNT, formatPrice, pct, volumeBands, type Deployment } from '../data/plans';
+import { url } from '../lib/url';
+import ObfuscatedEmail from './ObfuscatedEmail.astro';
 
 interface Props {
   /** `bee` features Bee and links straight to checkout; `all` adds Enterprise and links each plan to the configurator. */
@@ -12,8 +13,8 @@ const featured = variant === 'bee' ? 'bee' : 'cloud';
 const kind: Record<Deployment, string> = { 'self-hosted': 'Self-hosted', cloud: 'Managed cloud' };
 const storageLine = {
   none: 'Agent only · nothing to store',
-  optional: `Storage: your own, or ${formatUsd(STORAGE.pricePerTb)} / TB / month`,
-  required: `+ storage at ${formatUsd(STORAGE.pricePerTb)} / TB / month`,
+  optional: `Storage: your own, or ${formatPrice(STORAGE.pricePerGb, 'usd')} / GB / month`,
+  required: `+ storage at ${formatPrice(STORAGE.pricePerGb, 'usd')} / GB / month`,
 };
 const perks = [
   ...volumeBands().map((b) => `Nodes ${b}`),
@@ -30,7 +31,7 @@ const perks = [
         {p.id === featured && <span class="badge badge-mint">{variant === 'bee' ? 'Start here' : 'Recommended'}</span>}
       </div>
       <h3 class="h3">{p.name}</h3>
-      <div class="price"><span class="amount">{formatUsd(p.price)}</span><span class="per mono">/ node / month</span></div>
+      <div class="price"><span class="amount">{formatPrice(p.price, 'usd')}</span><span class="per mono">/ node / month</span></div>
       <p class="addon mono">{storageLine[p.storage]}</p>
       <p class="small">{p.blurb}</p>
       <ul>{p.features.map((f) => <li>{f}</li>)}</ul>
@@ -55,7 +56,7 @@ const perks = [
         <li>24/7 support with a named engineer</li>
         <li>Security review pack, DPA and procurement paperwork</li>
       </ul>
-      <a class="btn btn-outline" href={mailto('Obstack Enterprise')}>Talk to us</a>
+      <ObfuscatedEmail class="btn btn-outline" label="Talk to us" subject="Obstack Enterprise" />
     </article>
   )}
 </div>
@@ -64,7 +65,7 @@ const perks = [
   <ul class="perks mono">{perks.map((p) => <li>{p}</li>)}</ul>
   {variant === 'bee'
     ? <a class="btn btn-primary" href={url('/pricing#configure')}>Configure a quote</a>
-    : <a class="btn btn-primary" href={url('/terms')}>Read the terms</a>}
+    : <a class="btn btn-primary" href="#configure">Configure a quote</a>}
 </div>
 
 <style>
@@ -82,7 +83,7 @@ const perks = [
   ul { list-style: none; margin: 0; padding: 20px 0 0; border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.5; }
   li { display: flex; gap: 10px; }
   li::before { content: ""; width: 8px; height: 8px; background: var(--teal); margin-top: 7px; flex-shrink: 0; }
-  .plan .btn { margin-top: auto; }
+  .plan :global(.btn) { margin-top: auto; }
 
   .strip { margin-top: 24px; display: flex; justify-content: space-between; align-items: center; gap: 32px; background: var(--night); color: var(--on-dark); padding: 24px 32px; }
   .perks { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 32px; font-size: 13px; color: var(--on-dark-2); border: 0; }

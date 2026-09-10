@@ -1,6 +1,7 @@
 ---
 import Logo from './Logo.astro';
-import { url, mailto, CONTACT_EMAIL } from '../lib/url';
+import ObfuscatedEmail from './ObfuscatedEmail.astro';
+import { url } from '../lib/url';
 
 const company = ['Netter srl', 'P.IVA IT03569900545', 'Via Indipendenza, 06081 Assisi (PG), Italy'];
 
@@ -8,8 +9,8 @@ const company = ['Netter srl', 'P.IVA IT03569900545', 'Via Indipendenza, 06081 A
 const marks = [
   'Grafana', 'Grafana Beyla', 'Vector', 'Keep', 'GreptimeDB', 'Apache Kafka', 'OpenTelemetry', 'Prometheus',
   'Kubernetes', 'gRPC', 'Node.js', 'V8', 'MySQL', 'PostgreSQL', 'Redis', 'MongoDB', 'OpenSSL', 'Docker',
-  'containerd', 'Podman', 'CRI-O', 'Ubuntu', 'Debian', 'AlmaLinux', 'Rocky Linux', 'Rust', 'Java', '.NET',
-  'Python', 'Windows', 'Datadog', 'Dynatrace', 'New Relic', 'Elastic', 'Backblaze', 'Backblaze B2', 'Stripe',
+  'containerd', 'Podman', 'CRI-O', 'Ubuntu', 'PolyForm', 'Rust', 'Java', '.NET',
+  'Python', 'Windows', 'Datadog', 'Dynatrace', 'New Relic', 'Elastic',
 ];
 ---
 
@@ -37,8 +38,8 @@ const marks = [
       </div>
       <div class="stack col">
         <div class="head">Contact</div>
-        <a href={mailto()}>{CONTACT_EMAIL}</a>
-        <a href={mailto('Bee evaluation license')}>Evaluation license</a>
+        <ObfuscatedEmail label="Contact" />
+        <ObfuscatedEmail label="Evaluation license" subject="Bee evaluation license" />
       </div>
     </div>
 
@@ -64,8 +65,6 @@ const marks = [
   .brand p { font-size: 14px; line-height: 1.6; max-width: 340px; }
   .col { gap: 12px; }
   .head { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mint); }
-  .col a { color: #B4BCBF; text-decoration: none; font-size: 14px; }
-  .col a:hover { color: #fff; }
 
   .base { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-top: 56px; padding-top: 24px; border-top: 1px solid rgba(232, 241, 242, 0.08); font-size: 13px; color: #B4BCBF; }
   .base .mono { font-size: 12px; color: #7C868A; }
@@ -76,10 +75,12 @@ const marks = [
   .legal { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; max-width: 1040px; font-size: 12px; line-height: 1.7; color: #7C868A; }
 
   @media (max-width: 800px) {
-    .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+    .site-footer { padding: 48px 0 32px; }
+    .cols { grid-template-columns: minmax(0, 1fr); gap: 28px; }
     .brand { grid-column: 1 / -1; }
-    .base { flex-direction: column; gap: 8px; }
+    .base { flex-direction: column; gap: 8px; margin-top: 40px; }
     .entity { flex-direction: column; gap: 2px; }
+    .entity span { white-space: normal; }
     .entity span + span::before { content: none; }
   }
 </style>
