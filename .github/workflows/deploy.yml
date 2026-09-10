@@ -34,6 +34,9 @@ jobs:
 
       - name: Build site
         run: npm run build
+        env:
+          PUBLIC_PAYMENT_LINK_BEE: ${{ vars.PUBLIC_PAYMENT_LINK_BEE }}
+          PUBLIC_PAYMENT_LINK_STACK: ${{ vars.PUBLIC_PAYMENT_LINK_STACK }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

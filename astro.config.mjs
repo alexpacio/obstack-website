@@ -4,7 +4,6 @@ import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://alexpacio.github.io/obstack-website',
-  base: '/obstack-website',
+  site: 'https://obstack.it',
   integrations: [react()],
 });
