@@ -6,10 +6,15 @@ interface Props {
   rows: string[][];
   /** Index of the row to highlight, usually ours. */
   highlight?: number;
+  /**
+   * Per-row winning data-column indices (0 is the first cell after the row
+   * header). Mint plus a Wins badge. Omit on rows with no winner.
+   */
+  wins?: number[][];
   minWidth?: number;
 }
 
-const { head, rows, highlight = -1, minWidth = 900 } = Astro.props;
+const { head, rows, highlight = -1, wins, minWidth = 900 } = Astro.props;
 ---
 
 <div class="pt-wrap panel">
@@ -18,12 +23,21 @@ const { head, rows, highlight = -1, minWidth = 900 } = Astro.props;
       <tr>{head.map((h) => <th scope="col">{h}</th>)}</tr>
     </thead>
     <tbody>
-      {rows.map(([label, ...cells], i) => (
-        <tr class:list={{ ours: i === highlight }}>
-          <th scope="row">{label}</th>
-          {cells.map((c) => <td>{c}</td>)}
-        </tr>
-      ))}
+      {rows.map(([label, ...cells], i) => {
+        const rowWins = wins?.[i] ?? [];
+        const tag = rowWins.length > 1 ? 'Tie' : 'Wins';
+        return (
+          <tr class:list={{ ours: i === highlight && !wins }}>
+            <th scope="row">{label}</th>
+            {cells.map((c, j) => (
+              <td class:list={{ win: rowWins.includes(j) }}>
+                {rowWins.includes(j) && <span class="win-tag">{tag}</span>}
+                {c}
+              </td>
+            ))}
+          </tr>
+        );
+      })}
     </tbody>
   </table>
 </div>
@@ -37,5 +51,19 @@ const { head, rows, highlight = -1, minWidth = 900 } = Astro.props;
   td { color: var(--text-2); }
   tr.ours th, tr.ours td { background: var(--mint-wash); color: var(--ink); font-weight: 500; }
   tr.ours th { box-shadow: inset 4px 0 0 var(--ink); font-weight: 800; }
+  td.win { background: var(--mint-wash); color: var(--ink); font-weight: 600; }
+  .win-tag {
+    display: block;
+    width: fit-content;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+    background: var(--ink);
+    color: var(--mint);
+    padding: 3px 7px;
+    margin: 0 0 8px;
+  }
   tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
 </style>

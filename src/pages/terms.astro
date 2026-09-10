@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import PriceTable from '../components/PriceTable.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
-import { STORAGE, TERM_DISCOUNT, findPlan, formatPrice, pct, volumeBands } from '../data/plans';
+import { PAGEROOT, STORAGE, TERM_DISCOUNT, findPlan, formatPrice, pct, volumeBands } from '../data/plans';
 import { url } from '../lib/url';
 
 const bee = findPlan('bee');
@@ -32,9 +32,20 @@ const sections: Section[] = [
     title: 'Plans',
     paras: [
       `${bee.name}, ${formatPrice(bee.price, 'usd')} per node per month: the application agent, released under the PolyForm Internal Use License. Source and updates come with the subscription. It exports to a collector you run and stores nothing itself.`,
-      `${stack.name}, ${formatPrice(stack.price, 'usd')} per node per month: Bee plus our support for Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep, on your infrastructure. We deploy and configure the infrastructure, with reference Grafana dashboards. Storage is your own, or Obstack storage at ${gb} per GB per month.`,
+      `${stack.name}, ${formatPrice(stack.price, 'usd')} per node per month: Bee plus our support for Beyla, Vector, Kafka, GreptimeDB, Grafana and Prometheus Alertmanager, on your infrastructure. We deploy and configure the infrastructure, with reference Grafana dashboards. Storage is your own, or Obstack storage at ${gb} per GB per month.`,
       `${cloud.name}, ${formatPrice(cloud.price, 'usd')} per node per month: we deploy and operate the backend in the EU or US datacenter you choose, with the same setup, and you run the agents. Storage is bought by the gigabyte, from ${STORAGE.minGb} GB.`,
       `${stack.name} and ${cloud.name} start at ${stack.minNodes} nodes. Enterprise terms are agreed per contract.`,
+      'Air-gapped deployments, offline updates and sites with no outbound connectivity are not included in list plans. They are quoted as Enterprise.',
+    ],
+  },
+  {
+    id: 'pageroot',
+    title: 'PageRoot module',
+    paras: [
+      `PageRoot is an optional on-call module on ${stack.name} and ${cloud.name}. It is not available with Bee alone.`,
+      `Self-hosted PageRoot is ${formatPrice(PAGEROOT.selfHosted, 'usd')} per on-call user per month. PageRoot on Obstack Cloud is ${formatPrice(PAGEROOT.cloud, 'usd')} per on-call user per month. An on-call user is a person who can be placed on a schedule or receive a page. People who only watch ChatOps are not billed.`,
+      'Volume discounts and the 3-year term discount that apply to node fees also apply to PageRoot seats. Storage is not discounted.',
+      'PageRoot can be added to an existing Stack or Cloud subscription at any time, prorated to the renewal date. Reduce seats at renewal.',
     ],
   },
   {
@@ -51,7 +62,7 @@ const sections: Section[] = [
     paras: [
       'A node is one Linux host, virtual machine or Kubernetes worker node running an Obstack agent. Pods and containers are not counted.',
       'Bursts are covered: autoscaling up to 20% above your node count, for up to 7 days in a calendar month, costs nothing extra. There are no retroactive true-ups.',
-      'Add nodes at any time; they are billed prorated to your renewal date at your current rate. Reduce nodes at renewal.',
+      'Add nodes or PageRoot seats at any time; they are billed prorated to your renewal date at your current rate. Reduce nodes or seats at renewal.',
     ],
   },
   {
@@ -75,8 +86,8 @@ const sections: Section[] = [
     id: 'discounts',
     title: 'Discounts',
     paras: [
-      `Volume discounts are graduated and apply to node fees: nodes ${volumeBands().join(', ')}. Each node is priced by the band it falls in, so adding a node never lowers the total.`,
-      `A 3-year term takes ${pct(TERM_DISCOUNT[36])} off node fees, on top of volume discounts, and locks the per-node price for the whole term. Storage is not discounted.`,
+      `Volume discounts are graduated and apply to node fees and to PageRoot seats: ${volumeBands().join(', ')}. Each unit is priced by the band it falls in, so adding a node or a seat never lowers the total.`,
+      `A 3-year term takes ${pct(TERM_DISCOUNT[36])} off node fees and PageRoot fees, on top of volume discounts, and locks those unit prices for the whole term. Storage is not discounted.`,
     ],
   },
   {
@@ -133,7 +144,8 @@ const sections: Section[] = [
     paras: [
       'Bee is released under the PolyForm Internal Use License 1.0.0. You may use and modify it for the internal business operations of you and your company. You may not distribute it, sublicense it or transfer the license.',
       'An active paid subscription is how you get the Bee source and every update. When the subscription ends, we stop sending source and updates. Copies you already have remain usable under that license for internal use.',
-      'The open-source components of the stack (Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep) stay under their own licenses. The subscription pays for Bee, our integration work and our support.',
+      'PageRoot is Obstack software. When it is on the order, it is licensed for the internal business operations of you and your company for the term of the subscription, on the deployment you bought. It is not distributed as a standalone product without Stack or Cloud.',
+      'The open-source components of the stack (Beyla, Vector, Kafka, GreptimeDB, Grafana and Prometheus Alertmanager) stay under their own licenses. The subscription pays for Bee, PageRoot when purchased, our integration work and our support.',
     ],
   },
   {

@@ -1,53 +1,130 @@
 ---
+import CompareTable from './CompareTable.astro';
+
 const columns = ['Obstack Bee', 'Grafana Beyla', 'Dynatrace OneAgent', 'Datadog Agent'];
 
-const rows: [string, string, string, string, string][] = [
-  ['What you run', 'One Rust binary per node, eBPF embedded', 'One eBPF agent per node, open source (now OpenTelemetry eBPF Instrumentation)', 'OneAgent per host, reporting to a Dynatrace cluster', 'Agent per host, plus configuration per capability'],
-  ['Application code changes', 'None', 'None', 'None, but OneAgent is injected into your processes', 'A tracer library in each service for APM spans'],
-  ['Where telemetry goes', 'Any OpenTelemetry collector that accepts OTLP over HTTP', 'Your OTLP or Prometheus backend', 'Dynatrace SaaS or a vendor-run Managed cluster', 'Datadog SaaS'],
-  ['Air-gapped operation', 'Yes, licensing included', 'Possible; you assemble the stack', 'Managed option, still vendor-operated', 'No'],
-  ['Distributed tracing', 'Intra-service, intra-host and cross-host, no coordinator', 'Propagated context; you assemble the backend', 'In-process agent plus a Dynatrace cluster', 'Tracer libraries plus Datadog APM'],
-  ['Profiling', 'Tied to the same request as the trace', 'Not a first-class profiler', 'Code-level through the in-process agent', 'Separate profiler product'],
-  ['Named Node.js async waits', 'Yes, tied to the exact request that caused them', 'No, generic transactions', 'Method-level through the in-process agent', 'Through tracer and profiler integrations'],
-  ['Full MySQL query text', 'Yes, with typed prepared-statement parameters', 'Generic SQL metadata', 'Through the in-process agent', 'Through tracer libraries'],
-  ['Trace correlation', 'Evidence only; refuses to guess', 'Heuristics plus propagated context', 'In-process agent context', 'Tracer-propagated context'],
-  ['Resource ceilings', 'Published for every queue, map and buffer', 'Partial', 'Vary by agent configuration', 'Vary by agent configuration'],
-  ['Cost during an incident', 'Flat per node, unchanged', 'Free software; backend costs are yours', 'Consumption units rise with load', 'Host, span and ingest meters rise with load'],
-  ['Output format', 'OTLP and Prometheus', 'OTLP and Prometheus', 'Proprietary ingestion', 'Proprietary ingestion'],
+const rows = [
+  {
+    label: 'What you run',
+    win: [0, 1],
+    cells: [
+      'One Rust binary per node, eBPF embedded',
+      'One eBPF agent per node, open source (now OpenTelemetry eBPF Instrumentation)',
+      'OneAgent per host, reporting to a Dynatrace cluster',
+      'Agent per host, plus configuration per capability',
+    ],
+  },
+  {
+    label: 'Application code changes',
+    win: [0, 1],
+    cells: [
+      'None',
+      'None',
+      'None, but OneAgent is injected into your processes',
+      'A tracer library in each service for APM spans',
+    ],
+  },
+  {
+    label: 'Where telemetry goes',
+    win: [0, 1],
+    cells: [
+      'Any OpenTelemetry collector that accepts OTLP over HTTP',
+      'Your OTLP or Prometheus backend',
+      'Dynatrace SaaS or a vendor-run Managed cluster',
+      'Datadog SaaS',
+    ],
+  },
+  {
+    label: 'Air-gapped operation',
+    win: [],
+    cells: [
+      'Not on list plans; quoted as Enterprise (offline delivery and updates)',
+      'Possible; you assemble the stack',
+      'Managed option, still vendor-operated',
+      'No',
+    ],
+  },
+  {
+    label: 'Distributed tracing',
+    win: [0],
+    cells: [
+      'Intra-service, intra-host and cross-host, no coordinator',
+      'Propagated context; you assemble the backend',
+      'In-process agent plus a Dynatrace cluster',
+      'Tracer libraries plus Datadog APM',
+    ],
+  },
+  {
+    label: 'Profiling',
+    win: [0],
+    cells: [
+      'Tied to the same request as the trace',
+      'Not a first-class profiler',
+      'Code-level through the in-process agent',
+      'Separate profiler product',
+    ],
+  },
+  {
+    label: 'Named Node.js async waits',
+    win: [0],
+    cells: [
+      'Yes, tied to the exact request that caused them',
+      'No, generic transactions',
+      'Method-level through the in-process agent',
+      'Through tracer and profiler integrations',
+    ],
+  },
+  {
+    label: 'Full MySQL query text',
+    win: [0],
+    cells: [
+      'Yes, with typed prepared-statement parameters',
+      'Generic SQL metadata',
+      'Through the in-process agent',
+      'Through tracer libraries',
+    ],
+  },
+  {
+    label: 'Trace correlation',
+    win: [0],
+    cells: [
+      'Evidence only; refuses to guess',
+      'Heuristics plus propagated context',
+      'In-process agent context',
+      'Tracer-propagated context',
+    ],
+  },
+  {
+    label: 'Resource ceilings',
+    win: [0],
+    cells: [
+      'Published for every queue, map and buffer',
+      'Partial',
+      'Vary by agent configuration',
+      'Vary by agent configuration',
+    ],
+  },
+  {
+    label: 'Cost during an incident',
+    win: [0],
+    cells: [
+      'Flat per node, unchanged',
+      'Free software; backend costs are yours',
+      'Consumption units rise with load',
+      'Host, span and ingest meters rise with load',
+    ],
+  },
+  {
+    label: 'Output format',
+    win: [0, 1],
+    cells: [
+      'OTLP and Prometheus',
+      'OTLP and Prometheus',
+      'Proprietary ingestion',
+      'Proprietary ingestion',
+    ],
+  },
 ];
 ---
 
-<div class="cmp-wrap panel">
-  <table class="cmp">
-    <thead>
-      <tr>
-        <th class="k"><span class="sr">Capability</span></th>
-        {columns.map((c, i) => <th class:list={{ bee: i === 0 }} scope="col">{c}</th>)}
-      </tr>
-    </thead>
-    <tbody>
-      {rows.map(([label, ...cells]) => (
-        <tr>
-          <th class="k" scope="row">{label}</th>
-          {cells.map((c, i) => <td class:list={{ bee: i === 0 }}>{c}</td>)}
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-
-<style>
-  .cmp-wrap { overflow-x: auto; max-width: 100%; }
-  .cmp { border-collapse: collapse; width: 100%; min-width: 980px; }
-  .cmp th, .cmp td { text-align: left; vertical-align: top; padding: 18px 20px; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.55; }
-  thead th { background: var(--paper); font-weight: 700; width: 19%; }
-  thead th.bee { background: var(--ink); color: var(--on-dark-strong); width: 22%; }
-  .k { width: 200px; font-weight: 700; color: var(--text); background: var(--white); }
-  thead .k { background: var(--paper); }
-  td { color: var(--text-2); }
-  td.bee { background: var(--mint-wash); color: var(--ink); font-weight: 500; }
-  .bee { border-left: 2px solid var(--ink); border-right: 2px solid var(--ink); }
-  tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
-  tbody tr:last-child td.bee { border-bottom: 2px solid var(--ink); }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-</style>
+<CompareTable columns={columns} ours={0} rows={rows} />

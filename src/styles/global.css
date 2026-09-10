@@ -86,6 +86,7 @@ a:hover { color: var(--link-hover); }
   bottom: 16px;
   z-index: 9999;
   max-width: calc(100vw - 32px);
+  overflow: visible;
 }
 #obstack-human-layer .cf-challenge {
   max-width: min(320px, 100%);

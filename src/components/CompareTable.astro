@@ -1,0 +1,78 @@
+---
+interface Props {
+  columns: string[];
+  /** Column index of the Obstack product; the header stays marked. Default 0. */
+  ours?: number;
+  rows: {
+    label: string;
+    cells: string[];
+    /** Column indices that win this row. Empty or all columns: no badge. */
+    win: number[];
+  }[];
+}
+
+const { columns, ours = 0, rows } = Astro.props;
+---
+
+<div class="cmp-wrap panel">
+  <table class="cmp">
+    <caption>Mint and a Wins badge mark the winner of the row. Tie means more than one product wins that capability.</caption>
+    <thead>
+      <tr>
+        <th class="k"><span class="sr">Capability</span></th>
+        {columns.map((c, i) => <th class:list={{ ours: i === ours }} scope="col">{c}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => {
+        const marked = row.win.length > 0 && row.win.length < columns.length;
+        const tag = row.win.length > 1 ? 'Tie' : 'Wins';
+        return (
+          <tr>
+            <th class="k" scope="row">{row.label}</th>
+            {row.cells.map((c, i) => {
+              const isOurs = i === ours;
+              const isWin = marked && row.win.includes(i);
+              return (
+                <td class:list={{ ours: isOurs, win: isWin }}>
+                  {isWin && <span class="win-tag">{tag}</span>}
+                  {c}
+                </td>
+              );
+            })}
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .cmp-wrap { overflow-x: auto; max-width: 100%; }
+  .cmp { border-collapse: collapse; width: 100%; min-width: 980px; }
+  .cmp caption { caption-side: bottom; text-align: left; padding: 16px 4px 0; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+  .cmp th, .cmp td { text-align: left; vertical-align: top; padding: 18px 20px; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.55; }
+  thead th { background: var(--paper); font-weight: 700; width: 19%; }
+  thead th.ours { background: var(--ink); color: var(--on-dark-strong); width: 22%; }
+  .k { width: 200px; font-weight: 700; color: var(--text); background: var(--white); }
+  thead .k { background: var(--paper); }
+  td { color: var(--text-2); }
+  td.ours { border-left: 2px solid var(--ink); border-right: 2px solid var(--ink); color: var(--text); }
+  td.win { background: var(--mint-wash); color: var(--ink); font-weight: 600; }
+  .win-tag {
+    display: block;
+    width: fit-content;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+    background: var(--ink);
+    color: var(--mint);
+    padding: 3px 7px;
+    margin: 0 0 10px;
+  }
+  tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
+  tbody tr:last-child td.ours { border-bottom: 2px solid var(--ink); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>

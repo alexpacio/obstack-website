@@ -71,7 +71,7 @@ export default function Checkout() {
     e.preventDefault();
     if (!validate()) return;
 
-    const subject = `Order: ${q.plan.name}, ${q.nodes} nodes${q.storageGb > 0 ? `, ${q.storageGb} GB` : ''}`;
+    const subject = `Order: ${q.plan.name}, ${q.nodes} nodes${q.storageGb > 0 ? `, ${q.storageGb} GB` : ''}${q.pagerootUsers > 0 ? `, PageRoot ${q.pagerootUsers}` : ''}`;
     openMailto(subject, orderText, (orderMail, email) => {
       setSent({ orderMail, email });
     });
@@ -163,7 +163,7 @@ export default function Checkout() {
               <li><Check /><span>.deb packages for Ubuntu 24.04 and 26.04, no license server, no phone-home</span></li>
             </>
           )}
-          <li><Check /><span>Add nodes or gigabytes any time, prorated at your rate</span></li>
+          <li><Check /><span>Add nodes, gigabytes or PageRoot seats any time, prorated at your rate</span></li>
           <li><Check /><span>Full refund within 30 days of your first order</span></li>
         </ul>
         <p className="small">

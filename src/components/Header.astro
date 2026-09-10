@@ -4,18 +4,33 @@ import ObfuscatedEmail from './ObfuscatedEmail.astro';
 import { url } from '../lib/url';
 
 interface Props {
-  active?: 'bee' | 'stack' | 'pricing' | 'buy';
+  active?: 'bee' | 'pageroot' | 'grafana' | 'stack' | 'pricing' | 'buy';
   /** Minimal header used on checkout. */
   checkout?: boolean;
 }
 
 const { active, checkout = false } = Astro.props;
 
-const links = [
-  { id: 'bee', label: 'Bee', href: url('/bee') },
-  { id: 'stack', label: 'Stack', href: url('/stack') },
-  { id: 'pricing', label: 'Pricing', href: url('/pricing') },
+const groups = [
+  {
+    label: 'Products',
+    about: 'Obstack-owned: the Bee agent and PageRoot on-call',
+    items: [
+      { id: 'bee', label: 'Bee', href: url('/bee') },
+      { id: 'pageroot', label: 'PageRoot', href: url('/pageroot') },
+    ],
+  },
+  {
+    label: 'The stack',
+    about: 'Grafana, and the full Obstack Stack around it',
+    items: [
+      { id: 'grafana', label: 'Grafana', href: url('/grafana') },
+      { id: 'stack', label: 'Stack', href: url('/stack') },
+    ],
+  },
 ];
+
+const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
 ---
 
 <header class="site-header">
@@ -31,9 +46,15 @@ const links = [
     ) : (
       <>
         <nav class="links" aria-label="Main">
-          {links.map((l) => (
-            <a href={l.href} class:list={['nl', { on: active === l.id }]} aria-current={active === l.id ? 'page' : undefined}>{l.label}</a>
+          {groups.map((g) => (
+            <div class:list={['g', { on: g.items.some((i) => i.id === active) }]} title={g.about}>
+              <span class="gl">{g.label}</span>
+              {g.items.map((l) => (
+                <a href={l.href} class:list={['nl', { on: active === l.id }]} aria-current={active === l.id ? 'page' : undefined}>{l.label}</a>
+              ))}
+            </div>
           ))}
+          <a href={buy.href} class:list={['nl', { on: active === buy.id }]} aria-current={active === buy.id ? 'page' : undefined}>{buy.label}</a>
           <ObfuscatedEmail label="Contact" class="nl" />
         </nav>
         <div class="right">
@@ -43,9 +64,19 @@ const links = [
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
             </summary>
             <nav aria-label="Mobile">
-              {links.map((l) => <a href={l.href}>{l.label}</a>)}
+              {groups.map((g) => (
+                <div class="mg">
+                  <span class="mgl">{g.label}</span>
+                  <p class="mga">{g.about}</p>
+                  {g.items.map((l) => <a href={l.href}>{l.label}</a>)}
+                </div>
+              ))}
+              <div class="mg">
+                <span class="mgl">Buy</span>
+                <a href={buy.href}>{buy.label}</a>
+                <a href={url('/pricing#configure')}>Get a quote</a>
+              </div>
               <ObfuscatedEmail label="Contact" class="nl" />
-              <a href={url('/pricing#configure')}>Get a quote</a>
             </nav>
           </details>
         </div>
@@ -111,8 +142,28 @@ const links = [
   .bar { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; height: 52px; gap: 24px; min-width: 0; }
   .home { text-decoration: none; min-width: 0; flex: 1 1 auto; }
   .home :global(.logo) { max-width: 100%; }
-  .links { display: flex; gap: 36px; align-items: center; }
-  .nl, .links :global(.nl) { color: #B9CCD3; text-decoration: none; font-size: 14px; font-weight: 500; padding: 6px 0; border-bottom: 2px solid transparent; }
+  .links { display: flex; gap: 12px; align-items: center; }
+  .g {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 12px 4px 10px;
+    border: 1px solid rgba(232, 241, 242, 0.22);
+    background: rgba(0, 0, 0, 0.22);
+    white-space: nowrap;
+  }
+  .g.on { border-color: rgba(99, 232, 176, 0.45); }
+  .gl {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mint);
+    font-weight: 700;
+    padding-right: 10px;
+    border-right: 1px solid rgba(232, 241, 242, 0.18);
+  }
+  .nl, .links :global(.nl) { color: #B9CCD3; text-decoration: none; font-size: 14px; font-weight: 500; padding: 4px 0; border-bottom: 2px solid transparent; }
   .nl:hover, .links :global(.nl:hover) { color: #fff; }
   .nl.on { color: #fff; font-weight: 700; border-bottom-color: var(--mint); }
   .right { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-shrink: 0; }
@@ -122,15 +173,44 @@ const links = [
   .mnav { display: none; position: relative; flex-shrink: 0; }
   .mnav summary { list-style: none; cursor: pointer; color: #F6FBFB; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(232, 241, 242, 0.55); background: rgba(0,0,0,0.2); }
   .mnav summary::-webkit-details-marker { display: none; }
-  .mnav nav { position: absolute; right: 0; top: 40px; width: 240px; max-width: 100%; background: #0A0F12; border: 1px solid var(--on-dark-line); display: flex; flex-direction: column; padding: 6px; z-index: 60; box-shadow: 0 16px 40px rgba(0,0,0,0.4); }
-  .mnav nav :global(a) { color: var(--on-dark); text-decoration: none; padding: 14px 16px; font-size: 16px; font-family: var(--font-sans); }
+  .mnav nav {
+    position: fixed;
+    left: 50%;
+    right: auto;
+    top: 56px;
+    transform: translateX(-50%);
+    width: calc(100vw - 32px);
+    max-width: 280px;
+    background: #0A0F12;
+    border: 1px solid var(--on-dark-line);
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+    z-index: 80;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+  }
+  .mnav nav :global(a) { color: var(--on-dark); text-decoration: none; padding: 12px 16px; font-size: 16px; font-family: var(--font-sans); }
   .mnav nav :global(a:hover) { background: rgba(99, 232, 176, 0.08); }
+  .mg { display: flex; flex-direction: column; padding: 8px 0; border-bottom: 1px solid var(--on-dark-line); }
+  .mg:last-of-type { border-bottom: none; }
+  .mgl {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mint);
+    font-weight: 700;
+    padding: 8px 16px 2px;
+  }
+  .mga { margin: 0; padding: 0 16px 6px; font-size: 12px; line-height: 1.4; color: var(--on-dark-3); }
 
-  @media (max-width: 800px) {
-    .bar { gap: 12px; height: 48px; }
+  @media (max-width: 1100px) {
     .links { display: none; }
     .mnav { display: block; }
     .right .btn { display: none; }
+  }
+  @media (max-width: 800px) {
+    .bar { gap: 12px; height: 48px; }
     .secure { font-size: 13px; }
     .secure span { display: none; }
   }

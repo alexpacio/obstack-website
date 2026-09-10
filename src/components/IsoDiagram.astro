@@ -74,7 +74,7 @@ const KY = -320, KD = 116, KW = 90, KH = 54;
 const sinks = [
   { name: 'GreptimeDB', x: -150 },
   { name: 'Grafana', x: -45 },
-  { name: 'Keep', x: 60 },
+  { name: 'PageRoot', x: 60 },
 ].map((k) => ({
   ...k,
   cx: k.x + KW / 2,
@@ -143,7 +143,7 @@ for (let k = -10; k <= 12; k++) {
   class="iso"
   viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
   role="img"
-  aria-label="Applications, infrastructure and IoT feed the Obstack core, which stores traces, metrics and logs in GreptimeDB for Grafana and Keep"
+  aria-label="Applications, infrastructure and IoT feed the Obstack core, which stores traces, metrics and logs in GreptimeDB for Grafana and PageRoot"
 >
   <defs>
     <radialGradient id="iso-fade" gradientUnits="userSpaceOnUse" cx="0" cy={-FLOOR / 2} r={r1(vb.w * 0.55)}>

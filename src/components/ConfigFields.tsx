@@ -1,15 +1,18 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import {
   MAX_NODES,
+  PAGEROOT,
   PLANS,
   STORAGE,
   TERM_DISCOUNT,
+  allowsPageroot,
   findPlan,
   formatGb,
   formatPrice,
   fxDisclaimer,
   needsDatacenter,
   normalize,
+  pagerootUnitPrice,
   pct,
   volumeBands,
   type Config,
@@ -26,7 +29,7 @@ const DEPLOYMENTS: { id: Deployment; label: string; plan: PlanId; note: string }
     id: 'self-hosted',
     label: 'Self-hosted',
     plan: 'stack',
-    note: 'On your servers, air-gapped sites included. Setup, updates, rollout and monitoring of the infrastructure are included. Custom Grafana dashboards, alerts and similar are Professional Services, quoted in advance. Bee is licensed under PolyForm Internal Use; source and updates come with the subscription.',
+    note: 'On your servers. Setup, updates, rollout and monitoring of the infrastructure are included. Custom Grafana dashboards, alerts and similar are Professional Services, quoted in advance. Bee is licensed under PolyForm Internal Use; source and updates come with the subscription. Air-gapped delivery is quoted as Enterprise.',
   },
   {
     id: 'cloud',
@@ -52,6 +55,7 @@ export function configSteps(config: Config): number {
   let n = 4;
   if (plan.storage !== 'none') n += 1;
   if (needsDatacenter(config)) n += 1;
+  if (allowsPageroot(plan.id)) n += 1;
   return n;
 }
 
@@ -66,8 +70,10 @@ export default function ConfigFields({ config, onChange }: Props) {
   const plans = PLANS.filter((p) => p.deployment === plan.deployment);
   const deployment = DEPLOYMENTS.find((d) => d.id === plan.deployment)!;
   const managed = config.storageGb > 0;
+  const pagerootOn = config.pagerootUsers > 0;
   // Remembers the chosen size while storage is switched off or the plan has none.
   const [lastGb, setLastGb] = useState(config.storageGb || 2000);
+  const [lastSeats, setLastSeats] = useState(config.pagerootUsers || PAGEROOT.defaultUsers);
 
   const update = (patch: Partial<Config>) => onChange(normalize({ ...config, ...patch }));
   const setGb = (gb: number) => {
@@ -124,8 +130,64 @@ export default function ConfigFields({ config, onChange }: Props) {
             {plan.minNodes > 1 && ` ${plan.name} starts at ${plan.minNodes} nodes.`}
           </p>
         </div>
-        <p className="co-note">Volume pricing is graduated: nodes {volumeBands().join(', ')}.</p>
+        <p className="co-note">
+          Volume pricing is graduated: nodes {volumeBands().join(', ')}
+          {allowsPageroot(plan.id) ? '. The same bands apply to PageRoot seats.' : '.'}
+        </p>
       </fieldset>
+
+      {allowsPageroot(plan.id) && (
+        <fieldset className="co-block">
+          {legend('PageRoot')}
+          <Segmented
+            label="PageRoot"
+            value={pagerootOn ? 'on' : 'off'}
+            options={[
+              { value: 'off', label: 'Without PageRoot' },
+              { value: 'on', label: 'Add PageRoot' },
+            ]}
+            onChange={(v) => {
+              if (v === 'on') {
+                const seats = lastSeats || PAGEROOT.defaultUsers;
+                setLastSeats(seats);
+                update({ pagerootUsers: seats });
+              } else {
+                update({ pagerootUsers: 0 });
+              }
+            }}
+          />
+          {pagerootOn ? (
+            <>
+              <div className="co-nodes">
+                <Stepper
+                  value={config.pagerootUsers}
+                  min={PAGEROOT.minUsers}
+                  max={PAGEROOT.maxUsers}
+                  label="on-call users"
+                  onChange={(pagerootUsers) => {
+                    setLastSeats(pagerootUsers);
+                    update({ pagerootUsers });
+                  }}
+                />
+                <p className="small">
+                  One seat per person who can be on a schedule or receive a page. Stakeholders who only watch ChatOps are free.
+                </p>
+              </div>
+              <p className="co-paynote">
+                <strong>
+                  {config.pagerootUsers} on-call {config.pagerootUsers === 1 ? 'user' : 'users'} at{' '}
+                  {formatPrice(pagerootUnitPrice(plan.id), config.currency)}
+                </strong>{' '}
+                per user per month list. {plan.deployment === 'cloud' ? 'We run PageRoot next to Grafana in your datacenter.' : 'Runs on your servers, next to Grafana and Alertmanager.'} Schedules, escalations, ChatOps and the MCP server are included. No extra fee per incident.
+              </p>
+            </>
+          ) : (
+            <p className="co-paynote">
+              Alertmanager still routes Prometheus alerts. Add PageRoot when you want on-call schedules, escalation chains, ChatOps and a built-in MCP server. {formatPrice(pagerootUnitPrice(plan.id), config.currency)} per on-call user per month on this deployment.
+            </p>
+          )}
+        </fieldset>
+      )}
 
       {plan.storage !== 'none' && (
         <fieldset className="co-block">
@@ -210,7 +272,7 @@ export default function ConfigFields({ config, onChange }: Props) {
           ]}
           onChange={(v) => update({ currency: v as Currency })}
         />
-        <p className="small">{fxDisclaimer()}</p>
+        <p className="small">Defaulted from your browser language and timezone. {fxDisclaimer()}</p>
       </fieldset>
 
       <fieldset className="co-block">
@@ -224,7 +286,10 @@ export default function ConfigFields({ config, onChange }: Props) {
           ]}
           onChange={(v) => update({ term: Number(v) as Term })}
         />
-        <p className="small">Billed yearly in advance. A 3-year term locks your per-node price; its discount applies to node fees, not storage.</p>
+        <p className="small">
+          Billed yearly in advance. A 3-year term locks your unit prices; its discount applies to node
+          {allowsPageroot(plan.id) ? ' and PageRoot' : ''} fees, not storage.
+        </p>
       </fieldset>
     </>
   );
@@ -301,7 +366,14 @@ export function quoteText(q: Quote): string[] {
     `Plan: ${q.plan.name} (${q.plan.deployment === 'cloud' ? `managed cloud, ${q.dc.toUpperCase()} datacenter` : 'self-hosted'})`,
     `Nodes: ${q.nodes} at ${formatPrice(q.plan.price, q.currency)} per node per month list`,
     q.volumeSaving > 0 ? `Volume discount: -${formatPrice(q.volumeSaving, q.currency)} per month` : null,
-    q.termSaving > 0 ? `3-year term discount: -${formatPrice(q.termSaving, q.currency)} per month` : null,
+    q.termSaving > 0 ? `3-year term discount on nodes: -${formatPrice(q.termSaving, q.currency)} per month` : null,
+    q.pagerootUsers > 0
+      ? `PageRoot: ${q.pagerootUsers} on-call ${q.pagerootUsers === 1 ? 'user' : 'users'} at ${formatPrice(pagerootUnitPrice(q.planId), q.currency)} per user per month list`
+      : allowsPageroot(q.planId)
+        ? 'PageRoot: not included'
+        : null,
+    q.pagerootVolumeSaving > 0 ? `PageRoot volume discount: -${formatPrice(q.pagerootVolumeSaving, q.currency)} per month` : null,
+    q.pagerootTermSaving > 0 ? `3-year term discount on PageRoot: -${formatPrice(q.pagerootTermSaving, q.currency)} per month` : null,
     q.plan.storage === 'none'
       ? null
       : `Storage: ${q.storageGb > 0 ? `${formatGb(q.storageGb)} of Obstack storage at ${formatPrice(STORAGE.pricePerGb, q.currency)} per GB per month` : 'customer-provided'}`,
@@ -324,7 +396,15 @@ export function QuoteSummary({ q, eyebrow, children }: { q: Quote; eyebrow: stri
       <dl className="co-lines mono">
         <div><dt>{q.nodes} nodes × {formatPrice(q.plan.price, q.currency)}</dt><dd>{formatPrice(q.listNodes, q.currency)} / mo</dd></div>
         {q.volumeSaving > 0 && <div className="save"><dt>Volume discount</dt><dd>−{formatPrice(q.volumeSaving, q.currency)} / mo</dd></div>}
-        {q.termSaving > 0 && <div className="save"><dt>3-year term</dt><dd>−{formatPrice(q.termSaving, q.currency)} / mo</dd></div>}
+        {q.termSaving > 0 && <div className="save"><dt>3-year term, nodes</dt><dd>−{formatPrice(q.termSaving, q.currency)} / mo</dd></div>}
+        {q.pagerootUsers > 0 && (
+          <div>
+            <dt>PageRoot, {q.pagerootUsers} × {formatPrice(pagerootUnitPrice(q.planId), q.currency)}</dt>
+            <dd>{formatPrice(q.listPageroot, q.currency)} / mo</dd>
+          </div>
+        )}
+        {q.pagerootVolumeSaving > 0 && <div className="save"><dt>PageRoot volume</dt><dd>−{formatPrice(q.pagerootVolumeSaving, q.currency)} / mo</dd></div>}
+        {q.pagerootTermSaving > 0 && <div className="save"><dt>3-year term, PageRoot</dt><dd>−{formatPrice(q.pagerootTermSaving, q.currency)} / mo</dd></div>}
         {q.plan.storage !== 'none' && (
           <div>
             <dt>{q.storageGb > 0 ? `Storage, ${formatGb(q.storageGb)} × ${formatPrice(STORAGE.pricePerGb, q.currency)}` : 'Storage'}</dt>

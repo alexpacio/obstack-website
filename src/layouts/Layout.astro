@@ -8,13 +8,13 @@ import { url } from '../lib/url';
 interface Props {
   title?: string;
   description?: string;
-  active?: 'bee' | 'stack' | 'pricing' | 'buy';
+  active?: 'bee' | 'pageroot' | 'grafana' | 'stack' | 'pricing' | 'buy';
   checkout?: boolean;
 }
 
 const {
   title = 'Obstack · Observability for applications, infrastructure and IoT',
-  description = 'Obstack is a self-hosted observability stack for applications, infrastructure and IoT: the Bee eBPF agent, Beyla, Vector, GreptimeDB, Grafana and Keep, on servers you own.',
+  description = 'Obstack is a self-hosted observability stack for applications, infrastructure and IoT: the Bee eBPF agent, Beyla, Vector, GreptimeDB, Grafana and Prometheus Alertmanager, on servers you own. PageRoot is the optional on-call module.',
   active,
   checkout = false,
 } = Astro.props;

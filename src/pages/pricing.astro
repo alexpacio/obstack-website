@@ -5,7 +5,8 @@ import PriceTable from '../components/PriceTable.astro';
 import Configurator from '../components/Configurator';
 import Arrow from '../components/Arrow.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
-import { STORAGE, findPlan, formatPrice } from '../data/plans';
+import PageRootCompare from '../components/PageRootCompare.astro';
+import { PAGEROOT, STORAGE, findPlan, formatPrice } from '../data/plans';
 import { url } from '../lib/url';
 
 const bee = findPlan('bee');
@@ -31,17 +32,19 @@ const whyStorage = [
 
 const keyTerms = [
   ['Billing', 'Yearly in advance, in USD or EUR. USD is 25% above the euro list. VAT on invoice. Bank transfer within 30 days. Card payments are not accepted.'],
-  ['Changes', 'Add nodes or gigabytes any time, prorated to your renewal date. Reduce at renewal.'],
+  ['Changes', 'Add nodes, gigabytes or PageRoot seats any time, prorated to your renewal date. Reduce at renewal.'],
   ['Renewal', 'Renews for the same term unless cancelled 30 days before. 1-year renewals rise at most 5%; 3-year terms are locked.'],
   ['Refund', 'Full refund within 30 days of your first order. Cloud outages earn service credits.'],
 ];
 
 const faqs = [
   ['What counts as a node?', 'One Linux host, VM or Kubernetes worker node running an Obstack agent. Pods and containers are not counted, and autoscaling bursts of up to 20% for a few days a month are covered.'],
-  ['Self-hosted or Cloud?', 'Self-hosted runs on your servers, air-gapped sites included. Bee is licensed under PolyForm Internal Use; source and updates come with the subscription. Obstack Cloud is the same stack operated by us: you install the agents, we run and upgrade the rest. Data exports in open formats either way.'],
+  ['Self-hosted or Cloud?', 'Self-hosted runs on your servers. Bee is licensed under PolyForm Internal Use; source and updates come with the subscription. Obstack Cloud is the same stack operated by us: you install the agents, we run and upgrade the rest. Data exports in open formats either way.'],
+  ['Do list plans include air-gapped sites?', 'No. Bee, Stack, Cloud and PageRoot on the public price list assume the site can receive updates. Air-gapped delivery, offline updates and sites with no outbound connectivity are quoted as Enterprise.'],
   ['Do you set it up for us?', 'Yes. Obstack Stack on-prem and Obstack Cloud both include first setup, the release of updates, and the ongoing rollout and monitoring of the infrastructure.'],
   ['What about custom work?', 'Custom Grafana dashboards, alert setup and anything else tailored to your environment are Professional Services, quoted in advance. We send a written quote you approve before we start, then invoice the time spent.'],
-  ['Is anything metered?', 'No. Ingest, egress, queries and users are free. Storage is a capacity you choose: when it fills, the oldest data expires first and we warn you at 80%. There is never an overage bill.'],
+  ['Is anything metered?', 'No. Ingest, egress and queries are free. Grafana users are unlimited. Storage is a capacity you choose: when it fills, the oldest data expires first and we warn you at 80%. There is never an overage bill. PageRoot is optional and priced per on-call user.'],
+  ['What is PageRoot?', `An optional on-call module on Stack and Cloud: schedules, escalations, ChatOps and a built-in MCP server. ${formatPrice(PAGEROOT.selfHosted, 'usd')} per user self-hosted, ${formatPrice(PAGEROOT.cloud, 'usd')} on Obstack Cloud. Alertmanager is already in the stack.`],
   ['How much storage do I need?', 'Nodes × stored GB per node per day × retention days. The configurator does the arithmetic. Start with the retention you need today; you can add gigabytes at any time.'],
   ['Where does our data live?', `In the EU or US datacenter you pick in the configurator. Managed storage is Obstack storage at ${gb} per GB per month. Self-hosted customers can use their own S3-compatible bucket or local disk instead.`],
   ['How is Bee licensed?', 'Under the PolyForm Internal Use License: use and modify it for your own operations; do not distribute it. Pay the subscription and you get the source and every update. Stop paying and updates stop.'],
@@ -73,9 +76,9 @@ const faqs = [
       <div class="section-head">
         <div class="stack">
           <div class="eyebrow">01 / Plans</div>
-          <h2 class="h2">Three products, one price model.</h2>
+          <h2 class="h2">Three products, plus an optional on-call module.</h2>
         </div>
-        <p class="body-2">Per node, per month. Stack on-prem and Cloud include setup, updates, rollout and monitoring. Custom Grafana dashboards and alerts are Professional Services, quoted in advance.</p>
+        <p class="body-2">Per node, per month. Stack on-prem and Cloud include setup, updates, rollout and monitoring. PageRoot is an optional on-call module, priced per user. Custom Grafana dashboards and alerts are Professional Services, quoted in advance.</p>
       </div>
       <PricingTable variant="all" />
     </div>
@@ -86,7 +89,7 @@ const faqs = [
       <div class="section-head">
         <div class="stack">
           <div class="eyebrow">02 / Quote</div>
-          <h2 class="h2">Pick the deployment, the nodes and the gigabytes.</h2>
+          <h2 class="h2">Pick the deployment, the nodes, the gigabytes and PageRoot if you want it.</h2>
         </div>
         <p class="body-2">Discounts apply as you go. Take the quote to checkout, or send it to sales for a purchase order.</p>
       </div>
@@ -108,11 +111,25 @@ const faqs = [
     </div>
   </section>
 
+  <section class="section-tight" id="pageroot">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">04 / PageRoot</div>
+          <h2 class="h2">On-call at {formatPrice(PAGEROOT.selfHosted, 'usd')}–{formatPrice(PAGEROOT.cloud, 'usd')} per user. PagerDuty starts at $21.</h2>
+        </div>
+        <p class="body-2">Optional on Stack and Cloud. Ten on-call users are {formatPrice(PAGEROOT.selfHosted * 10, 'usd')} / month self-hosted, versus $210 on PagerDuty Professional and $400 if you buy both Rootly products.</p>
+      </div>
+      <PageRootCompare />
+      <p class="mono note">Public list prices, annual billing where offered, reviewed September 2026. See the <a class="text-link" href={url('/pageroot')}>PageRoot page</a> for the full comparison and where the others win.</p>
+    </div>
+  </section>
+
   <section class="dark">
     <div class="wrap section">
       <div class="section-head">
         <div class="stack">
-          <div class="eyebrow">04 / Storage</div>
+          <div class="eyebrow">05 / Storage</div>
           <h2 class="h2">Why storage is billed by the gigabyte.</h2>
         </div>
         <p class="body-2">An observability workload pays for capacity, requests, deletions and egress. Obstack storage is predictable on all four.</p>
@@ -132,7 +149,7 @@ const faqs = [
     <div class="wrap">
       <div class="section-head">
         <div class="stack">
-          <div class="eyebrow">05 / Terms in brief</div>
+          <div class="eyebrow">06 / Terms in brief</div>
           <h2 class="h2">The commercial terms, in four lines.</h2>
         </div>
         <a class="text-link" href={url('/terms')}>Read the full terms <Arrow size={16} /></a>
@@ -151,7 +168,7 @@ const faqs = [
   <section class="section-tight">
     <div class="wrap grid-2 faq">
       <div class="stack" style="gap: 16px">
-        <div class="eyebrow">06 / Questions</div>
+        <div class="eyebrow">07 / Questions</div>
         <h2 class="h2">Before you buy.</h2>
         <p class="body-2">Anything else: <ObfuscatedEmail label="email us" class="mono" subject="Pricing question" /></p>
       </div>
@@ -169,7 +186,7 @@ const faqs = [
 
 <style>
   .price-hero { padding-top: 88px; padding-bottom: 96px; }
-  #configure, #compare { scroll-margin-top: 64px; }
+  #configure, #compare, #pageroot { scroll-margin-top: 64px; }
   .why { gap: 48px; }
   .why .stack { gap: 12px; padding-top: 20px; border-top: 2px solid var(--mint); }
   .note { font-size: 12px; color: var(--muted); margin-top: 20px; max-width: 980px; line-height: 1.6; }

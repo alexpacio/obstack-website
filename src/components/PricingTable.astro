@@ -1,5 +1,5 @@
 ---
-import { PLANS, STORAGE, TERM_DISCOUNT, formatPrice, pct, volumeBands, type Deployment } from '../data/plans';
+import { PAGEROOT, PLANS, STORAGE, TERM_DISCOUNT, formatPrice, pct, volumeBands, type Deployment } from '../data/plans';
 import { url } from '../lib/url';
 import ObfuscatedEmail from './ObfuscatedEmail.astro';
 
@@ -19,7 +19,7 @@ const storageLine = {
 const perks = [
   ...volumeBands().map((b) => `Nodes ${b}`),
   `3-year term: ${pct(TERM_DISCOUNT[36])} off, price locked`,
-  'No meters on ingest, egress, queries or users',
+  'No meters on ingest, egress or queries',
 ];
 ---
 
@@ -61,6 +61,29 @@ const perks = [
   )}
 </div>
 
+{variant === 'all' && (
+  <aside class="module">
+    <div class="stack" style="gap: 10px">
+      <div class="kind mono">Optional module · Stack and Cloud</div>
+      <h3 class="h3">PageRoot</h3>
+      <p class="small">On-call, escalations, ChatOps and a built-in MCP server. Add it when you configure Stack or Cloud. Not available with Bee alone.</p>
+    </div>
+    <div class="module-prices">
+      <div>
+        <span class="mono">Self-hosted</span>
+        <strong>{formatPrice(PAGEROOT.selfHosted, 'usd')}</strong>
+        <span class="mono">/ user / month</span>
+      </div>
+      <div>
+        <span class="mono">Obstack Cloud</span>
+        <strong>{formatPrice(PAGEROOT.cloud, 'usd')}</strong>
+        <span class="mono">/ user / month</span>
+      </div>
+    </div>
+    <a class="btn btn-outline" href={url('/pageroot')}>Compare with PagerDuty and Rootly</a>
+  </aside>
+)}
+
 <div class="strip">
   <ul class="perks mono">{perks.map((p) => <li>{p}</li>)}</ul>
   {variant === 'bee'
@@ -85,6 +108,12 @@ const perks = [
   li::before { content: ""; width: 8px; height: 8px; background: var(--teal); margin-top: 7px; flex-shrink: 0; }
   .plan :global(.btn) { margin-top: auto; }
 
+  .module { margin-top: 24px; background: var(--white); border: 1px solid var(--line); border-top: 4px solid var(--ink); padding: 28px 32px; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 32px; align-items: center; }
+  .module-prices { display: flex; gap: 32px; }
+  .module-prices div { display: flex; flex-direction: column; gap: 4px; }
+  .module-prices strong { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .module :global(.btn) { justify-self: end; }
+
   .strip { margin-top: 24px; display: flex; justify-content: space-between; align-items: center; gap: 32px; background: var(--night); color: var(--on-dark); padding: 24px 32px; }
   .perks { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 32px; font-size: 13px; color: var(--on-dark-2); border: 0; }
   .perks li::before { background: var(--mint); margin-top: 6px; }
@@ -95,10 +124,14 @@ const perks = [
   @media (max-width: 1100px) {
     .plans-bee { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
     .plan.featured { box-shadow: 6px 6px 0 var(--mint); }
+    .module { grid-template-columns: minmax(0, 1fr); }
+    .module :global(.btn) { justify-self: start; }
   }
   @media (max-width: 800px) {
     .plans-all { grid-template-columns: minmax(0, 1fr); }
     .strip { flex-direction: column; align-items: flex-start; padding: 24px; }
+    .module { grid-template-columns: minmax(0, 1fr); padding: 24px; gap: 20px; }
+    .module :global(.btn) { justify-self: start; }
     .plan { padding: 24px; }
     .plan.featured { padding: 23px; }
   }

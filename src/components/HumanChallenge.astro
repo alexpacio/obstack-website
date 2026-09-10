@@ -80,16 +80,42 @@ const isTurnstile = Boolean(sitekey);
 
 <style>
   .cf-challenge {
+    position: relative;
     display: inline-flex;
     flex-direction: column;
     gap: 6px;
     padding: 10px 12px;
     background: #0a0f12;
-    border: 1px solid rgba(232, 241, 242, 0.12);
+    border: 1px solid #63E8B0;
     font-family: var(--font-mono, ui-monospace, monospace);
     max-width: 320px;
     user-select: none;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    box-shadow:
+      0 0 0 1px rgba(25, 184, 226, 0.45),
+      0 0 12px rgba(99, 232, 176, 0.55),
+      0 0 28px rgba(25, 184, 226, 0.28),
+      0 16px 40px rgba(0, 0, 0, 0.45);
+    animation: cf-aura 2.4s ease-in-out infinite;
+  }
+  .cf-challenge[data-verified="1"] {
+    animation: none;
+    border-color: rgba(99, 232, 176, 0.55);
+    box-shadow:
+      0 0 8px rgba(99, 232, 176, 0.3),
+      0 16px 40px rgba(0, 0, 0, 0.45);
+  }
+  @keyframes cf-aura {
+    0%, 100% {
+      border-color: #63E8B0;
+      box-shadow: 0 0 0 1px rgba(25, 184, 226, 0.35), 0 0 10px rgba(99, 232, 176, 0.4), 0 0 22px rgba(25, 184, 226, 0.18), 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+    50% {
+      border-color: #86F0C4;
+      box-shadow: 0 0 0 1px rgba(25, 184, 226, 0.7), 0 0 18px rgba(99, 232, 176, 0.7), 0 0 36px rgba(25, 184, 226, 0.35), 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cf-challenge { animation: none; }
   }
   .cf-box {
     display: flex;

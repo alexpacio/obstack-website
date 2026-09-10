@@ -1,0 +1,295 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Arrow from '../components/Arrow.astro';
+import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
+import { url } from '../lib/url';
+import { findPlan, formatPrice } from '../data/plans';
+
+const stackPlan = findPlan('stack');
+const cloud = findPlan('cloud');
+
+const panels = [
+  { name: 'Request rate', indent: 0, start: 0, width: 72, ms: '240 / s', color: '#19B8E2' },
+  { name: 'Error rate', indent: 0, start: 0, width: 8, ms: '0.4 %', color: '#2ED0C3' },
+  { name: 'p99 latency', indent: 0, start: 0, width: 81, ms: '812 ms', color: '#63E8B0', hot: true },
+  { name: 'CPU · checkout-api', indent: 0, start: 0, width: 41, ms: '41 %', color: '#2ED0C3' },
+];
+
+const jobs = [
+  ['Dashboards', 'A page of live graphs you keep. Error rate, latency, CPU, a trace next to its logs. You open it the way you open a status board, not a query editor.'],
+  ['Explore', 'A scratch pad. Ask “what did this service do in the last hour?”, look, and leave. Nothing has to be saved. Useful when you do not yet know which dashboard to build.'],
+  ['Alert rules', 'A line on a graph that should not be crossed. Grafana watches it. When it is crossed, an alert fires — into Alertmanager in this stack, then to people if you add PageRoot.'],
+  ['Users and folders', 'Who can see which dashboards. Grafana is a shared wall, not a personal notebook, so teams put service boards in folders and give people logins.'],
+];
+
+const notJobs = [
+  ['Not the database', 'Grafana does not store your telemetry. In Obstack that is GreptimeDB. Grafana only reads it, the way a spreadsheet reads a file.'],
+  ['Not the agent', 'It does not sit on your servers collecting packets. Bee and Beyla do that, and send OTLP into the stack.'],
+  ['Not on-call', 'It will not page a human or know who is on the rota. That is Alertmanager for routing and PageRoot, optional, for people.'],
+  ['Not Grafana Cloud', 'The Grafana in Obstack is the open-source app we run for you, on your servers or in the region you pick. There is no Grafana Cloud host-hour or GB-written bill.'],
+];
+
+const mcp = [
+  ['Find a dashboard', 'Search by name or folder, get a short summary, read which panels it has, and run one of those panels for a time range — without you clicking around.'],
+  ['Ask the data', 'Query the same datasources Grafana uses. In Obstack that is mostly GreptimeDB, in the language Prometheus users already write (PromQL). Grafana can also talk to logs and other stores it already knows.'],
+  ['Hand you the link', 'When the assistant has an answer, it can give you a URL to that dashboard, panel or Explore view, so you land on the same screen it just read.'],
+  ['Same permissions as a person', 'It logs in as a Grafana service account. It only sees what that account is allowed to see. Nothing phones home to Grafana Cloud unless you pointed Grafana there.'],
+];
+
+const split = [
+  ['Grafana MCP', 'Read graphs, logs, traces and alert rules — what is on the screen. Included with Grafana in the stack.'],
+  ['PageRoot MCP', 'Who is on call, and acknowledge, silence or resolve an alert group — the incident. Only if you add PageRoot.'],
+];
+---
+
+<Layout
+  title="Grafana in Obstack · where you look at the fleet"
+  description="Grafana is the screen for metrics, logs and traces in the Obstack Stack: dashboards you keep, Explore for one-off questions, and alert rules that fire when a graph crosses a line."
+  active="grafana"
+>
+  <section class="hero">
+    <div class="wrap hero-grid grafana-hero">
+      <div class="stack" style="gap: 26px">
+        <div class="eyebrow rise">Grafana in the stack</div>
+        <h1 class="display rise">Grafana is the screen. Not the database, not the pager.</h1>
+        <p class="lead rise-2">It is a web app for graphs, logs and traces. Obstack stores the telemetry; Grafana is the window onto it. You open a dashboard the way you open a live status board — request rate, errors, latency — and you can ask a one-off question without saving anything.</p>
+        <div class="btn-row rise-2" style="padding-top: 8px">
+          <a class="btn btn-primary" href="#meant-for">What it is for <Arrow /></a>
+          <a class="btn btn-ghost" href={url('/buy?plan=stack')}>Buy the stack</a>
+        </div>
+      </div>
+
+      <figure class="trace rise-3" aria-label="Example Grafana dashboard panels">
+        <div class="t-head mono"><span>Dashboard · payments-prod</span><span>now</span></div>
+        <div class="t-rows mono">
+          {panels.map((r) => (
+            <div class:list={['t-row', { hot: r.hot }]}>
+              <span class="t-name">{r.name}</span>
+              <div class="t-track"><div class="t-bar" style={`width:${r.width}%;background:${r.color}`}></div></div>
+              <span class="t-ms">{r.ms}</span>
+            </div>
+          ))}
+        </div>
+        <figcaption class="t-foot mono">
+          <span><b>a dashboard</b> is a page of panels you keep open</span>
+          <span><b>a panel</b> is one graph, table or trace on that page</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" id="meant-for">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">01 / What Grafana is for</div>
+          <h2 class="h2">Four jobs. That is the whole product, for a new user.</h2>
+        </div>
+        <p class="body-2">If you have never used it: Grafana does not collect data and it does not wake people up. It shows you what is already stored, and it can raise a hand when a number looks wrong.</p>
+      </div>
+      <div class="grid-4 rule-top four">
+        {jobs.map(([t, d]) => (
+          <div class="stack">
+            <span class="mono">→ {t}</span>
+            <p class="body-2">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">02 / What it is not</div>
+          <h2 class="h2">The rest of the stack does the other jobs.</h2>
+        </div>
+        <p class="body-2">People often say "Grafana" when they mean the whole observability system. In Obstack the name is narrower, on purpose.</p>
+      </div>
+      <div class="tile-grid grid-2">
+        {notJobs.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight" id="screenshots">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">03 / What it looks like</div>
+          <h2 class="h2">A dashboard is a page of graphs. Explore is the scratch pad next to it.</h2>
+        </div>
+        <p class="body-2">The shots below are Grafana itself: a distributed trace next to the logs for the same request, and a dashboard of request rate, errors, latency and host resources. That is the job — look, then decide.</p>
+      </div>
+      <div class="grafana-shots">
+        <figure>
+          <img src={url('/images/grafana_tracing.png')} alt="Grafana Explore showing logs and a distributed trace for one request" width="2335" height="2715" loading="lazy" />
+          <figcaption>Grafana Explore: logs and a distributed trace for the same request.</figcaption>
+        </figure>
+        <figure>
+          <img src={url('/images/grafana_sli_slo.png')} alt="Grafana dashboard of request rate, errors, latency, CPU and memory" width="1000" height="460" loading="lazy" />
+          <figcaption>Grafana dashboard: request rate, errors, latency, CPU and memory.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">04 / Day one in Obstack</div>
+          <h2 class="h2">You log in. The boards already have your data.</h2>
+        </div>
+        <p class="body-2">We install Grafana, point it at GreptimeDB, and ship reference dashboards for hosts and Bee. The first login is not an empty org. Custom boards and alert design are Professional Services, quoted in advance.</p>
+      </div>
+      <div class="tile-grid grid-2">
+        <div>
+          <h3 class="h3" style="font-size: 20px">Metrics, logs and traces in one place</h3>
+          <p class="body-2" style="font-size: 15px">Numbers (metrics), lines of text (logs) and a request's path through services (a trace) all live in GreptimeDB. Grafana can put them on the same dashboard, so you do not jump between three tools to ask "why was checkout slow?"</p>
+          <div class="tile-meta">metrics · logs · traces</div>
+        </div>
+        <div>
+          <h3 class="h3" style="font-size: 20px">Alerting stops at a hand-raise</h3>
+          <p class="body-2" style="font-size: 15px">A Grafana alert rule says “this graph went bad.” Prometheus Alertmanager decides how that notice is grouped and routed. PageRoot, if you add it, pages the person on call. Grafana does not have to know the rota.</p>
+          <div class="tile-meta">Grafana · Alertmanager · PageRoot</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dark" id="mcp">
+    <div class="wrap section bounded">
+      <div class="stack" style="gap: 20px">
+        <div class="eyebrow">05 / Grafana MCP server</div>
+        <h2 class="h2">Assistants can look at the same screen you do.</h2>
+        <p class="body-2" style="font-size: 17px">MCP is a way for an AI assistant to call tools. The Grafana MCP server is Grafana Labs' open-source one: the assistant can search dashboards, run a panel, query a datasource and hand you a link to the same view. It logs in as a Grafana user with permissions, on your network. You do not need it to use Grafana yourself.</p>
+      </div>
+      <div class="gossip">
+        {mcp.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 18px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">06 / Two MCP servers</div>
+          <h2 class="h2">Grafana for what you see. PageRoot for who you page.</h2>
+        </div>
+        <p class="body-2">If you later add an AI SRE agent, it can use Grafana MCP to read graphs and PageRoot MCP to work an incident. Grafana MCP is in the stack. PageRoot MCP comes only with the optional on-call module.</p>
+      </div>
+      <div class="tile-grid grid-2">
+        {split.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+      <p class="mono reviewed">Grafana MCP capabilities from Grafana Labs public documentation, reviewed September 2026. Grafana is a trademark of Grafana Labs. Obstack deploys the open-source server next to your Grafana.</p>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="panel grid-2 runs">
+        <div class="stack">
+          <div class="eyebrow">07 / In the stack</div>
+          <h2 class="h2" style="font-size: 32px">Not a Grafana Cloud subscription. Included with Stack and Cloud.</h2>
+          <p class="body-2" style="font-size: 15px">Grafana and its MCP server ship with Obstack Stack and Obstack Cloud. Unlimited users, dashboards and alert rules. Eagle, when it ships, will sit next to Grafana as an option, not a forced replacement.</p>
+          <div class="matrix mono">
+            <div><span>Included with</span><span>Obstack Stack and Obstack Cloud</span></div>
+            <div><span>Sold separately</span><span>No</span></div>
+            <div><span>MCP server</span><span>Grafana MCP, in the deployment</span></div>
+            <div><span>On-call MCP</span><span>PageRoot, optional</span></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="eyebrow">From {formatPrice(stackPlan.price, 'usd')} / node / month</div>
+          <h2 class="h2" style="font-size: 32px">Buy the stack. Grafana comes with it.</h2>
+          <p class="body-2" style="font-size: 15px">Self-hosted from {formatPrice(stackPlan.price, 'usd')} per node, or Obstack Cloud from {formatPrice(cloud.price, 'usd')} per node in the region you choose. Custom dashboards and alert design are Professional Services, quoted in advance.</p>
+          <div class="btn-row" style="padding-top: 8px">
+            <a class="btn btn-dark" href={url('/buy?plan=stack')}>Buy the stack <Arrow /></a>
+            <a class="text-link" href={url('/stack')}>What's inside <Arrow size={16} /></a>
+          </div>
+          <ObfuscatedEmail class="text-link" subject="Grafana in Obstack" label="Ask about Grafana" />
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .grafana-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  #meant-for, #mcp, #screenshots { scroll-margin-top: 64px; }
+
+  .trace { margin: 0; background: #080D10; border: 1px solid rgba(232, 241, 242, 0.14); border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); min-width: 0; }
+  .t-head { display: flex; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--on-dark-line); font-size: 12px; color: var(--on-dark-3); letter-spacing: 0.06em; text-transform: uppercase; }
+  .t-rows { padding: 10px 0; font-size: 12.5px; }
+  .t-row { display: grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr) 72px; gap: 14px; align-items: center; padding: 9px 20px; color: var(--on-dark-2); }
+  .t-row:first-child { color: var(--on-dark); }
+  .t-row.hot { background: rgba(99, 232, 176, 0.07); box-shadow: inset 2px 0 0 var(--mint); color: var(--mint); }
+  .t-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .t-track { height: 10px; background: rgba(232, 241, 242, 0.05); }
+  .t-bar { height: 10px; transform-origin: left; animation: grow 0.9s 0.3s cubic-bezier(.2, .7, .2, 1) both; }
+  .t-ms { text-align: right; }
+  .t-foot { display: flex; flex-direction: column; gap: 6px; padding: 16px 20px; border-top: 1px solid var(--on-dark-line); font-size: 12px; color: var(--on-dark-3); }
+  .t-foot b { color: var(--on-dark); font-weight: 500; }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  .four > .stack { gap: 12px; padding: 28px 28px 0; border-left: 1px solid var(--line); }
+  .four > .stack:first-child { padding-left: 0; border-left: none; }
+  .four .mono { font-size: 13px; color: var(--link); font-weight: 700; text-transform: uppercase; }
+
+  .bounded { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 72px; align-items: start; }
+  .gossip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--on-dark-line); align-self: stretch; }
+  .gossip > div { background: var(--night); padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 10px; }
+  .gossip .h3 { color: var(--on-dark-strong); }
+  .gossip .body-2 { color: var(--on-dark-2); }
+
+  .reviewed { font-size: 12px; color: var(--muted); margin-top: 40px; }
+
+  .grafana-shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+  .grafana-shots figure { margin: 0; }
+  .grafana-shots img { width: 100%; height: 420px; object-fit: cover; object-position: top left; border-radius: 12px; border: 1px solid var(--line); display: block; background: #111; }
+  .grafana-shots figcaption { font-size: 13px; color: var(--text-2); margin-top: 8px; line-height: 1.5; }
+
+  .runs > .stack { padding: 48px; gap: 24px; }
+  .runs > .stack + .stack { border-left: 1px solid var(--line); }
+  .matrix { display: flex; flex-direction: column; font-size: 13px; }
+  .matrix div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+  .matrix div:last-child { border-bottom: none; }
+  .matrix span + span { color: var(--text-2); text-align: right; }
+
+  @media (max-width: 1100px) {
+    .grafana-hero { grid-template-columns: minmax(0, 1fr); }
+    .bounded { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+    .four > .stack:nth-child(3) { padding-left: 0; border-left: none; }
+    .grafana-shots { grid-template-columns: minmax(0, 1fr); }
+    .grafana-shots img { height: 220px; }
+  }
+  @media (max-width: 800px) {
+    .t-row { grid-template-columns: minmax(0, 1fr) 72px; gap: 8px; padding: 8px 14px; font-size: 11px; }
+    .t-track { grid-column: 1 / -1; grid-row: 2; }
+    .t-head, .t-foot { padding-left: 14px; padding-right: 14px; }
+    .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
+    .gossip { grid-template-columns: minmax(0, 1fr); }
+    .gossip > div { padding: 20px 0; background: transparent; }
+    .runs > .stack { padding: 24px; }
+    .runs > .stack + .stack { border-left: none; border-top: 1px solid var(--line); }
+    .matrix { font-size: 12px; }
+  }
+</style>

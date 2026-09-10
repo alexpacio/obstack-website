@@ -45,11 +45,12 @@ export const PLANS: Plan[] = [
     short: 'Stack',
     price: 25,
     minNodes: 3,
-    blurb: 'The complete stack on your servers, air-gapped sites included.',
+    blurb: 'The complete stack on your servers.',
     features: [
-      'Bee plus Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep',
+      'Bee plus Beyla, Vector, Kafka, GreptimeDB, Grafana and Alertmanager',
+      'PageRoot on-call module optional, priced per user',
       'Setup, updates, ongoing rollout and monitoring of the infrastructure included',
-      'Unlimited users, dashboards and alert rules',
+      'Unlimited Grafana users, dashboards and alert rules',
       'P1 answered in 4 business hours',
       'Custom Grafana dashboards, alerts and similar: Professional Services, quoted in advance',
     ],
@@ -65,6 +66,7 @@ export const PLANS: Plan[] = [
     blurb: 'The same stack, operated by us in the region you choose. You install the agents; we run the rest.',
     features: [
       'Same stack, operated by us; you install the agents',
+      'PageRoot on-call module optional, priced per user',
       'Setup, updates, ongoing rollout and monitoring of the infrastructure included',
       'Datacenter in the EU or the US, you choose',
       '99.9% SLA, P1 answered in 1 hour, 24/7',
@@ -80,6 +82,29 @@ export const PLANS: Plan[] = [
  * minimum storage duration, which matters because retention deletes telemetry
  * every day. Each deployment lands in the region the customer picks.
  */
+/**
+ * Optional on-call module on Stack and Cloud. Priced per on-call user, not
+ * per node. Euro list on a 12-month term; USD is list × USD_MARKUP.
+ */
+export const PAGEROOT = {
+  selfHosted: 4,
+  cloud: 8,
+  minUsers: 1,
+  maxUsers: 9999,
+  defaultUsers: 5,
+} as const;
+
+export function allowsPageroot(planId: PlanId): boolean {
+  return planId === 'stack' || planId === 'cloud';
+}
+
+/** Euro list per on-call user per month for this plan. Zero on Bee. */
+export function pagerootUnitPrice(planId: PlanId): number {
+  if (planId === 'cloud') return PAGEROOT.cloud;
+  if (planId === 'stack') return PAGEROOT.selfHosted;
+  return 0;
+}
+
 export const STORAGE = {
   /** USD per GB per month of compressed data at rest. */
   pricePerGb: 0.007,
@@ -128,33 +153,67 @@ export type Currency = keyof typeof CURRENCY;
 
 const EURO_LANGS = new Set([
   'it', 'de', 'fr', 'es', 'nl', 'pt', 'fi', 'el', 'sk', 'sl', 'et', 'lv', 'lt', 'ga', 'mt', 'lb', 'ca', 'eu', 'gl', 'hr',
+  'sv', 'da', 'nb', 'nn', 'no', 'pl', 'cs', 'hu', 'ro', 'bg', 'is',
 ]);
 const EURO_REGIONS = new Set([
   'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU',
   'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'IS', 'LI', 'NO', 'CH', 'AD', 'MC', 'SM', 'VA', 'GB',
 ]);
+/** UN M.49: Europe and its subregions (Chrome reports `en-150` for English in Europe). */
+const EUROPE_M49 = new Set(['150', '154', '155', '151', '039']);
+const NON_EURO_TZ = new Set([
+  'Europe/Istanbul', 'Europe/Moscow', 'Europe/Minsk', 'Europe/Kaliningrad', 'Europe/Simferopol',
+  'Europe/Kirov', 'Europe/Volgograd', 'Europe/Samara', 'Europe/Astrakhan', 'Europe/Saratov',
+  'Europe/Ulyanovsk', 'Europe/Kyiv', 'Europe/Kiev', 'Europe/Zaporozhye', 'Europe/Uzhgorod',
+]);
+
+function parseLocale(tag: string): { lang: string; region: string } {
+  const normalized = tag.trim().replaceAll('_', '-');
+  try {
+    const loc = new Intl.Locale(normalized);
+    return { lang: (loc.language || '').toLowerCase(), region: (loc.region || '').toUpperCase() };
+  } catch {
+    const parts = normalized.split('-');
+    const lang = (parts[0] || '').toLowerCase();
+    const region = parts.slice(1).map((p) => p.toUpperCase()).find((p) => p.length === 2 || EUROPE_M49.has(p)) ?? '';
+    return { lang, region };
+  }
+}
 
 /** EUR for euro-area and European locales; USD otherwise. */
 export function currencyFromLocales(locales: readonly string[]): Currency {
   for (const raw of locales) {
-    const tag = raw.trim().replace('_', '-');
-    if (!tag) continue;
-    const parts = tag.split('-');
-    const lang = parts[0].toLowerCase();
-    const region = parts.slice(1).map((p) => p.toUpperCase()).find((p) => p.length === 2) ?? '';
-    if (region) {
-      if (EURO_REGIONS.has(region)) return 'eur';
-      continue;
-    }
+    if (!raw) continue;
+    const { lang, region } = parseLocale(raw);
+    if (region && (EURO_REGIONS.has(region) || EUROPE_M49.has(region))) return 'eur';
+    if (region && region.length === 2) continue;
     if (EURO_LANGS.has(lang)) return 'eur';
   }
   return 'usd';
 }
 
+function currencyFromTimezone(): Currency | null {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    if (!tz) return null;
+    if (NON_EURO_TZ.has(tz)) return null;
+    if (tz.startsWith('Europe/')) return 'eur';
+    if (tz === 'Atlantic/Canary' || tz === 'Atlantic/Reykjavik' || tz === 'Atlantic/Azores' || tz === 'Atlantic/Madeira' || tz === 'Arctic/Longyearbyen') {
+      return 'eur';
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+/** Browser language, then timezone. English UI in Europe still yields EUR. */
 export function currencyFromBrowser(): Currency {
   if (typeof navigator === 'undefined') return 'usd';
   const list = (navigator.languages?.length ? navigator.languages : [navigator.language]).filter(Boolean);
-  return currencyFromLocales(list);
+  const fromLang = currencyFromLocales(list);
+  if (fromLang === 'eur') return 'eur';
+  return currencyFromTimezone() ?? 'usd';
 }
 
 export interface Config {
@@ -165,9 +224,11 @@ export interface Config {
   dc: Datacenter;
   term: Term;
   currency: Currency;
+  /** 0 means PageRoot is not on the order. Stack and Cloud only. */
+  pagerootUsers: number;
 }
 
-export const DEFAULT_CONFIG: Config = { planId: 'cloud', nodes: 10, storageGb: 2000, dc: 'eu', term: 12, currency: 'usd' };
+export const DEFAULT_CONFIG: Config = { planId: 'cloud', nodes: 10, storageGb: 2000, dc: 'eu', term: 12, currency: 'usd', pagerootUsers: 0 };
 
 export interface Quote extends Config {
   plan: Plan;
@@ -178,6 +239,12 @@ export interface Quote extends Config {
   /** Node fees per month after discounts. */
   nodesMonthly: number;
   storageMonthly: number;
+  /** PageRoot fees per month at list price. */
+  listPageroot: number;
+  pagerootVolumeSaving: number;
+  pagerootTermSaving: number;
+  /** PageRoot fees per month after discounts. */
+  pagerootMonthly: number;
   monthly: number;
   annual: number;
   /** Node fee per node after discounts. */
@@ -200,6 +267,11 @@ export function normalize(config: Config): Config {
   const plan = findPlan(config.planId);
   const storageGb =
     plan.storage === 'none' ? 0 : clampInt(config.storageGb, plan.storage === 'required' ? STORAGE.minGb : 0, STORAGE.maxGb);
+  const pagerootUsers = allowsPageroot(plan.id)
+    ? config.pagerootUsers > 0
+      ? clampInt(config.pagerootUsers, PAGEROOT.minUsers, PAGEROOT.maxUsers)
+      : 0
+    : 0;
   return {
     planId: plan.id,
     nodes: clampInt(config.nodes, plan.minNodes, MAX_NODES),
@@ -207,6 +279,7 @@ export function normalize(config: Config): Config {
     dc: config.dc === 'us' ? 'us' : 'eu',
     term: config.term === 36 ? 36 : 12,
     currency: config.currency || 'usd',
+    pagerootUsers,
   };
 }
 
@@ -227,7 +300,11 @@ export function quote(config: Config): Quote {
   const afterVolume = nodeFees(plan.price, c.nodes);
   const nodesMonthly = round2(afterVolume * (1 - TERM_DISCOUNT[c.term]));
   const storageMonthly = round2(c.storageGb * STORAGE.pricePerGb);
-  const monthly = round2(nodesMonthly + storageMonthly);
+  const prPrice = pagerootUnitPrice(c.planId);
+  const listPageroot = prPrice * c.pagerootUsers;
+  const pagerootAfterVolume = c.pagerootUsers > 0 ? nodeFees(prPrice, c.pagerootUsers) : 0;
+  const pagerootMonthly = round2(pagerootAfterVolume * (1 - TERM_DISCOUNT[c.term]));
+  const monthly = round2(nodesMonthly + storageMonthly + pagerootMonthly);
   return {
     ...c,
     plan,
@@ -236,6 +313,10 @@ export function quote(config: Config): Quote {
     termSaving: round2(afterVolume - nodesMonthly),
     nodesMonthly,
     storageMonthly,
+    listPageroot,
+    pagerootVolumeSaving: round2(listPageroot - pagerootAfterVolume),
+    pagerootTermSaving: round2(pagerootAfterVolume - pagerootMonthly),
+    pagerootMonthly,
     monthly,
     annual: round2(monthly * 12),
     perNode: round2(nodesMonthly / c.nodes),
@@ -264,6 +345,7 @@ export function configFromSearch(search: string): Config {
     dc,
     term: num('term', DEFAULT_CONFIG.term) === 36 ? 36 : 12,
     currency,
+    pagerootUsers: num('seats', 0),
   });
 }
 
@@ -276,6 +358,7 @@ export function configQuery(config: Config): string {
     dc: c.dc,
     term: String(c.term),
     currency: c.currency,
+    seats: String(c.pagerootUsers),
   }).toString();
 }
 

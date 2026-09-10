@@ -9,7 +9,7 @@ export default function Configurator() {
   const q = quote(config);
   const baseline = q.nodes * BASELINE.perHost;
 
-  // Plan from the URL; currency from ?currency= or the browser language.
+  // Plan from the URL; currency from ?currency=, else browser language and timezone.
   useEffect(() => {
     setConfig(configFromSearch(window.location.search));
   }, []);
@@ -29,7 +29,10 @@ export default function Configurator() {
           type="button"
           className="btn btn-outline"
           onClick={() => {
-            openMailto(`Quote: ${q.plan.name}, ${q.nodes} nodes`, quoteText(q).join('\n'));
+            openMailto(
+              `Quote: ${q.plan.name}, ${q.nodes} nodes${q.pagerootUsers > 0 ? `, PageRoot ${q.pagerootUsers}` : ''}`,
+              quoteText(q).join('\n'),
+            );
           }}
         >
           Send this quote to sales

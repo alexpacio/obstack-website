@@ -7,7 +7,8 @@ const company = ['Netter srl', 'P.IVA IT03569900545', 'Via Indipendenza, 06081 A
 
 /** Third-party names mentioned across the site, for the trademark notice. */
 const marks = [
-  'Grafana', 'Grafana Beyla', 'Vector', 'Keep', 'GreptimeDB', 'Apache Kafka', 'OpenTelemetry', 'Prometheus',
+  'Grafana', 'Grafana Beyla', 'Grafana OnCall', 'Vector', 'GreptimeDB', 'Apache Kafka', 'OpenTelemetry', 'Prometheus',
+  'PagerDuty', 'Rootly', 'incident.io',
   'Kubernetes', 'gRPC', 'Node.js', 'V8', 'MySQL', 'PostgreSQL', 'Redis', 'MongoDB', 'OpenSSL', 'Docker',
   'containerd', 'Podman', 'CRI-O', 'Ubuntu', 'PolyForm', 'Rust', 'Java', '.NET',
   'Python', 'Windows', 'Datadog', 'Dynatrace', 'New Relic', 'Elastic',
@@ -24,6 +25,8 @@ const marks = [
       <div class="stack col">
         <div class="head">Products</div>
         <a href={url('/bee')}>Bee</a>
+        <a href={url('/pageroot')}>PageRoot</a>
+        <a href={url('/grafana')}>Grafana</a>
         <a href={url('/stack')}>Obstack Stack</a>
         <a href={url('/#ai-sre')}>AI SRE agent</a>
         <a href={url('/#eagle')}>Eagle</a>
@@ -33,6 +36,7 @@ const marks = [
         <a href={url('/pricing')}>Pricing</a>
         <a href={url('/pricing#configure')}>Configure a quote</a>
         <a href={url('/buy?plan=bee')}>Buy Bee</a>
+        <a href={url('/buy?plan=stack&seats=5')}>Buy PageRoot</a>
         <a href={url('/buy?plan=cloud')}>Buy Obstack Cloud</a>
         <a href={url('/terms')}>Commercial terms</a>
       </div>

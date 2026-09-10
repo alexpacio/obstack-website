@@ -4,7 +4,7 @@ import IsoDiagram from '../components/IsoDiagram.astro';
 import Arrow from '../components/Arrow.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
 import { url } from '../lib/url';
-import { findPlan, formatPrice } from '../data/plans';
+import { PAGEROOT, findPlan, formatPrice } from '../data/plans';
 
 const bee = findPlan('bee');
 const stackPlan = findPlan('stack');
@@ -14,8 +14,8 @@ const pipeline = [
   { step: 'Collect', name: 'Bee · Beyla', text: 'eBPF agents on every node: Bee goes deep on the services that matter, Beyla goes broad on the rest.' },
   { step: 'Ship', name: 'Vector · Kafka', text: 'Vector gathers OTLP, host metrics and logs. Kafka buffers large or bursty fleets when you need it.' },
   { step: 'Store', name: 'GreptimeDB', text: 'Metrics, logs and traces in one database, queried with SQL and PromQL.' },
-  { step: 'See', name: 'Grafana', text: 'Dashboards and exploration on the Grafana your team already knows. Eagle is on its way.' },
-  { step: 'Act', name: 'Keep · MCP · AI SRE', text: 'Keep runs alerting and incidents; the Grafana MCP server lets agents read what your team reads.' },
+  { step: 'See', name: 'Grafana · MCP', text: 'Dashboards and exploration on the Grafana your team already knows, plus the Grafana MCP server for agents. Eagle is on its way.' },
+  { step: 'Act', name: 'Alertmanager · PageRoot', text: 'Prometheus Alertmanager groups and routes firing alerts. PageRoot is an optional on-call module: schedules, escalations, ChatOps and a built-in MCP server.' },
 ];
 ---
 
@@ -63,7 +63,7 @@ const pipeline = [
         <article class="product lead-product">
           <div class="p-head"><span class="p-name">Obstack Stack</span><span class="badge badge-mint">Available</span></div>
           <p class="p-line">The complete stack, built around Bee.</p>
-          <p class="body-2">Bee and Beyla for collection, Vector and Kafka for transport, GreptimeDB for storage, Grafana for dashboards, Keep for alerts and incidents, and the Grafana MCP server for agents. Self-hosted, or run by us in the region you choose. We configure it end to end; custom dashboards, alerts and migration are quoted and billed on time and materials. One support contract.</p>
+          <p class="body-2">Bee and Beyla for collection, Vector and Kafka for transport, GreptimeDB for storage, Grafana for dashboards, Prometheus Alertmanager for alert routing, and the Grafana MCP server for agents. PageRoot, the on-call module, is optional. Self-hosted, or run by us in the region you choose. We configure it end to end; custom dashboards, alerts and migration are quoted and billed on time and materials. One support contract.</p>
           <div class="p-foot">
             <span class="mono p-price">{formatPrice(stackPlan.price, 'usd')} self-hosted · {formatPrice(cloud.price, 'usd')} cloud, / node / month</span>
             <div class="btn-row">
@@ -73,9 +73,30 @@ const pipeline = [
           </div>
         </article>
 
+      </div>
+
+      <div class="products products-rest">
+        <article class="product" id="pageroot">
+          <div class="p-head"><span class="p-name">PageRoot</span><span class="badge badge-mint">Optional module</span></div>
+          <p class="body-2">On-call, escalations, ChatOps and a built-in MCP server. Optional on Stack and Cloud, {formatPrice(PAGEROOT.selfHosted, 'usd')} per user self-hosted, {formatPrice(PAGEROOT.cloud, 'usd')} on Obstack Cloud. A fraction of PagerDuty or Rootly.</p>
+          <div class="p-foot">
+            <span class="mono p-price">{formatPrice(PAGEROOT.selfHosted, 'usd')} / {formatPrice(PAGEROOT.cloud, 'usd')} / user / month</span>
+            <div class="btn-row">
+              <a class="btn btn-dark" href={url(`/buy?plan=stack&seats=${PAGEROOT.defaultUsers}`)}>Buy PageRoot</a>
+              <a class="text-link" href={url('/pageroot')}>How it compares <Arrow size={16} /></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="product" id="grafana">
+          <div class="p-head"><span class="p-name">Grafana</span><span class="badge badge-mint">In the stack</span></div>
+          <p class="body-2">Dashboards, Explore and alerting in Grafana, with the Grafana MCP server so agents query the same datasources your team does. Included in Stack and Cloud, not sold on its own.</p>
+          <a class="text-link" href={url('/grafana')}>How Grafana works here <Arrow size={16} /></a>
+        </article>
+
         <article class="product" id="ai-sre">
           <div class="p-head"><span class="p-name">AI SRE agent</span><span class="badge badge-dashed">Early access</span></div>
-          <p class="body-2">An agent that works incidents alongside your on-call. It reads the same traces, metrics, logs and alerts your team does, through the stack's own interfaces, on your infrastructure.</p>
+          <p class="body-2">An agent that works incidents alongside your on-call. It reads the same traces, metrics, logs and alerts your team does, through the Grafana MCP server and PageRoot's MCP, on your infrastructure.</p>
           <ObfuscatedEmail class="text-link" subject="AI SRE agent early access" label="Request early access">
             Request early access <Arrow size={16} />
           </ObfuscatedEmail>
@@ -150,7 +171,7 @@ const pipeline = [
       <div class="grid-3 principles">
         <div class="stack">
           <h3 class="h3">Your data stays on your servers</h3>
-          <p class="body-2">Telemetry goes to collectors and databases you run. Bee is licensed under PolyForm Internal Use: you get the source and every update for as long as you subscribe. Air-gapped sites are a first-class deployment.</p>
+          <p class="body-2">Telemetry goes to collectors and databases you run. Bee is licensed under PolyForm Internal Use: you get the source and every update for as long as you subscribe. Air-gapped delivery is quoted as Enterprise, not on the list plans.</p>
         </div>
         <div class="stack">
           <h3 class="h3">Open formats in and out</h3>
@@ -183,6 +204,7 @@ const pipeline = [
   .hero-art { margin-right: calc(var(--gutter) * -0.5); overflow: hidden; max-width: 100%; }
 
   .products { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .products-rest { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 24px; }
   .product { background: var(--white); border: 1px solid var(--line); padding: 36px; display: flex; flex-direction: column; gap: 16px; }
   .lead-product { border-top: 4px solid var(--ink); }
   .p-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -210,7 +232,7 @@ const pipeline = [
   @media (max-width: 1100px) {
     .home-hero { grid-template-columns: minmax(0, 1fr); }
     .hero-art { margin-right: 0; }
-    .products { grid-template-columns: minmax(0, 1fr); }
+    .products, .products-rest { grid-template-columns: minmax(0, 1fr); }
     .principles { gap: 32px; }
   }
   @media (max-width: 800px) {
