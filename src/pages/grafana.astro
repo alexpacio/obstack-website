@@ -8,13 +8,6 @@ import { findPlan, formatPrice } from '../data/plans';
 const stackPlan = findPlan('stack');
 const cloud = findPlan('cloud');
 
-const panels = [
-  { name: 'Request rate', indent: 0, start: 0, width: 72, ms: '240 / s', color: '#19B8E2' },
-  { name: 'Error rate', indent: 0, start: 0, width: 8, ms: '0.4 %', color: '#2ED0C3' },
-  { name: 'p99 latency', indent: 0, start: 0, width: 81, ms: '812 ms', color: '#63E8B0', hot: true },
-  { name: 'CPU · checkout-api', indent: 0, start: 0, width: 41, ms: '41 %', color: '#2ED0C3' },
-];
-
 const jobs = [
   ['Dashboards', 'A page of live graphs you keep. Error rate, latency, CPU, a trace next to its logs. You open it the way you open a status board, not a query editor.'],
   ['Explore', 'A scratch pad. Ask “what did this service do in the last hour?”, look, and leave. Nothing has to be saved. Useful when you do not yet know which dashboard to build.'],
@@ -59,21 +52,8 @@ const split = [
         </div>
       </div>
 
-      <figure class="trace rise-3" aria-label="Example Grafana dashboard panels">
-        <div class="t-head mono"><span>Dashboard · payments-prod</span><span>now</span></div>
-        <div class="t-rows mono">
-          {panels.map((r) => (
-            <div class:list={['t-row', { hot: r.hot }]}>
-              <span class="t-name">{r.name}</span>
-              <div class="t-track"><div class="t-bar" style={`width:${r.width}%;background:${r.color}`}></div></div>
-              <span class="t-ms">{r.ms}</span>
-            </div>
-          ))}
-        </div>
-        <figcaption class="t-foot mono">
-          <span><b>a dashboard</b> is a page of panels you keep open</span>
-          <span><b>a panel</b> is one graph, table or trace on that page</span>
-        </figcaption>
+      <figure class="shot rise-3">
+        <img src={url('/images/grafana.webp')} alt="Grafana dashboard: host overview with CPU, memory, filesystem and network panels" width="1366" height="1520" />
       </figure>
     </div>
   </section>
@@ -236,19 +216,8 @@ const split = [
   .grafana-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   #meant-for, #mcp, #screenshots { scroll-margin-top: 64px; }
 
-  .trace { margin: 0; background: #080D10; border: 1px solid rgba(232, 241, 242, 0.14); border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); min-width: 0; }
-  .t-head { display: flex; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--on-dark-line); font-size: 12px; color: var(--on-dark-3); letter-spacing: 0.06em; text-transform: uppercase; }
-  .t-rows { padding: 10px 0; font-size: 12.5px; }
-  .t-row { display: grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr) 72px; gap: 14px; align-items: center; padding: 9px 20px; color: var(--on-dark-2); }
-  .t-row:first-child { color: var(--on-dark); }
-  .t-row.hot { background: rgba(99, 232, 176, 0.07); box-shadow: inset 2px 0 0 var(--mint); color: var(--mint); }
-  .t-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .t-track { height: 10px; background: rgba(232, 241, 242, 0.05); }
-  .t-bar { height: 10px; transform-origin: left; animation: grow 0.9s 0.3s cubic-bezier(.2, .7, .2, 1) both; }
-  .t-ms { text-align: right; }
-  .t-foot { display: flex; flex-direction: column; gap: 6px; padding: 16px 20px; border-top: 1px solid var(--on-dark-line); font-size: 12px; color: var(--on-dark-3); }
-  .t-foot b { color: var(--on-dark); font-weight: 500; }
-  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .shot { margin: 0; min-width: 0; border-radius: 14px; overflow: hidden; border: 1px solid rgba(232, 241, 242, 0.14); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); background: #080D10; }
+  .shot img { width: 100%; height: auto; display: block; }
 
   .four > .stack { gap: 12px; padding: 28px 28px 0; border-left: 1px solid var(--line); }
   .four > .stack:first-child { padding-left: 0; border-left: none; }
@@ -282,9 +251,6 @@ const split = [
     .grafana-shots img { height: 220px; }
   }
   @media (max-width: 800px) {
-    .t-row { grid-template-columns: minmax(0, 1fr) 72px; gap: 8px; padding: 8px 14px; font-size: 11px; }
-    .t-track { grid-column: 1 / -1; grid-row: 2; }
-    .t-head, .t-foot { padding-left: 14px; padding-right: 14px; }
     .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
     .gossip { grid-template-columns: minmax(0, 1fr); }
     .gossip > div { padding: 20px 0; background: transparent; }

@@ -26,8 +26,8 @@ const qualities = [
   ['Routes from the payload', 'A route is a template that must evaluate true. Severity, service, namespace or any field in the JSON can send the group down a different chain and into a different Slack channel.', 'first matching route wins'],
   ['Escalation chains', 'Steps include wait, notify a user or the current on-call, notify a whole team, round-robin, time-of-day gates, alert-count thresholds, outgoing webhooks and a repeat of the chain.', 'default and important notification sets'],
   ['Schedules that match how teams actually work', 'Build rotations in the UI, import an iCal calendar, or manage shifts in Terraform. Shift-swap requests let a teammate take a stretch of on-call without rewriting the rotation.', 'web · iCal · Terraform · shift swaps'],
-  ['Personal notification policies', 'Each responder sets a default path and an important path: ChatOps, webhook, email or a sequence of those, with delays between steps. Escalation steps choose which path to use.', 'default · important'],
-  ['ChatOps and outgoing webhooks', 'Publish groups to Slack, Microsoft Teams or Telegram. Outgoing webhooks fire on create, acknowledge, resolve, silence or as an escalation step, with templates for the body and a record of other webhook responses.', 'Slack · Teams · Telegram · webhooks'],
+  ['Personal notification policies', 'Each responder sets a default path and an important path: ChatOps, webhook, email, SMS or a phone call, with delays between steps. Escalation steps choose which path to use.', 'default · important'],
+  ['ChatOps, Twilio, outgoing webhooks', 'Publish groups to Slack, Microsoft Teams or Telegram. SMS and phone calls go through Twilio: plug in your Twilio account, PageRoot places the call or sends the text. Outgoing webhooks fire on create, acknowledge, resolve, silence or as an escalation step.', 'Slack · Teams · Telegram · Twilio · webhooks'],
 ];
 
 const mcp = [
@@ -161,7 +161,7 @@ const split = [
           <p class="body-2" style="font-size: 15px">We would rather you hear it from us. Pick something else if you need:</p>
         </div>
         <ul>
-          <li>A phone/SMS bundle we operate, live call routing, or a public status page as part of the same SKU.</li>
+          <li>Live call routing, or a public status page as part of the same SKU. PageRoot sends SMS and phone calls through your Twilio account, not a bundle we meter.</li>
           <li>Slack-native incident command with roles, timelines and a meeting bot in the channel.</li>
           <li>Vendor-run AIOps or a packaged AI SRE. PageRoot gives agents MCP; the model and the run are yours.</li>
         </ul>
@@ -187,7 +187,7 @@ const split = [
           <div class="matrix mono">
             <div><span>On-call users</span><span>Priced</span></div>
             <div><span>Incidents, schedules, MCP</span><span>Included</span></div>
-            <div><span>Phone / SMS bundle</span><span>Not sold</span></div>
+            <div><span>Phone / SMS</span><span>Twilio</span></div>
             <div><span>Ten users, list</span><span>{formatPrice(PAGEROOT.selfHosted * ten, 'usd')} / month</span></div>
           </div>
           <a class="btn btn-dark" href={url(`/buy?plan=stack&${seatsQuery}`)}>Buy on Stack <Arrow /></a>
@@ -199,7 +199,7 @@ const split = [
           <div class="matrix mono">
             <div><span>On-call users</span><span>Priced</span></div>
             <div><span>Incidents, schedules, MCP</span><span>Included</span></div>
-            <div><span>Phone / SMS bundle</span><span>Not sold</span></div>
+            <div><span>Phone / SMS</span><span>Twilio</span></div>
             <div><span>Ten users, list</span><span>{formatPrice(PAGEROOT.cloud * ten, 'usd')} / month</span></div>
           </div>
           <a class="btn btn-dark" href={url(`/buy?plan=cloud&${seatsQuery}`)}>Buy on Cloud <Arrow /></a>

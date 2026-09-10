@@ -142,11 +142,12 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
   .bar { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; height: 52px; gap: 24px; min-width: 0; }
   .home { text-decoration: none; min-width: 0; flex: 1 1 auto; }
   .home :global(.logo) { max-width: 100%; }
-  .links { display: flex; gap: 12px; align-items: center; }
+  .links { display: flex; gap: 24px; align-items: center; }
   .g {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 24px;
     padding: 4px 12px 4px 10px;
     border: 1px solid rgba(232, 241, 242, 0.22);
     background: rgba(0, 0, 0, 0.22);
@@ -160,10 +161,22 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
     text-transform: uppercase;
     color: var(--mint);
     font-weight: 700;
-    padding-right: 10px;
-    border-right: 1px solid rgba(232, 241, 242, 0.18);
   }
-  .nl, .links :global(.nl) { color: #B9CCD3; text-decoration: none; font-size: 14px; font-weight: 500; padding: 4px 0; border-bottom: 2px solid transparent; }
+  .nl, .links :global(.nl) { position: relative; color: #B9CCD3; text-decoration: none; font-size: 14px; font-weight: 500; padding: 4px 0; border-bottom: 2px solid transparent; }
+  .g .nl::before,
+  .g + .g::before,
+  .links > .g + .nl::before,
+  .links > .nl + :global(.nl)::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 12px;
+    background: rgba(232, 241, 242, 0.28);
+    pointer-events: none;
+  }
   .nl:hover, .links :global(.nl:hover) { color: #fff; }
   .nl.on { color: #fff; font-weight: 700; border-bottom-color: var(--mint); }
   .right { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-shrink: 0; }
