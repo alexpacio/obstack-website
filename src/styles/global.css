@@ -20,6 +20,8 @@
   --link: #138BB0;
   --link-hover: #0B6A88;
 
+  --night: #030607;
+
   --on-dark: #E8F1F2;
   --on-dark-strong: #F6FBFB;
   --on-dark-2: #A9BEC6;
@@ -80,16 +82,27 @@ a:hover { color: var(--link-hover); }
 .grid-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 
 /* Dark surfaces */
-.dark { background: var(--ink); color: var(--on-dark); }
+.dark { background: var(--night); color: var(--on-dark); }
 
 .hero {
-  background-color: var(--ink);
-  background-image:
-    radial-gradient(ellipse 60% 70% at 78% 45%, rgba(25, 184, 226, 0.16), transparent 70%),
-    linear-gradient(rgba(46, 208, 195, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(46, 208, 195, 0.06) 1px, transparent 1px);
-  background-size: auto, 48px 48px, 48px 48px;
+  background-color: var(--night);
+  background-image: radial-gradient(ellipse 50% 60% at 75% 45%, rgba(46, 208, 195, 0.07), transparent 70%);
   color: var(--on-dark);
+}
+
+/* Dithered hand-off into the light page: stripes thicken and brighten band by band until solid. */
+.hero::after {
+  content: "";
+  display: block;
+  height: 96px;
+  background:
+    repeating-linear-gradient(90deg, rgba(244, 247, 247, 0.18) 0 1px, transparent 1px 4px) 0 0 / 100% 12px no-repeat,
+    repeating-linear-gradient(90deg, rgba(244, 247, 247, 0.34) 0 1px, transparent 1px 4px) 0 12px / 100% 12px no-repeat,
+    repeating-linear-gradient(90deg, rgba(244, 247, 247, 0.6) 0 1px, transparent 1px 4px) 0 24px / 100% 12px no-repeat,
+    repeating-linear-gradient(90deg, rgba(244, 247, 247, 0.6) 0 2px, transparent 2px 4px) 0 36px / 100% 12px no-repeat,
+    repeating-linear-gradient(90deg, rgba(244, 247, 247, 0.9) 0 2px, transparent 2px 4px) 0 48px / 100% 12px no-repeat,
+    repeating-linear-gradient(90deg, var(--paper) 0 3px, rgba(244, 247, 247, 0.4) 3px 4px) 0 60px / 100% 12px no-repeat,
+    linear-gradient(var(--paper), var(--paper)) 0 72px / 100% 24px no-repeat;
 }
 
 .hero-grid {
@@ -98,7 +111,7 @@ a:hover { color: var(--link-hover); }
   gap: 56px;
   align-items: center;
   padding-top: 88px;
-  padding-bottom: 104px;
+  padding-bottom: 64px;
 }
 
 /* Type */
@@ -112,18 +125,18 @@ a:hover { color: var(--link-hover); }
 .dark .eyebrow, .hero .eyebrow { color: var(--mint); }
 
 .display {
-  font-size: clamp(40px, 5.2vw, 66px);
-  line-height: 1.04;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: clamp(40px, 4.6vw, 62px);
+  line-height: 1.06;
+  font-weight: 500;
+  letter-spacing: -0.035em;
   color: var(--on-dark-strong);
 }
 
 .h2 {
   font-size: clamp(30px, 3.3vw, 44px);
   line-height: 1.1;
-  font-weight: 800;
-  letter-spacing: -0.015em;
+  font-weight: 500;
+  letter-spacing: -0.03em;
 }
 .dark .h2 { color: var(--on-dark-strong); }
 
@@ -153,10 +166,10 @@ a:hover { color: var(--link-hover); }
   min-height: 48px;
   padding: 12px 22px;
   border: 1px solid transparent;
-  border-radius: 0;
+  border-radius: 999px;
   font: inherit;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.2;
   text-decoration: none;
   cursor: pointer;

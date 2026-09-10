@@ -43,7 +43,6 @@ const bounds = [
 const othersWin = [
   'PostgreSQL, Kafka or MongoDB today. They are on Bee’s roadmap; Beyla covers them now, and ships in the Obstack Stack.',
   'ARM64, Windows, or Linux kernels older than 7.0.',
-  'Hosting outside the EU. Obstack Cloud runs in EU regions only.',
   'Framework-aware spans inside Java, .NET or Python services.',
 ];
 ---
@@ -191,7 +190,7 @@ const othersWin = [
           <div class="eyebrow">06 / Pricing</div>
           <h2 class="h2">Per node, per month. Nothing metered.</h2>
         </div>
-        <p class="body-2" style="font-size: 15px">Bee on its own, or inside the full stack, self-hosted or run by us in the EU. Every plan includes all protocols and Node.js await naming.</p>
+        <p class="body-2" style="font-size: 15px">Bee on its own, or inside the full stack, self-hosted or run by us in the region you choose. Every plan includes all protocols and Node.js await naming.</p>
       </div>
       <PricingTable variant="bee" />
     </div>
@@ -201,7 +200,7 @@ const othersWin = [
 <style>
   .bee-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 
-  .trace { margin: 0; background: var(--ink-2); border: 1px solid rgba(99, 232, 176, 0.2); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); min-width: 0; }
+  .trace { margin: 0; background: #080D10; border: 1px solid rgba(232, 241, 242, 0.14); border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); min-width: 0; }
   .t-head { display: flex; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--on-dark-line); font-size: 12px; color: var(--on-dark-3); letter-spacing: 0.06em; text-transform: uppercase; }
   .t-rows { padding: 10px 0; font-size: 12.5px; }
   .t-row { display: grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr) 64px; gap: 14px; align-items: center; padding: 9px 20px; color: var(--on-dark-2); }

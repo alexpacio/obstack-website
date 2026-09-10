@@ -1,6 +1,16 @@
 ---
 import Logo from './Logo.astro';
 import { url, mailto, CONTACT_EMAIL } from '../lib/url';
+
+const company = ['Netter srl', 'P.IVA IT03569900545', 'Via Indipendenza, 06081 Assisi (PG), Italy'];
+
+/** Third-party names mentioned across the site, for the trademark notice. */
+const marks = [
+  'Grafana', 'Grafana Beyla', 'Vector', 'Keep', 'GreptimeDB', 'Apache Kafka', 'OpenTelemetry', 'Prometheus',
+  'Kubernetes', 'gRPC', 'Node.js', 'V8', 'MySQL', 'PostgreSQL', 'Redis', 'MongoDB', 'OpenSSL', 'Docker',
+  'containerd', 'Podman', 'CRI-O', 'Ubuntu', 'Debian', 'AlmaLinux', 'Rocky Linux', 'Rust', 'Java', '.NET',
+  'Python', 'Windows', 'Datadog', 'Dynatrace', 'New Relic', 'Elastic', 'Backblaze', 'Backblaze B2', 'Stripe',
+];
 ---
 
 <footer class="site-footer">
@@ -8,7 +18,7 @@ import { url, mailto, CONTACT_EMAIL } from '../lib/url';
     <div class="cols">
       <div class="stack brand">
         <Logo size={32} />
-        <p>The observability stack for applications, infrastructure and IoT.</p>
+        <p>The observability stack for applications, infrastructure and IoT. A product of Netter srl.</p>
       </div>
       <div class="stack col">
         <div class="head">Products</div>
@@ -31,26 +41,45 @@ import { url, mailto, CONTACT_EMAIL } from '../lib/url';
         <a href={mailto('Bee evaluation license')}>Evaluation license</a>
       </div>
     </div>
+
     <div class="base">
-      <span>© {new Date().getFullYear()} Obstack</span>
+      <p class="entity">
+        <span>© {new Date().getFullYear()} {company[0]}</span>
+        {company.slice(1).map((c) => <span>{c}</span>)}
+      </p>
       <span class="mono">obstack.it</span>
+    </div>
+
+    <div class="legal">
+      <p>{marks.join(', ')} are trademarks or registered trademarks of their respective owners. Linux® is the registered trademark of Linus Torvalds in the U.S. and other countries.</p>
+      <p>Third-party names are used on this site only to identify compatible software and to compare products. Their use implies no affiliation with, sponsorship by or endorsement from their owners. Open-source components shipped in the Obstack Stack are distributed under their own licenses.</p>
     </div>
   </div>
 </footer>
 
 <style>
-  .site-footer { background: var(--ink-3); color: #9FB6BF; padding: 56px 0 40px; }
+  .site-footer { background: var(--night); color: #A3ACB0; border-top: 1px solid rgba(232, 241, 242, 0.08); padding: 64px 0 40px; }
   .cols { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 48px; }
-  .brand { gap: 16px; }
+  .brand { gap: 16px; align-items: flex-start; }
   .brand p { font-size: 14px; line-height: 1.6; max-width: 340px; }
   .col { gap: 12px; }
   .head { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mint); }
-  .col a { color: #9FB6BF; text-decoration: none; font-size: 14px; }
+  .col a { color: #B4BCBF; text-decoration: none; font-size: 14px; }
   .col a:hover { color: #fff; }
-  .base { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--on-dark-line); font-size: 13px; }
-  .base .mono { font-size: 12px; }
+
+  .base { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-top: 56px; padding-top: 24px; border-top: 1px solid rgba(232, 241, 242, 0.08); font-size: 13px; color: #B4BCBF; }
+  .base .mono { font-size: 12px; color: #7C868A; }
+  .entity { display: flex; flex-wrap: wrap; }
+  .entity span { white-space: nowrap; }
+  .entity span + span::before { content: "·"; margin: 0 10px; color: #4E575B; }
+
+  .legal { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; max-width: 1040px; font-size: 12px; line-height: 1.7; color: #7C868A; }
+
   @media (max-width: 800px) {
     .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
     .brand { grid-column: 1 / -1; }
+    .base { flex-direction: column; gap: 8px; }
+    .entity { flex-direction: column; gap: 2px; }
+    .entity span + span::before { content: none; }
   }
 </style>

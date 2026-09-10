@@ -102,7 +102,7 @@ export default function Checkout() {
             Your email app opened with the order addressed to info@obstack.it. Send it and we reply with{' '}
             {pay === 'card' ? 'a secure payment link' : 'a pro-forma invoice with our bank details'}. Once payment clears,{' '}
             {cloud
-              ? `the OTLP endpoint and Grafana login for your EU tenant go to ${details.licenseEmail}.`
+              ? `the OTLP endpoint and Grafana login for your tenant go to ${details.licenseEmail}.`
               : `the signed license for ${q.nodes} nodes goes to ${details.licenseEmail}.`}
           </p>
           <pre className="co-order mono">{orderText}</pre>
@@ -176,7 +176,7 @@ export default function Checkout() {
         <ul className="co-perks">
           {cloud ? (
             <>
-              <li><Check /><span>EU tenant with OTLP endpoint and Grafana login, by email</span></li>
+              <li><Check /><span>Tenant in the region you choose, with OTLP endpoint and Grafana login</span></li>
               <li><Check /><span>No meters on ingest, egress, queries or users</span></li>
             </>
           ) : (

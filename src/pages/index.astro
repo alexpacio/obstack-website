@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import StackIllustration from '../components/StackIllustration.astro';
+import IsoDiagram from '../components/IsoDiagram.astro';
 import Arrow from '../components/Arrow.astro';
 import { url, mailto } from '../lib/url';
 import { findPlan, formatUsd } from '../data/plans';
@@ -20,7 +20,7 @@ const pipeline = [
 
 <Layout>
   <section class="hero">
-    <div class="wrap hero-grid">
+    <div class="wrap hero-grid home-hero">
       <div class="stack" style="gap: 28px">
         <div class="eyebrow rise">Self-hosted observability stack</div>
         <h1 class="display rise">One observability stack for applications, infrastructure and IoT.</h1>
@@ -30,7 +30,7 @@ const pipeline = [
           <a class="btn btn-ghost" href={url('/stack')}>See the full stack</a>
         </div>
       </div>
-      <div class="rise-3"><StackIllustration /></div>
+      <div class="rise-3 hero-art"><IsoDiagram /></div>
     </div>
   </section>
 
@@ -62,7 +62,7 @@ const pipeline = [
         <article class="product lead-product">
           <div class="p-head"><span class="p-name">Obstack Stack</span><span class="badge badge-mint">Available</span></div>
           <p class="p-line">The complete stack, built around Bee.</p>
-          <p class="body-2">Bee and Beyla for collection, Vector and Kafka for transport, GreptimeDB for storage, Grafana for dashboards, Keep for alerts and incidents, and the Grafana MCP server for agents. Self-hosted, or run by us in the EU. One support contract.</p>
+          <p class="body-2">Bee and Beyla for collection, Vector and Kafka for transport, GreptimeDB for storage, Grafana for dashboards, Keep for alerts and incidents, and the Grafana MCP server for agents. Self-hosted, or run by us in the region you choose. We configure it end to end; custom dashboards, alerts and migration are quoted and billed on time and materials. One support contract.</p>
           <div class="p-foot">
             <span class="mono p-price">{formatUsd(stackPlan.price)} self-hosted · {formatUsd(cloud.price)} cloud, / node / month</span>
             <div class="btn-row">
@@ -175,6 +175,9 @@ const pipeline = [
 </Layout>
 
 <style>
+  .home-hero { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 32px; }
+  .hero-art { margin-right: calc(var(--gutter) * -0.5); }
+
   .products { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
   .product { background: var(--white); border: 1px solid var(--line); padding: 36px; display: flex; flex-direction: column; gap: 16px; }
   .lead-product { border-top: 4px solid var(--ink); }
@@ -201,6 +204,8 @@ const pipeline = [
   .principles .stack { gap: 14px; padding-top: 20px; border-top: 2px solid var(--ink); }
 
   @media (max-width: 1100px) {
+    .home-hero { grid-template-columns: minmax(0, 1fr); }
+    .hero-art { margin-right: 0; }
     .products { grid-template-columns: minmax(0, 1fr); }
     .principles { gap: 32px; }
   }

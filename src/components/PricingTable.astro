@@ -9,7 +9,7 @@ interface Props {
 
 const { variant = 'all' } = Astro.props;
 const featured = variant === 'bee' ? 'bee' : 'cloud';
-const kind: Record<Deployment, string> = { 'self-hosted': 'Self-hosted', cloud: 'Managed cloud · EU' };
+const kind: Record<Deployment, string> = { 'self-hosted': 'Self-hosted', cloud: 'Managed cloud' };
 const storageLine = {
   none: 'Agent only · nothing to store',
   optional: `Storage: your own, or ${formatUsd(STORAGE.pricePerTb)} / TB / month`,
@@ -84,7 +84,7 @@ const perks = [
   li::before { content: ""; width: 8px; height: 8px; background: var(--teal); margin-top: 7px; flex-shrink: 0; }
   .plan .btn { margin-top: auto; }
 
-  .strip { margin-top: 24px; display: flex; justify-content: space-between; align-items: center; gap: 32px; background: var(--ink); color: var(--on-dark); padding: 24px 32px; }
+  .strip { margin-top: 24px; display: flex; justify-content: space-between; align-items: center; gap: 32px; background: var(--night); color: var(--on-dark); padding: 24px 32px; }
   .perks { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 32px; font-size: 13px; color: var(--on-dark-2); border: 0; }
   .perks li::before { background: var(--mint); margin-top: 6px; }
 

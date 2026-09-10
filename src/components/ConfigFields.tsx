@@ -8,6 +8,7 @@ import {
   formatUsd,
   normalize,
   pct,
+  regionList,
   volumeBands,
   type Config,
   type Deployment,
@@ -21,13 +22,13 @@ const DEPLOYMENTS: { id: Deployment; label: string; plan: PlanId; note: string }
     id: 'self-hosted',
     label: 'Self-hosted',
     plan: 'stack',
-    note: 'Runs on your servers, air-gapped sites included, under an offline signed license. You run the backend.',
+    note: 'Runs on your servers, air-gapped sites included, under an offline signed license. With the Stack plan we configure the infrastructure, with reference dashboards. Custom work is quoted and billed on time and materials.',
   },
   {
     id: 'cloud',
     label: 'Obstack Cloud',
     plan: 'cloud',
-    note: `We run and upgrade the backend in the EU; you install the agents. Data stays in ${STORAGE.regions[0]} unless you pick another EU region.`,
+    note: 'We deploy, run and upgrade the backend in the region you pick at deployment, with reference dashboards. You install the agents. Custom work is quoted and billed on time and materials.',
   },
 ];
 
@@ -161,8 +162,8 @@ export default function ConfigFields({ config, onChange }: Props) {
               </div>
               <p className="co-paynote">
                 <strong>{config.storageTb} TB on {STORAGE.provider}</strong>, {formatUsd(config.storageTb * STORAGE.pricePerTb)} per month at{' '}
-                {formatUsd(STORAGE.pricePerTb)} per TB. No egress, API or early-deletion fees. When it fills, the oldest data expires first, so
-                there is never an overage bill. EU regions: {STORAGE.regions.join(', ')}.
+                {formatUsd(STORAGE.pricePerTb)} per TB, Backblaze's list price with no markup. Egress and API calls included, no early-deletion
+                fees. When it fills, the oldest data expires first, so there is never an overage bill. Region, picked at deployment: {regionList()}.
               </p>
               <Estimator nodes={config.nodes} onUse={setTb} />
             </>
@@ -260,13 +261,13 @@ function Estimator({ nodes, onUse }: { nodes: number; onUse: (tb: number) => voi
 /** Plain-text lines describing a quote, for order and quote emails. */
 export function quoteText(q: Quote): string[] {
   const lines: (string | null)[] = [
-    `Plan: ${q.plan.name} (${q.plan.deployment === 'cloud' ? 'managed cloud, EU' : 'self-hosted'})`,
+    `Plan: ${q.plan.name} (${q.plan.deployment === 'cloud' ? 'managed cloud, region chosen at deployment' : 'self-hosted'})`,
     `Nodes: ${q.nodes} at ${formatUsd(q.plan.price)} per node per month list`,
     q.volumeSaving > 0 ? `Volume discount: -${formatUsd(q.volumeSaving)} per month` : null,
     q.termSaving > 0 ? `3-year term discount: -${formatUsd(q.termSaving)} per month` : null,
     q.plan.storage === 'none'
       ? null
-      : `Storage: ${q.storageTb > 0 ? `${q.storageTb} TB on ${STORAGE.provider} at ${formatUsd(STORAGE.pricePerTb)} per TB per month` : 'customer-provided'}`,
+      : `Storage: ${q.storageTb > 0 ? `${q.storageTb} TB on ${STORAGE.provider} at ${formatUsd(STORAGE.pricePerTb)} per TB per month (list price, no markup)` : 'customer-provided'}`,
     `Monthly equivalent: ${formatUsd(q.monthly)}`,
     `Term: ${q.term} months, billed yearly`,
     `Billed yearly: ${formatUsd(q.annual)} (VAT on invoice)`,

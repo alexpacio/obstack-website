@@ -48,7 +48,13 @@ export const PLANS: Plan[] = [
     price: 25,
     minNodes: 3,
     blurb: 'The complete stack on your servers, air-gapped sites included.',
-    features: ['Bee, Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep', 'Unlimited users, dashboards and alert rules', 'One support contract, P1 answered in 4 business hours'],
+    features: [
+      'Bee, Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep',
+      'Infrastructure configured by us, with reference Grafana dashboards',
+      'Custom dashboards, alerts and migration quoted, billed on time and materials',
+      'Unlimited users, dashboards and alert rules',
+      'One support contract, P1 answered in 4 business hours',
+    ],
     storage: 'optional',
     paymentLink: import.meta.env.PUBLIC_PAYMENT_LINK_STACK,
   },
@@ -59,26 +65,39 @@ export const PLANS: Plan[] = [
     short: 'Cloud',
     price: 39,
     minNodes: 3,
-    blurb: 'The same stack, operated by us in the EU. You install the agents; we run the rest.',
-    features: ['Managed Vector, GreptimeDB, Grafana and Keep, upgrades included', 'EU only: Milan by default, or Frankfurt, Paris, Ireland', '99.9% uptime SLA, P1 answered in 1 hour, 24/7'],
+    blurb: 'The same stack, operated by us in the region you choose. You install the agents; we run the rest.',
+    features: [
+      'Managed Vector, GreptimeDB, Grafana and Keep, upgrades included',
+      'Setup by us, with reference Grafana dashboards',
+      'Custom dashboards, alerts and migration quoted, billed on time and materials',
+      'Any region, chosen at deployment',
+      '99.9% uptime SLA, P1 answered in 1 hour, 24/7',
+    ],
     storage: 'required',
   },
 ];
 
 /**
- * Object storage we provision and bill with the plan. IDrive e2 has the lowest
- * list price among S3 providers without egress fees, charges nothing for API
- * calls and has no minimum storage duration, which matters because retention
- * deletes telemetry every day.
+ * Object storage we provision and bill with the plan: Backblaze B2, resold at
+ * its own list price with no markup. API calls are free, egress is free up to
+ * 3× the data stored and there is no minimum storage duration, which matters
+ * because retention deletes telemetry every day. A B2 account lives in a single
+ * region, so each deployment gets an account in the region the customer picks.
  */
 export const STORAGE = {
-  provider: 'IDrive e2',
-  /** USD per TB per month, bucket setup, lifecycle rules and monitoring included. */
-  pricePerTb: 7,
-  regions: ['Milan', 'Frankfurt', 'Paris', 'Ireland'],
+  provider: 'Backblaze B2',
+  /** USD per TB per month: Backblaze's pay-as-you-go list price, reviewed September 2026. */
+  pricePerTb: 6.95,
+  regions: ['US West', 'US East', 'EU Central (Amsterdam)', 'Canada East (Toronto)'],
   minTb: 1,
   maxTb: 1000,
 };
+
+/** The storage regions as prose, for example "US West, US East or Canada East". */
+export function regionList(): string {
+  const r = STORAGE.regions;
+  return `${r.slice(0, -1).join(', ')} or ${r[r.length - 1]}`;
+}
 
 /** Graduated: each node is priced by the band it falls in, so adding a node never lowers the total. */
 export const VOLUME_TIERS = [
@@ -159,7 +178,7 @@ export function quote(config: Config): Quote {
   const listNodes = plan.price * c.nodes;
   const afterVolume = nodeFees(plan.price, c.nodes);
   const nodesMonthly = round2(afterVolume * (1 - TERM_DISCOUNT[c.term]));
-  const storageMonthly = c.storageTb * STORAGE.pricePerTb;
+  const storageMonthly = round2(c.storageTb * STORAGE.pricePerTb);
   const monthly = round2(nodesMonthly + storageMonthly);
   return {
     ...c,

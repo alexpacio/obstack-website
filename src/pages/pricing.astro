@@ -4,7 +4,7 @@ import PricingTable from '../components/PricingTable.astro';
 import PriceTable from '../components/PriceTable.astro';
 import Configurator from '../components/Configurator';
 import Arrow from '../components/Arrow.astro';
-import { STORAGE, findPlan, formatUsd } from '../data/plans';
+import { STORAGE, findPlan, formatUsd, regionList } from '../data/plans';
 import { url, mailto } from '../lib/url';
 
 const bee = findPlan('bee');
@@ -21,21 +21,11 @@ const vendors = [
   ['Elastic Serverless', 'Per GB ingested and per GB retained', 'No host fee', '$0.09–0.15 / GB ingested', '≈ $0.02 / GB / month, measured before compression', 'Included', 'Ingest and retention rise'],
 ];
 
-const s3Head = ['', 'Storage / TB / month', 'Egress', 'API calls', 'Minimum storage duration', 'EU regions'];
-const s3 = [
-  ['IDrive e2', `$6 list · ${tb} through Obstack, operations included`, 'Free up to 3× stored per month; always included through Obstack', 'Free', 'None', STORAGE.regions.join(', ')],
-  ['Backblaze B2', '$6.95', 'Free up to 3× stored, then $0.01 / GB', 'Free, except one class above a daily allowance', 'None', 'Amsterdam'],
-  ['Wasabi', '$7.99', 'Free under a fair-use policy', 'Free', '90 days, billed even after deletion', 'Several, including Milan and Frankfurt'],
-  ['Impossible Cloud', '€7.99', 'Free', 'Free', 'None', 'Germany and other EU'],
-  ['Cloudflare R2', '$15', 'Free', '$4.50 per million writes, $0.36 per million reads', 'None', 'EU jurisdiction option'],
-  ['Amazon S3 Standard', '$23', '$90 / TB to the internet', '$5 per million writes', 'None', 'Milan, Frankfurt and others'],
-];
-
 const whyStorage = [
-  ['Lowest list price without egress fees', 'At $6 per TB it undercuts Backblaze, Wasabi and Impossible Cloud, and costs a quarter of Amazon S3 before S3 charges a cent of egress.'],
-  ['Free API calls', 'GreptimeDB writes, compacts and reads Parquet files all day. Per-request fees on R2 or S3 grow with that activity; on IDrive e2 they are zero.'],
-  ['No minimum storage duration', 'Retention deletes telemetry every day. Wasabi bills 90 days for every object, so you would keep paying for data already gone.'],
-  ['Data stays in Italy', 'The Milan region keeps Italian telemetry in Italy; Frankfurt, Paris and Ireland cover the rest of the EU. London, outside the EU, is not offered.'],
+  ['List price, no markup', `You pay Backblaze's own price, ${tb} per TB per month. We add nothing on top, and egress and API calls stay included.`],
+  ['Requests that cost nothing', 'GreptimeDB writes, compacts and reads Parquet files all day. Through Obstack those requests are included, so that activity never reaches your bill.'],
+  ['No minimum storage duration', 'Retention deletes telemetry every day. Backblaze B2 bills no minimum duration, so you never pay for data already gone.'],
+  ['Your region, picked at deployment', `${regionList()}. Choose where your telemetry lives when we deploy; EU customers keep it in the EU.`],
 ];
 
 const keyTerms = [
@@ -48,7 +38,10 @@ const keyTerms = [
 const faqs = [
   ['What counts as a node?', 'One Linux host, VM or Kubernetes worker node running an Obstack agent. Pods and containers are not counted, and autoscaling bursts of up to 20% for a few days a month are covered.'],
   ['Is anything metered?', 'No. Ingest, egress, queries and users are free. Storage is a capacity you choose: when it fills, the oldest data expires first and we warn you at 80%. There is never an overage bill.'],
-  ['Self-hosted or Cloud?', 'Self-hosted runs on your servers under an offline license, air-gapped sites included, and you run the backend. Obstack Cloud is the same stack operated by us in the EU: you install the agents, we run and upgrade the rest. Your data exports in open formats either way.'],
+  ['Self-hosted or Cloud?', 'Self-hosted runs on your servers under an offline license, air-gapped sites included, and you run the backend. Obstack Cloud is the same stack operated by us: you install the agents, we run and upgrade the rest. Your data exports in open formats either way.'],
+  ['Where does our data live?', `In the region you pick when we deploy. Managed storage is ${STORAGE.provider} in ${regionList()}, at Backblaze's list price of ${tb} per TB per month with no markup. Self-hosted customers can use their own S3-compatible bucket or local disk instead.`],
+  ['Do you set it up for us?', 'Yes. With the Stack and Cloud plans we deploy and configure the whole infrastructure, with reference Grafana dashboards, as part of the subscription.'],
+  ['What about custom work?', 'Anything tailored to your environment, such as building dashboards for your services, setting up alert rules and routing, or migrating your current dashboards, alerts, workflows and incidents, is billed on time and materials. We estimate it in a written quote you approve before any work starts, then invoice the time actually spent.'],
   ['How much storage do I need?', 'Nodes × stored GB per node per day × retention days. The configurator does the arithmetic. Start with the retention you need today; you can add terabytes at any time.'],
   ['How is a self-hosted license delivered?', 'As an Ed25519-signed file sent by email. It works offline, is bound to no machine and needs no license server.'],
   ['Can we try it first?', 'Yes. Ask info@obstack.it for a 30-day evaluation license, or a 30-day Cloud trial with 1 TB of storage.'],
@@ -57,7 +50,7 @@ const faqs = [
 
 <Layout
   title="Pricing · Obstack"
-  description="Obstack pricing: self-hosted from $15 per node per month, Obstack Cloud from $39 per node plus storage at $7 per TB. No ingest, egress, query or user meters."
+  description={`Obstack pricing: self-hosted from ${formatUsd(bee.price)} per node per month, Obstack Cloud from ${formatUsd(cloud.price)} per node plus Backblaze B2 storage at ${tb} per TB, no markup. No ingest, egress, query or user meters.`}
   active="pricing"
 >
   <section class="hero">
@@ -65,7 +58,7 @@ const faqs = [
       <div class="stack" style="gap: 22px; max-width: 880px">
         <div class="eyebrow rise">Pricing</div>
         <h1 class="display rise">Flat per node. Storage by the terabyte. Nothing metered.</h1>
-        <p class="lead rise-2" style="max-width: 680px">Run Obstack on your servers or let us run it in the EU. Either way your bill looks the same during an incident as it does on a quiet Sunday.</p>
+        <p class="lead rise-2" style="max-width: 680px">Run Obstack on your servers or let us run it in the region you choose. Either way your bill looks the same during an incident as it does on a quiet Sunday.</p>
         <div class="btn-row rise-2" style="padding-top: 8px">
           <a class="btn btn-primary" href="#configure">Configure a quote <Arrow /></a>
           <a class="btn btn-ghost" href="#compare">Compare with Datadog and others</a>
@@ -98,9 +91,9 @@ const faqs = [
       <div class="section-head">
         <div class="stack">
           <div class="eyebrow">02 / Storage</div>
-          <h2 class="h2">Why your terabytes live on IDrive e2.</h2>
+          <h2 class="h2">Why your terabytes live on Backblaze B2.</h2>
         </div>
-        <p class="body-2">We compared every major S3-compatible provider on what an observability workload actually pays for: capacity, requests, deletions and egress.</p>
+        <p class="body-2">An observability workload pays for capacity, requests, deletions and egress. Backblaze B2 is predictable on all four, and we pass it on at cost.</p>
       </div>
       <div class="grid-4 why">
         {whyStorage.map(([t, d]) => (
@@ -110,13 +103,6 @@ const faqs = [
           </div>
         ))}
       </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <PriceTable head={s3Head} rows={s3} highlight={0} />
-      <p class="mono note">Pay-as-you-go list prices from each provider's public pricing page, reviewed September 2026. Through Obstack, storage is {tb} per TB per month with egress, API calls and deletions included.</p>
     </div>
   </section>
 

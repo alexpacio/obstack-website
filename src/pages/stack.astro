@@ -2,10 +2,17 @@
 import Layout from '../layouts/Layout.astro';
 import Arrow from '../components/Arrow.astro';
 import { url, mailto } from '../lib/url';
-import { STORAGE, findPlan, formatUsd } from '../data/plans';
+import { STORAGE, findPlan, formatUsd, regionList } from '../data/plans';
 
 const stackPlan = findPlan('stack');
 const cloud = findPlan('cloud');
+
+const services = [
+  ['Infrastructure, configured', 'We deploy and configure every component for your environment: agents on your nodes, Vector pipelines, Kafka where it helps, GreptimeDB with retention and object storage, Grafana and Keep.'],
+  ['Reference dashboards', 'Grafana arrives connected to your data, with reference dashboards for hosts and Bee, so the first login shows your fleet, not an empty canvas.'],
+  ['Custom work, quoted first', 'Dashboards built for your services, alert rules and routing, migration of your current dashboards, alerts, workflows and incidents: billed on time and materials, from a written quote you approve before we start.'],
+  ['Storage in your region', `Telemetry lands on ${STORAGE.provider} at Backblaze's list price, ${formatUsd(STORAGE.pricePerTb)} per TB per month with no markup, in the region you pick at deployment: ${regionList()}.`],
+];
 
 const components = [
   { layer: 'Collect', name: 'Bee', role: 'Application agent', text: 'Kernel-level traces for HTTP, gRPC, TLS, MySQL and Redis, with named Node.js awaits and published resource ceilings.', ours: true },
@@ -29,7 +36,7 @@ const components = [
       <div class="stack" style="gap: 26px; max-width: 900px">
         <div class="eyebrow rise">Obstack Stack</div>
         <h1 class="display rise">A complete observability stack, running on your servers.</h1>
-        <p class="lead rise-2" style="max-width: 680px">Eight proven components, chosen to fit together, deployed around Bee and supported as one product. Open standards at every seam, so no part of it locks you in.</p>
+        <p class="lead rise-2" style="max-width: 680px">Eight proven components, chosen to fit together, configured by us around Bee and supported as one product. Open standards at every seam, so no part of it locks you in.</p>
         <div class="btn-row rise-2" style="padding-top: 8px">
           <a class="btn btn-primary" href={url('/pricing?plan=stack#configure')}>Configure the stack · from {formatUsd(stackPlan.price)} / node / month <Arrow /></a>
           <a class="btn btn-ghost" href={mailto('Obstack Stack')}>Talk to us</a>
@@ -64,10 +71,30 @@ const components = [
     </div>
   </section>
 
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">02 / Setup and migration</div>
+          <h2 class="h2">We build it for you. Anything custom is quoted first.</h2>
+        </div>
+        <p class="body-2">Setup is part of the full Obstack Stack, self-hosted or on Obstack Cloud: you get a working observability platform, not a box of parts. Tailoring it to your team is billed on time and materials.</p>
+      </div>
+      <div class="tile-grid grid-4">
+        {services.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
   <section class="dark">
     <div class="wrap section flow-sec">
       <div class="stack" style="gap: 16px; max-width: 760px">
-        <div class="eyebrow">02 / Data flow</div>
+        <div class="eyebrow">03 / Data flow</div>
         <h2 class="h2">From the kernel to the person on call.</h2>
       </div>
       <div class="diagram-wrap">
@@ -112,7 +139,7 @@ const components = [
   <section class="section">
     <div class="wrap grid-2 pair">
       <div class="stack">
-        <div class="eyebrow">03 / Bee and Beyla together</div>
+        <div class="eyebrow">04 / Bee and Beyla together</div>
         <h2 class="h2">Deep where it matters, broad everywhere else.</h2>
       </div>
       <div class="stack" style="gap: 18px">
@@ -142,7 +169,7 @@ const components = [
     <div class="wrap cta-band">
       <div class="stack" style="gap: 18px">
         <h2 class="h2">On your servers, or run by us.</h2>
-        <p class="body-2" style="font-size: 18px; max-width: 620px">{formatUsd(stackPlan.price)} per node per month self-hosted, or {formatUsd(cloud.price)} per node plus {formatUsd(STORAGE.pricePerTb)} per TB when we run it in the EU. Every component above, one support contract.</p>
+        <p class="body-2" style="font-size: 18px; max-width: 620px">{formatUsd(stackPlan.price)} per node per month self-hosted, or {formatUsd(cloud.price)} per node plus {formatUsd(STORAGE.pricePerTb)} per TB when we run it for you, in the region you choose. Every component above, set up by us, one support contract.</p>
       </div>
       <div class="btn-row">
         <a class="btn btn-primary" href={url('/buy?plan=stack')}>Buy the stack</a>

@@ -1,14 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import PriceTable from '../components/PriceTable.astro';
-import { STORAGE, TERM_DISCOUNT, findPlan, formatUsd, pct, volumeBands } from '../data/plans';
+import { STORAGE, TERM_DISCOUNT, findPlan, formatUsd, pct, regionList, volumeBands } from '../data/plans';
 import { url, mailto } from '../lib/url';
 
 const bee = findPlan('bee');
 const stack = findPlan('stack');
 const cloud = findPlan('cloud');
 const tb = formatUsd(STORAGE.pricePerTb);
-const [homeRegion, ...otherRegions] = STORAGE.regions;
 
 interface Section {
   id: string;
@@ -23,7 +22,7 @@ const sections: Section[] = [
     id: 'scope',
     title: 'Scope',
     paras: [
-      'These terms cover Obstack subscriptions bought on obstack.it or through a quote from us. Where a signed order form or master agreement differs, that document prevails.',
+      'These terms cover Obstack subscriptions bought on obstack.it or through a quote from us. Obstack is sold by Netter srl, P.IVA IT03569900545, Via Indipendenza, 06081 Assisi (PG), Italy. Where a signed order form or master agreement differs, that document prevails.',
       'Prices are in US dollars and exclude VAT. VAT is added where it applies; business customers in other EU countries with a valid VAT number are invoiced under reverse charge.',
     ],
   },
@@ -32,9 +31,17 @@ const sections: Section[] = [
     title: 'Plans',
     paras: [
       `${bee.name}, ${formatUsd(bee.price)} per node per month: the application agent under a self-hosted license. It exports to a collector you run and stores nothing itself.`,
-      `${stack.name}, ${formatUsd(stack.price)} per node per month: Bee plus our support for Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep, on your infrastructure. Storage is your own, or a managed bucket at ${tb} per TB per month.`,
-      `${cloud.name}, ${formatUsd(cloud.price)} per node per month: we operate the backend in the EU and you run the agents. Storage is bought by the terabyte, from ${STORAGE.minTb} TB.`,
+      `${stack.name}, ${formatUsd(stack.price)} per node per month: Bee plus our support for Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep, on your infrastructure. We deploy and configure the infrastructure, with reference Grafana dashboards. Storage is your own, or a managed ${STORAGE.provider} bucket at ${tb} per TB per month.`,
+      `${cloud.name}, ${formatUsd(cloud.price)} per node per month: we deploy and operate the backend in the region you choose at deployment, with the same setup, and you run the agents. Storage is bought by the terabyte, from ${STORAGE.minTb} TB.`,
       `${stack.name} and ${cloud.name} start at ${stack.minNodes} nodes. Enterprise terms are agreed per contract.`,
+    ],
+  },
+  {
+    id: 'custom-work',
+    title: 'Custom work',
+    paras: [
+      'Work beyond the standard setup is not included in any subscription. This covers, for example, building dashboards for your services, configuring alert rules and notification routing, and migrating dashboards, alerts, workflows and incidents from your current tools.',
+      'Custom work is billed on time and materials. We estimate it in a written quote that you approve before any work starts, and invoice the time actually spent.',
     ],
   },
   {
@@ -50,7 +57,7 @@ const sections: Section[] = [
     id: 'storage',
     title: 'Storage',
     paras: [
-      `Managed storage is an S3 bucket on ${STORAGE.provider}, in ${homeRegion} by default or in ${otherRegions.join(', ')} on request. It is priced by capacity at ${tb} per TB per month, measured as compressed data at rest.`,
+      `Managed storage is an S3-compatible bucket on ${STORAGE.provider}, in the region you choose at deployment: ${regionList()}. It is priced by capacity at ${STORAGE.provider}'s pay-as-you-go list price, ${tb} per TB per month, without markup, measured as compressed data at rest.`,
       'Egress, API requests and early deletion are included. We never pass provider fees through.',
       'When your capacity is full, the oldest data expires first. We warn you at 80% and 95%. You are never billed for overage.',
       'Increase capacity at any time, prorated to your renewal date; reduce it at renewal. Self-hosted customers can use any S3-compatible bucket or local disk instead, at no charge from us.',
@@ -132,7 +139,7 @@ const sections: Section[] = [
     id: 'data',
     title: 'Your data',
     paras: [
-      'You own your telemetry. On Obstack Cloud we process it only to run the service, in the EU region you chose, under a data processing agreement per Article 28 GDPR, available on request with the list of sub-processors.',
+      'You own your telemetry. On Obstack Cloud we process it only to run the service, in the region you chose at deployment, under a data processing agreement per Article 28 GDPR, available on request with the list of sub-processors.',
       'Export at any time with SQL, PromQL or the raw Parquet files. When a Cloud subscription ends you have 30 days to export; we then delete tenant data within a further 30 days.',
     ],
   },
@@ -146,7 +153,7 @@ const sections: Section[] = [
   {
     id: 'law',
     title: 'Governing law',
-    paras: ['These terms are governed by Italian law. Disputes go to the courts of the place where Obstack has its registered office.'],
+    paras: ['These terms are governed by Italian law. Disputes go to the competent court for Assisi, Italy, where Netter srl has its registered office.'],
   },
 ];
 ---

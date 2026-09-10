@@ -1,0 +1,278 @@
+---
+/* Isometric wireframe of the stack: sources feed the Obstack core, which feeds storage, dashboards and alerting. */
+
+const C = Math.cos(Math.PI / 6);
+const FLOOR = -80;
+
+type Pt = [number, number];
+const extent: Pt[] = [];
+const proj = (x: number, y: number, z = 0): Pt => [(x - y) * C, (x + y) / 2 - z];
+/** Project a world point and record it, so the viewBox fits the drawing. */
+const P = (x: number, y: number, z = 0): Pt => {
+  const p = proj(x, y, z);
+  extent.push(p);
+  return p;
+};
+const r1 = (n: number) => Math.round(n * 10) / 10;
+const r3 = (n: number) => Math.round(n * 1000) / 1000;
+const pts = (...ps: Pt[]) => ps.map(([x, y]) => `${r1(x)},${r1(y)}`).join(' ');
+const path = (...ps: Pt[]) => 'M' + ps.map(([x, y]) => `${r1(x)} ${r1(y)}`).join(' L');
+
+/** 2D frame lying flat at height z: local x runs along world x, local y along world y. */
+const flat = (x: number, y: number, z: number) => {
+  const [X, Y] = P(x, y, z);
+  return `matrix(${r3(C)} 0.5 ${-r3(C)} 0.5 ${r1(X)} ${r1(Y)})`;
+};
+/** Frame for text and icons lying flat at height z, reading up and to the right. */
+const read = (x: number, y: number, z: number) => {
+  const [X, Y] = P(x, y, z);
+  return `matrix(${r3(C)} -0.5 ${r3(C)} 0.5 ${r1(X)} ${r1(Y)})`;
+};
+/** The three visible faces of a box. */
+const box = (x: number, y: number, z: number, w: number, d: number, h: number) => ({
+  top: pts(P(x, y, z + h), P(x + w, y, z + h), P(x + w, y + d, z + h), P(x, y + d, z + h)),
+  right: pts(P(x + w, y, z), P(x + w, y + d, z), P(x + w, y + d, z + h), P(x + w, y, z + h)),
+  left: pts(P(x, y + d, z), P(x + w, y + d, z), P(x + w, y + d, z + h), P(x, y + d, z + h)),
+});
+const square = (x: number, y: number, w: number, d: number, z: number) =>
+  pts(P(x, y, z), P(x + w, y, z), P(x + w, y + d, z), P(x, y + d, z));
+
+// Core: three chip plates, largest at the bottom, with the logo floating on top.
+const PH = 7;
+const GAP = 22;
+const plates = [104, 92, 80].map((s, i) => box(-s, -s, i * GAP, 2 * s, 2 * s, PH));
+const coreTop = 2 * GAP + PH;
+const coreInsets = [14, 30].map((i) => square(-80 + i, -80 + i, 160 - 2 * i, 160 - 2 * i, coreTop));
+const pins = Array.from({ length: 17 }, (_, i) => -64 + i * 8).map((x) => path(P(x, 95, PH), P(x, 101, PH)));
+const vias = [-60, -44, 44, 60].map((y) => P(86, y, GAP + PH));
+const logo = [
+  { color: '#19B8E2', ...box(-22, -22, coreTop + 10, 44, 44, 5) },
+  { color: '#2ED0C3', ...box(-22, -22, coreTop + 20, 44, 44, 5) },
+  { color: '#63E8B0', ...box(-22, -22, coreTop + 30, 44, 44, 5) },
+];
+const logoDot = flat(0, 0, coreTop + 35);
+const coreGlow = flat(0, 0, coreTop);
+const floorGlow = flat(0, 0, FLOOR);
+
+// Sources: long slabs on the lower left.
+const SY = 196, SD = 236, SW = 56, SH = 10;
+const sources = [
+  { name: 'Applications', icon: 'apps', x: -95 },
+  { name: 'Infrastructure', icon: 'infra', x: -25 },
+  { name: 'IoT & edge', icon: 'iot', x: 45 },
+].map((s) => ({
+  ...s,
+  cx: s.x + SW / 2,
+  slab: box(s.x, SY, 0, SW, SD, SH),
+  tile: box(s.x + 10, SY + SD - 48, SH, 36, 36, 5),
+  iconAt: read(s.x + 10, SY + SD - 12, SH + 5),
+  labelAt: read(s.x + SW / 2 + 7, SY + SD - 60, SH),
+}));
+
+// Storage and consumers: server blocks on the upper right.
+const KY = -320, KD = 116, KW = 90, KH = 54;
+const sinks = [
+  { name: 'GreptimeDB', x: -150 },
+  { name: 'Grafana', x: -45 },
+  { name: 'Keep', x: 60 },
+].map((k) => ({
+  ...k,
+  cx: k.x + KW / 2,
+  body: box(k.x, KY, 0, KW, KD, KH),
+  inset: square(k.x + 8, KY + 8, KW - 16, KD - 16, KH),
+  vents: [12, 18, 24, 30, 36].map((z) => path(P(k.x + 10, KY + KD, z), P(k.x + 52, KY + KD, z))),
+  leds: [P(k.x + KW, KY + KD - 16, KH - 14), P(k.x + KW, KY + KD - 28, KH - 14)],
+  labelAt: read(k.x + KW / 2 + 5.5, KY + KD / 2, KH),
+}));
+
+// Signals: pills on the lower right.
+const PY = -56, PD = 200, PW = 54, PT = 9;
+const signals = ['Traces', 'Metrics', 'Logs'].map((name, i) => {
+  const x = 196 + i * 76;
+  P(x + PW, PY, 0); P(x + PW, PY + PD, 0); P(x, PY + PD, 0);
+  return {
+    name,
+    x,
+    sides: [0, 3, 6].map((z) => flat(x, PY, z)),
+    top: flat(x, PY, PT),
+    labelAt: read(x + PW / 2 + 7, PY + PD / 2, PT),
+  };
+});
+
+// Processing tiles between the groups.
+const spinners = [[3, 150], [150, 10]].map(([cx, cy]) => ({
+  body: box(cx - 18, cy - 18, 0, 36, 36, 7),
+  at: flat(cx - 18, cy - 18, 7),
+}));
+
+const flows = [
+  ...sources.map((s) => path(P(s.cx, SY), P(s.cx, 104))),
+  path(P(104, 10), P(196, 10)),
+  path(P(-50, -104), P(-50, -160), P(-105, -160), P(-105, KY + KD)),
+  path(P(0, -104), P(0, KY + KD)),
+  path(P(50, -104), P(50, -160), P(105, -160), P(105, KY + KD)),
+];
+
+const drops = [
+  [-104, 104], [104, 104], [104, -104],
+  ...sources.flatMap((s) => [[s.x, SY + SD], [s.x + SW, SY + SD]]),
+  ...sinks.flatMap((k) => [[k.x, KY + KD], [k.x + KW, KY + KD], [k.x + KW, KY]]),
+  ...signals.map((s) => [s.x + PW / 2, PY + PD]),
+  [-15, 168], [132, 28],
+].map(([x, y]) => path(P(x, y, 0), P(x, y, FLOOR)));
+
+const xs = extent.map((p) => p[0]);
+const ys = extent.map((p) => p[1]);
+const PAD = 24;
+const vb = {
+  x: r1(Math.min(...xs) - PAD),
+  y: r1(Math.min(...ys) - PAD),
+  w: r1(Math.max(...xs) - Math.min(...xs) + 2 * PAD),
+  h: r1(Math.max(...ys) - Math.min(...ys) + 2 * PAD),
+};
+
+const G = 48;
+const grid: string[] = [];
+for (let k = -10; k <= 12; k++) {
+  grid.push(path(proj(k * G, -10 * G, FLOOR), proj(k * G, 12 * G, FLOOR)));
+  grid.push(path(proj(-10 * G, k * G, FLOOR), proj(12 * G, k * G, FLOOR)));
+}
+---
+
+<svg
+  class="iso"
+  viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
+  role="img"
+  aria-label="Applications, infrastructure and IoT feed the Obstack core, which stores traces, metrics and logs in GreptimeDB for Grafana and Keep"
+>
+  <defs>
+    <radialGradient id="iso-fade" gradientUnits="userSpaceOnUse" cx="0" cy={-FLOOR / 2} r={r1(vb.w * 0.55)}>
+      <stop offset="0" stop-color="#fff"></stop>
+      <stop offset="0.6" stop-color="#fff" stop-opacity="0.5"></stop>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"></stop>
+    </radialGradient>
+    <mask id="iso-grid-mask"><rect x={vb.x} y={vb.y} width={vb.w} height={vb.h} fill="url(#iso-fade)"></rect></mask>
+    <radialGradient id="iso-glow">
+      <stop offset="0" stop-color="#63E8B0" stop-opacity="0.4"></stop>
+      <stop offset="1" stop-color="#63E8B0" stop-opacity="0"></stop>
+    </radialGradient>
+    <filter id="iso-blur" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="12"></feGaussianBlur></filter>
+  </defs>
+
+  <circle class="glow" transform={floorGlow} r="200" fill="url(#iso-glow)" opacity="0.5"></circle>
+  <g class="grid" mask="url(#iso-grid-mask)">{grid.map((g) => <path d={g}></path>)}</g>
+  <g class="drop">{drops.map((g) => <path d={g}></path>)}</g>
+  <g>{flows.map((g) => <path class="flow" d={g}></path>)}</g>
+
+  {sinks.map((k) => (
+    <g>
+      <polygon class="f-l" points={k.body.left}></polygon>
+      <polygon class="f-r" points={k.body.right}></polygon>
+      <polygon class="f-t" points={k.body.top}></polygon>
+      <polygon class="inset" points={k.inset}></polygon>
+      <g class="vent">{k.vents.map((v) => <path d={v}></path>)}</g>
+      {k.leds.map(([x, y], i) => <circle class:list={['led', { on: i === 0 }]} cx={r1(x)} cy={r1(y)} r="2.2"></circle>)}
+      <text class="lbl sm" transform={k.labelAt} text-anchor="middle">{k.name}</text>
+    </g>
+  ))}
+
+  <g>
+    {plates.map((p, i) => (
+      <g>
+        <polygon class="f-l" points={p.left}></polygon>
+        <polygon class="f-r" points={p.right}></polygon>
+        <polygon class:list={['f-t', { hi: i === 2 }]} points={p.top}></polygon>
+        {i === 0 && <g class="vent">{pins.map((v) => <path d={v}></path>)}</g>}
+        {i === 1 && vias.map(([x, y]) => <circle class="via" cx={r1(x)} cy={r1(y)} r="2.4"></circle>)}
+      </g>
+    ))}
+    {coreInsets.map((c, i) => <polygon class:list={['inset', { dash: i === 1 }]} points={c}></polygon>)}
+    <circle class="glow" transform={coreGlow} r="72" fill="url(#iso-glow)"></circle>
+    <polygon class="glow" points={logo[2].top} fill="#63E8B0" filter="url(#iso-blur)"></polygon>
+    {logo.map((l) => (
+      <g>
+        <polygon points={l.left} fill={l.color} fill-opacity="0.45"></polygon>
+        <polygon points={l.right} fill={l.color} fill-opacity="0.7"></polygon>
+        <polygon points={l.top} fill={l.color}></polygon>
+      </g>
+    ))}
+    <circle transform={logoDot} r="6" fill="#04080A"></circle>
+  </g>
+
+  {spinners.map((s) => (
+    <g>
+      <polygon class="f-l" points={s.body.left}></polygon>
+      <polygon class="f-r" points={s.body.right}></polygon>
+      <polygon class="f-t" points={s.body.top}></polygon>
+      <g transform={s.at}>
+        <circle class="ring" cx="18" cy="18" r="10"></circle>
+        <circle class="arc" cx="18" cy="18" r="10"></circle>
+      </g>
+    </g>
+  ))}
+
+  {signals.map((s) => (
+    <g>
+      {s.sides.map((t, i) => <rect class:list={['side', { edge: i === 0 }]} transform={t} width={PW} height={PD} rx={PW / 2}></rect>)}
+      <rect class="f-t" transform={s.top} width={PW} height={PD} rx={PW / 2}></rect>
+      <rect class="inset" transform={s.top} x="6" y="6" width={PW - 12} height={PD - 12} rx={PW / 2 - 6}></rect>
+      <text class="lbl" transform={s.labelAt} text-anchor="middle">{s.name}</text>
+    </g>
+  ))}
+
+  {sources.map((s) => (
+    <g>
+      <polygon class="f-l" points={s.slab.left}></polygon>
+      <polygon class="f-r" points={s.slab.right}></polygon>
+      <polygon class="f-t" points={s.slab.top}></polygon>
+      <polygon class="f-l" points={s.tile.left}></polygon>
+      <polygon class="f-r" points={s.tile.right}></polygon>
+      <polygon class="f-t" points={s.tile.top}></polygon>
+      <g class="icon" transform={s.iconAt}>
+        {s.icon === 'apps' && <><path d="M8 12h20M8 18h12M8 24h15"></path><circle class="dot" cx="26" cy="18" r="2"></circle></>}
+        {s.icon === 'infra' && <><rect x="8" y="8" width="20" height="8"></rect><rect x="8" y="20" width="20" height="8"></rect><path class="accent" d="M12 12h.01M12 24h.01" stroke-width="3"></path></>}
+        {s.icon === 'iot' && <><rect x="14" y="14" width="8" height="8"></rect><path class="accent" d="M9 9a13 13 0 0 1 18 0M27 27a13 13 0 0 1-18 0"></path></>}
+      </g>
+      <text class="lbl" transform={s.labelAt}>{s.name}</text>
+    </g>
+  ))}
+</svg>
+
+<style>
+  .iso { width: 100%; height: auto; overflow: visible; }
+
+  .grid path { fill: none; stroke: rgba(222, 236, 240, 0.2); stroke-dasharray: 2 4; }
+  .drop path { fill: none; stroke: rgba(232, 241, 242, 0.4); stroke-dasharray: 1 4; }
+
+  .f-t, .f-l, .f-r, .edge { stroke: rgba(222, 236, 240, 0.6); stroke-width: 1; stroke-linejoin: round; }
+  .f-t { fill: #0A1216; }
+  .f-t.hi { fill: #0C171C; stroke: rgba(240, 248, 250, 0.9); }
+  .f-l, .side { fill: #03070A; }
+  .f-r { fill: #060C10; }
+  .inset { fill: none; stroke: rgba(222, 236, 240, 0.26); }
+  .inset.dash { stroke-dasharray: 3 4; }
+  .vent path { stroke: rgba(222, 236, 240, 0.4); }
+  .led { fill: rgba(222, 236, 240, 0.35); }
+  .led.on { fill: #63E8B0; }
+  .via { fill: none; stroke: rgba(222, 236, 240, 0.5); }
+
+  .lbl { font-family: var(--font-mono); font-size: 20px; letter-spacing: 0.01em; fill: rgba(232, 241, 242, 0.82); }
+  .lbl.sm { font-size: 15px; }
+
+  .icon * { fill: none; stroke: rgba(232, 241, 242, 0.85); stroke-width: 1.5; }
+  .icon .accent { stroke: #63E8B0; }
+  .icon .dot { fill: #63E8B0; stroke: none; }
+
+  .flow { fill: none; stroke: #63E8B0; stroke-width: 1.5; stroke-dasharray: 3 7; opacity: 0.8; animation: iso-flow 1.4s linear infinite; }
+  .ring { fill: none; stroke: rgba(222, 236, 240, 0.18); stroke-width: 3; }
+  .arc { fill: none; stroke: #63E8B0; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 20 43; animation: iso-spin 1.3s linear infinite; }
+  .glow { animation: iso-pulse 3.2s ease-in-out infinite; }
+
+  @keyframes iso-flow { to { stroke-dashoffset: -20; } }
+  @keyframes iso-spin { to { stroke-dashoffset: -62.8; } }
+  @keyframes iso-pulse { 50% { opacity: 0.5; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flow, .arc, .glow { animation: none; }
+  }
+</style>
