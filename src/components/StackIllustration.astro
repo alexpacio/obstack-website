@@ -1,0 +1,73 @@
+---
+/* Isometric illustration: applications, infrastructure and IoT layers. */
+---
+
+<svg class="iso" viewBox="0 0 720 530" role="img" aria-label="Applications, infrastructure and IoT layers feeding one stack">
+  <defs>
+    <linearGradient id="iso-sl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#139ECC"></stop><stop offset="1" stop-color="#2CCCB8"></stop></linearGradient>
+    <linearGradient id="iso-sr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#20B8D3"></stop><stop offset="1" stop-color="#38D8B1"></stop></linearGradient>
+    <linearGradient id="iso-st" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#19B8E2"></stop><stop offset="0.52" stop-color="#2ED0C3"></stop><stop offset="1" stop-color="#63E8B0"></stop></linearGradient>
+  </defs>
+
+  <g>
+    <polygon points="50,385 260,490 260,504 50,399" fill="url(#iso-sl)" opacity="0.75"></polygon>
+    <polygon points="260,490 470,385 470,399 260,504" fill="url(#iso-sr)" opacity="0.75"></polygon>
+    <polygon points="260,280 470,385 260,490 50,385" fill="#10364B" stroke="url(#iso-st)" stroke-width="2"></polygon>
+    <g stroke="#63E8B0" stroke-width="1.5" stroke-dasharray="3 5" opacity="0.6" fill="none">
+      <path d="M260 385 L170 385"></path><path d="M260 385 L215 360"></path><path d="M260 385 L230 412"></path>
+      <path d="M260 385 L300 362"></path><path d="M260 385 L322 408"></path><path d="M260 385 L360 382"></path>
+    </g>
+    <g fill="#63E8B0">
+      <circle cx="170" cy="385" r="4.5"></circle><circle cx="215" cy="360" r="4.5"></circle><circle cx="230" cy="412" r="4.5"></circle>
+      <circle cx="300" cy="362" r="4.5"></circle><circle cx="322" cy="408" r="4.5"></circle><circle cx="360" cy="382" r="4.5"></circle>
+    </g>
+    <polygon points="260,375 280,385 260,395 240,385" fill="#0A1F2E" stroke="#63E8B0" stroke-width="2"></polygon>
+  </g>
+
+  <g>
+    <polygon points="50,265 260,370 260,384 50,279" fill="url(#iso-sl)" opacity="0.88"></polygon>
+    <polygon points="260,370 470,265 470,279 260,384" fill="url(#iso-sr)" opacity="0.88"></polygon>
+    <polygon points="260,160 470,265 260,370 50,265" fill="#123D55" stroke="url(#iso-st)" stroke-width="2"></polygon>
+    <g fill="none" stroke="#2ED0C3" stroke-width="1.6" opacity="0.85">
+      <polygon points="185,265 215,250 245,265 215,280"></polygon>
+      <polygon points="230,242 260,227 290,242 260,257"></polygon>
+      <polygon points="275,220 305,205 335,220 305,235"></polygon>
+      <polygon points="230,287 260,272 290,287 260,302"></polygon>
+      <polygon points="275,265 305,250 335,265 305,280"></polygon>
+      <polygon points="320,242 350,227 380,242 350,257"></polygon>
+      <polygon points="275,310 305,295 335,310 305,325"></polygon>
+      <polygon points="140,242 170,227 200,242 170,257"></polygon>
+    </g>
+  </g>
+
+  <g>
+    <polygon points="50,145 260,250 260,264 50,159" fill="url(#iso-sl)"></polygon>
+    <polygon points="260,250 470,145 470,159 260,264" fill="url(#iso-sr)"></polygon>
+    <polygon points="260,40 470,145 260,250 50,145" fill="#174D6B" stroke="url(#iso-st)" stroke-width="2.5"></polygon>
+    <g fill="none" stroke="url(#iso-st)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M160 145 L200 165 L240 145 L280 165 L320 145 L360 165"></path>
+      <path d="M200 125 L240 105 L280 125 L320 105"></path>
+      <path d="M240 145 L280 125"></path>
+    </g>
+    <g fill="#174D6B" stroke="#63E8B0" stroke-width="2.5">
+      <circle cx="200" cy="165" r="6"></circle><circle cx="280" cy="165" r="6"></circle><circle cx="240" cy="105" r="6"></circle>
+      <circle cx="320" cy="105" r="6"></circle><circle cx="360" cy="165" r="6"></circle>
+    </g>
+  </g>
+
+  <g font-family="M PLUS 1p, system-ui, sans-serif">
+    <path d="M480 145 H540" stroke="#63E8B0" stroke-width="1.5"></path>
+    <text x="552" y="142" fill="#F2F8F8" font-size="19" font-weight="700">Applications</text>
+    <text x="552" y="164" fill="#7FA3B3" font-size="13" font-family="M PLUS 1 Code, monospace">Bee · Beyla</text>
+    <path d="M480 265 H540" stroke="#2ED0C3" stroke-width="1.5"></path>
+    <text x="552" y="262" fill="#F2F8F8" font-size="19" font-weight="700">Infrastructure</text>
+    <text x="552" y="284" fill="#7FA3B3" font-size="13" font-family="M PLUS 1 Code, monospace">hosts · containers</text>
+    <path d="M480 385 H540" stroke="#19B8E2" stroke-width="1.5"></path>
+    <text x="552" y="382" fill="#F2F8F8" font-size="19" font-weight="700">IoT &amp; edge</text>
+    <text x="552" y="404" fill="#7FA3B3" font-size="13" font-family="M PLUS 1 Code, monospace">devices · OTLP</text>
+  </g>
+</svg>
+
+<style>
+  .iso { width: 100%; max-width: 640px; height: auto; margin: 0 auto; }
+</style>

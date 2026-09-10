@@ -1,0 +1,212 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PriceTable from '../components/PriceTable.astro';
+import { STORAGE, TERM_DISCOUNT, findPlan, formatUsd, pct, volumeBands } from '../data/plans';
+import { url, mailto } from '../lib/url';
+
+const bee = findPlan('bee');
+const stack = findPlan('stack');
+const cloud = findPlan('cloud');
+const tb = formatUsd(STORAGE.pricePerTb);
+const [homeRegion, ...otherRegions] = STORAGE.regions;
+
+interface Section {
+  id: string;
+  title: string;
+  paras: string[];
+  table?: { head: string[]; rows: string[][] };
+  after?: string[];
+}
+
+const sections: Section[] = [
+  {
+    id: 'scope',
+    title: 'Scope',
+    paras: [
+      'These terms cover Obstack subscriptions bought on obstack.it or through a quote from us. Where a signed order form or master agreement differs, that document prevails.',
+      'Prices are in US dollars and exclude VAT. VAT is added where it applies; business customers in other EU countries with a valid VAT number are invoiced under reverse charge.',
+    ],
+  },
+  {
+    id: 'plans',
+    title: 'Plans',
+    paras: [
+      `${bee.name}, ${formatUsd(bee.price)} per node per month: the application agent under a self-hosted license. It exports to a collector you run and stores nothing itself.`,
+      `${stack.name}, ${formatUsd(stack.price)} per node per month: Bee plus our support for Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep, on your infrastructure. Storage is your own, or a managed bucket at ${tb} per TB per month.`,
+      `${cloud.name}, ${formatUsd(cloud.price)} per node per month: we operate the backend in the EU and you run the agents. Storage is bought by the terabyte, from ${STORAGE.minTb} TB.`,
+      `${stack.name} and ${cloud.name} start at ${stack.minNodes} nodes. Enterprise terms are agreed per contract.`,
+    ],
+  },
+  {
+    id: 'nodes',
+    title: 'Nodes',
+    paras: [
+      'A node is one Linux host, virtual machine or Kubernetes worker node running an Obstack agent. Pods and containers are not counted.',
+      'Bursts are covered: autoscaling up to 20% above your node count, for up to 7 days in a calendar month, costs nothing extra. There are no retroactive true-ups.',
+      'Add nodes at any time; they are billed prorated to your renewal date at your current rate. Reduce nodes at renewal.',
+    ],
+  },
+  {
+    id: 'storage',
+    title: 'Storage',
+    paras: [
+      `Managed storage is an S3 bucket on ${STORAGE.provider}, in ${homeRegion} by default or in ${otherRegions.join(', ')} on request. It is priced by capacity at ${tb} per TB per month, measured as compressed data at rest.`,
+      'Egress, API requests and early deletion are included. We never pass provider fees through.',
+      'When your capacity is full, the oldest data expires first. We warn you at 80% and 95%. You are never billed for overage.',
+      'Increase capacity at any time, prorated to your renewal date; reduce it at renewal. Self-hosted customers can use any S3-compatible bucket or local disk instead, at no charge from us.',
+    ],
+  },
+  {
+    id: 'fair-use',
+    title: 'Fair use on Obstack Cloud',
+    paras: [
+      'Ingest, queries and users are not metered. If a fleet averages more than 50 GB of raw telemetry per node per day over a full calendar month, we will contact you to agree a change of plan. We will never add charges automatically.',
+    ],
+  },
+  {
+    id: 'discounts',
+    title: 'Discounts',
+    paras: [
+      `Volume discounts are graduated and apply to node fees: nodes ${volumeBands().join(', ')}. Each node is priced by the band it falls in, so adding a node never lowers the total.`,
+      `A 3-year term takes ${pct(TERM_DISCOUNT[36])} off node fees, on top of volume discounts, and locks the per-node price for the whole term. Storage is not discounted.`,
+    ],
+  },
+  {
+    id: 'billing',
+    title: 'Billing and payment',
+    paras: [
+      'Subscriptions are billed yearly in advance, 3-year terms included. Pay by card, or by bank transfer within 30 days of the invoice date.',
+      'If an invoice is more than 30 days overdue, Cloud access may be suspended after 14 days’ written notice. Self-hosted licenses already issued stay valid until they expire.',
+    ],
+  },
+  {
+    id: 'renewal',
+    title: 'Term, renewal and cancellation',
+    paras: [
+      'Subscriptions renew for the same length of term unless either side cancels in writing at least 30 days before the renewal date.',
+      '1-year renewals can rise by at most 5% over the previous per-node price. 3-year terms are locked for their full length.',
+      'A first order can be cancelled within 30 days for a full refund. After that, fees for the current term are not refunded, except as service credits.',
+    ],
+  },
+  {
+    id: 'sla',
+    title: 'Service level on Obstack Cloud',
+    paras: [
+      'The OTLP ingest endpoint and the Grafana and query interfaces are available at least 99.9% of each calendar month. Maintenance announced at least 5 days ahead, and outages caused by the customer or by force majeure, do not count.',
+    ],
+    table: {
+      head: ['Monthly availability', 'Service credit'],
+      rows: [
+        ['Below 99.9%', '10% of that month’s Cloud fees'],
+        ['Below 99.0%', '25% of that month’s Cloud fees'],
+        ['Below 95.0%', '50% of that month’s Cloud fees'],
+      ],
+    },
+    after: ['Credits are applied to the next invoice when claimed within 30 days of the end of the month.'],
+  },
+  {
+    id: 'support',
+    title: 'Support',
+    paras: ['Response targets measure the time to a first reply from an engineer.'],
+    table: {
+      head: ['Plan', 'Channel', 'P1 · service down', 'P2 · degraded', 'P3 · question'],
+      rows: [
+        [bee.name, 'Email, business hours', 'Next business day', 'Next business day', '2 business days'],
+        [stack.name, 'Email and tickets, business hours', '4 business hours', '1 business day', '2 business days'],
+        [cloud.name, 'Email and tickets; P1 around the clock', '1 hour, 24/7', '4 business hours', '1 business day'],
+        ['Enterprise', '24/7, with a named engineer', '30 minutes, 24/7', '2 hours', '1 business day'],
+      ],
+    },
+    after: ['Business hours are 09:00–18:00 CET, Monday to Friday, excluding Italian public holidays.'],
+  },
+  {
+    id: 'licenses',
+    title: 'Self-hosted licenses',
+    paras: [
+      'Licenses are Ed25519-signed files stating the customer ID, node count and expiry. They work offline, are bound to no machine and never phone home.',
+      'Renewal licenses are issued at least 14 days before the current one expires, once the renewal invoice is paid or a purchase order is received.',
+      'The open-source components of the stack (Beyla, Vector, Kafka, GreptimeDB, Grafana and Keep) stay under their own licenses. The subscription pays for Bee, our integration work and our support.',
+    ],
+  },
+  {
+    id: 'data',
+    title: 'Your data',
+    paras: [
+      'You own your telemetry. On Obstack Cloud we process it only to run the service, in the EU region you chose, under a data processing agreement per Article 28 GDPR, available on request with the list of sub-processors.',
+      'Export at any time with SQL, PromQL or the raw Parquet files. When a Cloud subscription ends you have 30 days to export; we then delete tenant data within a further 30 days.',
+    ],
+  },
+  {
+    id: 'liability',
+    title: 'Liability',
+    paras: [
+      'Each party’s total liability under a subscription is capped at the fees paid in the 12 months before the claim. Neither party is liable for indirect or consequential loss. These limits do not apply where the law does not allow them.',
+    ],
+  },
+  {
+    id: 'law',
+    title: 'Governing law',
+    paras: ['These terms are governed by Italian law. Disputes go to the courts of the place where Obstack has its registered office.'],
+  },
+];
+---
+
+<Layout title="Commercial terms · Obstack" description="Obstack commercial terms: nodes, storage, discounts, billing, renewal, service levels, support and data.">
+  <section class="hero">
+    <div class="wrap terms-hero">
+      <div class="stack" style="gap: 22px; max-width: 820px">
+        <div class="eyebrow rise">Commercial terms</div>
+        <h1 class="display rise">Plain terms, no fine print.</h1>
+        <p class="lead rise-2">What you pay for, what is included, and what happens at renewal. Last updated 10 September 2026.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap terms">
+      <nav class="toc mono" aria-label="Sections">
+        {sections.map((s, i) => <a href={`#${s.id}`}><span>{String(i + 1).padStart(2, '0')}</span>{s.title}</a>)}
+      </nav>
+      <div class="body">
+        {sections.map((s, i) => (
+          <section id={s.id} class="clause">
+            <h2 class="h3"><span class="mono">{String(i + 1).padStart(2, '0')}</span>{s.title}</h2>
+            {s.paras.map((p) => <p class="body-2">{p}</p>)}
+            {s.table && <PriceTable head={s.table.head} rows={s.table.rows} minWidth={s.table.head.length > 2 ? 720 : 0} />}
+            {s.after?.map((p) => <p class="small">{p}</p>)}
+          </section>
+        ))}
+        <div class="panel contact">
+          <p class="body-2">Questions about these terms, or need an order form and DPA for procurement?</p>
+          <div class="btn-row">
+            <a class="btn btn-dark" href={mailto('Commercial terms')}>info@obstack.it</a>
+            <a class="btn btn-outline" href={url('/pricing#configure')}>Configure a quote</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .terms-hero { padding-top: 88px; padding-bottom: 88px; }
+  .terms { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 72px; align-items: start; }
+  .toc { position: sticky; top: 108px; display: flex; flex-direction: column; border-top: 2px solid var(--ink); font-size: 13px; }
+  .toc a { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); color: var(--text-2); text-decoration: none; }
+  .toc a:hover { color: var(--ink); }
+  .toc span { color: var(--link); }
+  .body { display: flex; flex-direction: column; gap: 56px; max-width: 860px; }
+  .clause { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 100px; }
+  .clause h2 { display: flex; gap: 14px; align-items: baseline; padding-bottom: 12px; border-bottom: 2px solid var(--ink); }
+  .clause h2 .mono { font-size: 13px; color: var(--link); }
+  .contact { padding: 32px; display: flex; flex-direction: column; gap: 20px; }
+  @media (max-width: 1100px) {
+    .terms { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+    .toc { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
+  }
+  @media (max-width: 800px) {
+    .terms-hero { padding-top: 64px; padding-bottom: 64px; }
+    .toc { grid-template-columns: minmax(0, 1fr); }
+    .contact { padding: 24px; }
+  }
+</style>

@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Checkout from '../components/Checkout';
+---
+
+<Layout
+  title="Buy · Obstack"
+  description="Buy Obstack: self-hosted or Obstack Cloud, with the nodes and storage you need."
+  active="buy"
+  checkout
+>
+  <Checkout client:load />
+</Layout>

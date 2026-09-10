@@ -1,360 +1,258 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import Layout from '../layouts/Layout.astro';
+import Arrow from '../components/Arrow.astro';
+import Comparison from '../components/Comparison.astro';
+import PricingTable from '../components/PricingTable.astro';
+import { url, mailto } from '../lib/url';
 
-const basePath = import.meta.env.BASE_URL || '';
+const trace = [
+  { name: 'POST /api/checkout', indent: 0, start: 0, width: 100, ms: '812 ms', color: '#19B8E2' },
+  { name: 'redis GET cart:*', indent: 1, start: 2, width: 1.2, ms: '2 ms', color: '#2ED0C3' },
+  { name: 'mysql SELECT … orders', indent: 1, start: 4, width: 5, ms: '41 ms', color: '#2ED0C3' },
+  { name: 'await reserveStock()', indent: 1, start: 11, width: 78, ms: '640 ms', color: '#63E8B0', hot: true },
+  { name: 'HTTPS POST /reserve', indent: 2, start: 13, width: 73, ms: '598 ms', color: '#2ED0C3' },
+];
+
+const steps = [
+  ['Discover', 'Finds every process, container and service on the host from /proc. New containers need no action.'],
+  ['Capture', 'Reads application protocols in the kernel with eBPF, plus bounded Node.js runtime probes.'],
+  ['Correlate', 'Links requests, hops and async waits only where socket, stream or runtime evidence proves it.'],
+  ['Export', 'Sends OTLP over HTTP to any OpenTelemetry collector and serves Prometheus metrics locally.'],
+];
+
+const qualities = [
+  ['In-kernel capture that never gets in the way', 'Aya cgroup-skb programs filter TCP in the kernel and keep per-CPU flow aggregates. Bee never blocks or drops a packet: filtering only decides what gets observed.', 'eBPF · cgroup ingress/egress · OpenSSL uprobes'],
+  ['Protocols parsed to the field', 'HTTP/1 with pipelining, HTTP/2 and gRPC with HPACK state, TLS handshakes with SNI and ALPN. Full MySQL query text with typed prepared-statement parameters. Redis RESP2 and RESP3.', 'HTTP/1 · HTTP/2 · gRPC · TLS 1.2/1.3 · MySQL · Redis'],
+  ['Node.js awaits, named', 'Promise probes capture a bounded stack at the exact await boundary. Bee reads V8 frames using the layout constants the Node binary itself exports, and emits a span only once an observed socket proves which request it belongs to.', 'Node.js ≥ 22 · process_vm_readv · v8dbg_*'],
+  ['Evidence, never guesses', 'Parent–child edges come from socket cookies, HTTP/2 stream ids, MySQL statements, W3C traceparent and authenticated hops between agents. Timestamp overlap proves nothing, so without proof a span ships as an honest root.', 'unmeasured values are labelled, never zero'],
+  ['Discovery and topology built in', 'Docker, containerd, CRI-O and Podman containers plus Kubernetes identity, with a service graph exposed as JSON, Prometheus counters and OTLP relationship spans.', '/healthz · /metrics · /graph on :9400'],
+  ['Works with your collector', 'Batches go over one persistent OTLP/HTTP connection to any OpenTelemetry collector: Vector, the OpenTelemetry Collector or your vendor’s endpoint. If it goes down, finished batches wait up to five minutes in a fixed on-disk ring.', 'OTLP/HTTP protobuf · rustls · at-most-once'],
+];
+
+const bounds = [
+  ['Application metric series', '4,096'],
+  ['Resource graph edges', '16,384'],
+  ['eBPF flow entries', '32,768'],
+  ['HTTP connections / depth', '32,768 / 256'],
+  ['MySQL, Redis connections', '4,096 each'],
+  ['Pipeline resident memory', '32 MiB'],
+  ['OTLP batch', '256 spans / 1 MiB / 1 s'],
+  ['Disk rings raw / ingest / export', '2 GiB / 512 MiB / 1 GiB'],
+];
+
+const othersWin = [
+  'PostgreSQL, Kafka or MongoDB today. They are on Bee’s roadmap; Beyla covers them now, and ships in the Obstack Stack.',
+  'ARM64, Windows, or Linux kernels older than 7.0.',
+  'Hosting outside the EU. Obstack Cloud runs in EU regions only.',
+  'Framework-aware spans inside Java, .NET or Python services.',
+];
 ---
 
-<Layout title="Obstack Bee — Zero-Code Linux Observability Agent" description="Obstack Bee is a bounded, zero-code Linux application-observability agent written in Rust. Discover, capture, correlate, and export telemetry with eBPF and native Node.js profiling.">
-  <!-- Hero -->
-  <section class="relative section overflow-hidden">
-    <div class="container">
-      <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-        <div class="animate-slide-up">
-          <div class="inline-flex items-center gap-2 rounded-none border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary mb-6">
-            <span class="relative flex h-2 w-2">
-              <span class="absolute inset-0 bg-primary rounded-none animate-pulse"></span>
-              <span class="absolute inset-0 bg-primary rounded-none"></span>
-            </span>
-            Now Available — v1.0.0
-          </div>
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-6">
-            Obstack <span class="gradient-text">Bee</span>
-          </h1>
-          <p class="text-xl text-gray-600 mb-4">
-            A bounded, zero-code Linux application-observability agent written in Rust.
-          </p>
-          <p class="text-lg text-gray-600 mb-10 max-w-xl">
-            Discover → Capture → Correlate → Export — all without modifying your applications.
-          </p>
-          <div class="flex flex-col sm:flex-row gap-4">
-            <a
-              href={`${basePath}/download`}
-              class="btn-primary"
-              >Download Bee</a
-            >
-            <a
-              href={`${basePath}/pricing`}
-              class="btn-secondary"
-              >View Licensing</a
-            >
-          </div>
-          <div class="mt-8 flex flex-wrap items-center gap-6 text-sm text-gray-500">
-            <div class="flex items-center gap-2">
-              <svg class="h-4 w-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Linux 7.0+ (x86_64)</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <svg class="h-4 w-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Node.js 24 (V8 ABI)</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <svg class="h-4 w-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              <span>OTLP → Vector</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="relative animate-fade-in" style="animation-delay: 200ms;">
-          <div class="aspect-square max-w-lg mx-auto lg:max-w-none">
-            <img
-              src="/images/hero-architecture.svg"
-              alt="Obstack Bee Architecture - eBPF agent architecture diagram"
-              class="w-full h-auto"
-            />
-          </div>
+<Layout
+  title="Obstack Bee · eBPF application observability for Linux"
+  description="Bee is a single Rust agent that captures HTTP, gRPC, TLS, MySQL and Redis with eBPF, names slow Node.js awaits, and exports OTLP to any OpenTelemetry collector."
+  active="bee"
+>
+  <section class="hero">
+    <div class="wrap hero-grid bee-hero">
+      <div class="stack" style="gap: 26px">
+        <div class="eyebrow rise">Obstack Bee · v0.2.4 · Linux x86-64</div>
+        <h1 class="display rise">Application traces from the kernel. No SDK, no redeploy.</h1>
+        <p class="lead rise-2">Bee is a single Rust agent that discovers every process on a Linux host, captures HTTP, gRPC, TLS, MySQL and Redis with eBPF, and exports OTLP to any OpenTelemetry collector. On Node.js it names the exact await a slow request is waiting on.</p>
+        <div class="btn-row rise-2" style="padding-top: 8px">
+          <a class="btn btn-primary" href="#pricing">Buy Bee <Arrow /></a>
+          <a class="btn btn-ghost" href={mailto('Bee evaluation license')}>Request an evaluation license</a>
         </div>
       </div>
+
+      <figure class="trace rise-3" aria-label="Example trace produced by Bee">
+        <div class="t-head mono"><span>Example trace · checkout-api</span><span>812 ms</span></div>
+        <div class="t-rows mono">
+          {trace.map((r) => (
+            <div class:list={['t-row', { hot: r.hot }]}>
+              <span class="t-name" style={`padding-left:${r.indent * 14}px`}>{r.name}</span>
+              <div class="t-track"><div class="t-bar" style={`margin-left:${r.start}%;width:${r.width}%;background:${r.color}`}></div></div>
+              <span class="t-ms">{r.ms}</span>
+            </div>
+          ))}
+        </div>
+        <figcaption class="t-foot mono">
+          <span><b>code.function</b> reserveStock · src/inventory.js:88</span>
+          <span><b>parent proven by</b> socket cookie · traceparent</span>
+        </figcaption>
+      </figure>
     </div>
-    <div class="absolute inset-0 bg-grid opacity-50 pointer-events-none" aria-hidden="true"></div>
   </section>
 
-  <!-- Architecture Diagram -->
   <section class="section">
-    <div class="container">
-      <div class="text-center max-w-3xl mx-auto mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-4">
-          Architecture
-        </h2>
-        <p class="text-lg text-gray-600">
-          Bee's pipeline runs on Compio's io_uring runtime — no Tokio, no compatibility layer.
-        </p>
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">01 / What Bee does</div>
+          <h2 class="h2">One binary, one config file, four jobs.</h2>
+        </div>
       </div>
-
-      <div class="overflow-x-auto mb-12">
-        <pre class="code-block"><code>host /proc ──> immutable discovery snapshot ───────────────┐
-     │                                                    │
-     └─ Node PID ─> perf/V8 samples + OpenSSL uprobes     │
-                                     │                         │
-cgroup ingress/egress            │                         │
-         │                         │                         │
-         v                         v                         │
-  Aya eBPF: TCP port gate ─> payload + TLS plaintext rings  │
-         └─ per-CPU flow aggregation                        │
-                                     │                         │
-                                     v                         v
-               HTTP/1 + HTTP/2/gRPC + TLS + Redis + MySQL parsing
-                                     │
-                        peer/request/profile correlation
-                                     │
-                          bounded Compio channel
-                                     │
-                 /metrics + /graph ├─ Cyper OTLP/HTTP(S) protobuf
-                                     v
-                           node-local Vector</code></pre>
-      </div>
-
-      <div class="grid sm:grid-cols-3 gap-6 text-center">
-        <div class="card">
-          <p class="text-3xl font-bold text-primary">io_uring</p>
-          <p class="text-sm text-gray-500">Async Runtime (Compio)</p>
-        </div>
-        <div class="card">
-          <p class="text-3xl font-bold text-primary">cgroup_skb</p>
-          <p class="text-sm text-gray-500">Kernel Capture (Aya)</p>
-        </div>
-        <div class="card">
-          <p class="text-3xl font-bold text-primary">perf_event_open</p>
-          <p class="text-sm text-gray-500">V8 Profiling (99 Hz)</p>
-        </div>
+      <div class="grid-4 rule-top four">
+        {steps.map(([t, d]) => (
+          <div class="stack">
+            <span class="mono">→ {t}</span>
+            <p class="body-2">{d}</p>
+          </div>
+        ))}
       </div>
     </div>
   </section>
 
-  <!-- Implemented Capabilities -->
-  <section class="section bg-gray-50">
-    <div class="container">
-      <div class="text-center max-w-3xl mx-auto mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-4">
-          Implemented Capabilities
-        </h2>
-        <p class="text-lg text-gray-600">
-          Comprehensive observability with bounded resource usage — every component has an explicit ceiling.
-        </p>
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">02 / Under the hood</div>
+          <h2 class="h2">Built for the engineer who reads the trace and asks how it knows.</h2>
+        </div>
       </div>
-
-      <div class="grid sm:grid-cols-2 gap-8">
-        <!-- Protocol Support -->
-        <article class="card h-full">
-          <div class="feature-icon mb-4">
-            <img src="/images/feature-protocols.svg" alt="Protocol Support" class="w-full h-auto max-w-full" />
+      <div class="tile-grid grid-3">
+        {qualities.map(([t, d, m]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+            <div class="tile-meta">{m}</div>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-4">Protocol Support</h3>
-          <ul class="space-y-3 text-sm text-gray-600">
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-primary"></span>
-              <span>Plaintext HTTP/1.1 client/server spans with TCP reassembly</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-primary"></span>
-              <span>TLS 1.2/1.3 handshake spans with SNI, ALPN, version</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-primary"></span>
-              <span>HTTP/2/gRPC with bounded frame/HPACK/continuation state</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-primary"></span>
-              <span>Redis RESP2/3 with pipelining & command correlation</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-primary"></span>
-              <span>MySQL COM_QUERY, prepare/execute, full query text</span>
-            </li>
-          </ul>
-        </article>
-
-        <!-- Node.js Profiling -->
-        <article class="card h-full">
-          <div class="feature-icon mb-4">
-            <img src="/images/feature-v8.svg" alt="V8 Profiling" class="w-full h-auto max-w-full" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-4">Native Node.js Profiling</h3>
-          <ul class="space-y-3 text-sm text-gray-600">
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-success"></span>
-              <span>99 Hz sampling via perf_event_open (CPU clock)</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-success"></span>
-              <span>Direct V8 heap reads using exported v8dbg_* constants</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-success"></span>
-              <span>Hot & slow JS function spans with caller chains</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-success"></span>
-              <span>Automatic trace correlation with HTTP requests</span>
-            </li>
-          </ul>
-        </article>
-
-        <!-- Discovery & Graph -->
-        <article class="card h-full">
-          <div class="feature-icon mb-4">
-            <img src="/images/feature-bounded.svg" alt="Bounded Resources" class="w-full h-auto max-w-full" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-4">Discovery & Resource Graph</h3>
-          <ul class="space-y-3 text-sm text-gray-600">
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-warning"></span>
-              <span>Auto process, container, K8s identity from /proc</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-warning"></span>
-              <span>Bounded TCP application-resource graph</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-warning"></span>
-              <span>JSON, Prometheus, OTLP relationship exports</span>
-            </li>
-          </ul>
-        </article>
-
-        <!-- Metrics & Export -->
-        <article class="card h-full">
-          <div class="feature-icon mb-4">
-            <img src="/images/feature-otlp.svg" alt="OTLP Export" class="w-full h-auto max-w-full" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-4">Metrics & Export</h3>
-          <ul class="space-y-3 text-sm text-gray-600">
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-cyan-600"></span>
-              <span>Process CPU, memory, disk I/O metrics</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-cyan-600"></span>
-              <span>Bounded app rate/error/duration (RED) metrics</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="flex-shrink-0 mt-0.5 h-1.5 w-1.5 rounded-none bg-cyan-600"></span>
-              <span>OTLP/HTTP protobuf to node-local Vector</span>
-            </li>
-          </ul>
-        </article>
+        ))}
       </div>
     </div>
   </section>
 
-  <!-- Platform Requirements -->
+  <section class="dark">
+    <div class="wrap section bounded">
+      <div class="stack" style="gap: 20px">
+        <div class="eyebrow">03 / Bounded by design</div>
+        <h2 class="h2">Most agents grow under load. Bee is not allowed to.</h2>
+        <p class="body-2" style="font-size: 17px">Every queue, eBPF map, parser buffer, metric series set and spill file has a written ceiling. Past it, work is counted and shed. Your application never waits on the agent, and the disk never fills by surprise.</p>
+      </div>
+      <div class="limits mono">
+        {bounds.map(([k, v]) => <div class="limit"><span>{k}</span><span class="v">{v}</span></div>)}
+        <div class="limits-note">Default ceilings from Bee's published performance contract.</div>
+      </div>
+    </div>
+  </section>
+
   <section class="section">
-    <div class="container">
-      <div class="text-center max-w-3xl mx-auto mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-4">
-          Platform Requirements
-        </h2>
-        <p class="text-lg text-gray-600">
-          Bee deliberately targets a single, well-defined platform for maximum performance and reliability.
-        </p>
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">04 / How Bee compares</div>
+          <h2 class="h2">Bee next to Grafana Beyla, Dynatrace and Datadog.</h2>
+        </div>
+        <p class="body-2">Beyla is the open-source eBPF agent Bee's architecture follows. Dynatrace and Datadog are the platforms most teams pay for today. Bee covers fewer things than any of them, and goes deeper on the ones it covers.</p>
       </div>
-
-      <div class="grid sm:grid-cols-3 gap-8">
-        <div class="card text-center">
-          <div class="feature-icon mx-auto mb-4">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3l2.593 2.594a1 1 0 01-1.414 1.414l-2.586-2.586A2 2 0 019 15V12z" />
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Linux Kernel</h3>
-          <ul class="text-sm text-gray-600 space-y-1 text-left max-w-xs mx-auto">
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-primary"></span>x86_64 architecture</li>
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-primary"></span>Kernel 7.0 or newer</li>
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-primary"></span>cgroup v2 hierarchy</li>
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-primary"></span>CAP_BPF, CAP_NET_ADMIN</li>
-          </ul>
+      <Comparison />
+      <div class="others">
+        <div class="stack" style="gap: 12px">
+          <h3 class="h3">Where the others win</h3>
+          <p class="body-2" style="font-size: 15px">We would rather you hear it from us. Pick something else if you need:</p>
         </div>
+        <ul>{othersWin.map((o) => <li>{o}</li>)}</ul>
+      </div>
+      <p class="mono reviewed">Based on each vendor's public documentation, reviewed September 2026.</p>
+    </div>
+  </section>
 
-        <div class="card text-center">
-          <div class="feature-icon mx-auto mb-4 bg-green-100 text-success">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0a9 9 0 0118 0z" />
-            </svg>
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="panel grid-2 runs">
+        <div class="stack">
+          <div class="eyebrow">05 / Runs on</div>
+          <h2 class="h2" style="font-size: 32px">A package per node. Pods stay untouched.</h2>
+          <div class="matrix mono">
+            <div><span>Ubuntu 24.04 LTS</span><span>.deb</span></div>
+            <div><span>Debian 13</span><span>.deb</span></div>
+            <div><span>AlmaLinux 10 · Rocky Linux 10</span><span>.rpm</span></div>
+            <div><span>Kubernetes</span><span>one agent per node</span></div>
+            <div><span>Requires</span><span>x86-64 · Linux 7.0+ · cgroup v2 · BTF</span></div>
           </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Node.js Runtime</h3>
-          <ul class="text-sm text-gray-600 space-y-1 text-left max-w-xs mx-auto">
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-success"></span>Node.js 24.x</li>
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-success"></span>64-bit V8 tagged ABI</li>
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-success"></span>No inspector/preload needed</li>
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-success"></span>No source changes</li>
-          </ul>
         </div>
-
-        <div class="card text-center">
-          <div class="feature-icon mx-auto mb-4 bg-cyan-100 text-cyan-600">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3l-3 3m4-6h8m-8 6h8" />
-            </svg>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Export Target</h3>
-          <ul class="text-sm text-gray-600 space-y-1 text-left max-w-xs mx-auto">
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-cyan-600"></span>OTLP/HTTP protobuf</li>
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-cyan-600"></span>Vector collector (local)</li>
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-cyan-600"></span>Port 4318</li>
-            <li class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-none bg-cyan-600"></span>Persistent connection</li>
-          </ul>
+        <div class="stack">
+          <div class="eyebrow">Offline license</div>
+          <h2 class="h2" style="font-size: 32px">A signed file. No license server.</h2>
+          <p class="body-2" style="font-size: 15px">Your Ed25519-signed license is portable and bound to no machine. Bee checks it at startup and once a minute, and shuts down cleanly on expiry. It never phones home.</p>
+          <pre class="code"><span class="p">$ </span>sudo apt install ./obstack-bee_0.2.4_amd64.deb
+<span class="p">$ </span>sudo install -m 600 license.json /etc/obstack-bee/
+<span class="p">$ </span>curl http://127.0.0.1:9400/healthz</pre>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Diagnostics -->
-  <section class="section bg-gray-50">
-    <div class="container">
-      <div class="text-center max-w-3xl mx-auto mb-16">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-4">
-          Built-in Diagnostics
-        </h2>
-        <p class="text-lg text-gray-600">
-          Monitor Bee's health, resource usage, and internal state with built-in HTTP endpoints.
-        </p>
+  <section class="section-tight" id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">06 / Pricing</div>
+          <h2 class="h2">Per node, per month. Nothing metered.</h2>
+        </div>
+        <p class="body-2" style="font-size: 15px">Bee on its own, or inside the full stack, self-hosted or run by us in the EU. Every plan includes all protocols and Node.js await naming.</p>
       </div>
-
-      <div class="grid sm:grid-cols-3 gap-6">
-        <div class="card text-center">
-          <code class="font-mono text-sm text-primary block mb-2">127.0.0.1:9400/healthz</code>
-          <p class="text-sm text-gray-600">Health check endpoint — returns 200 OK when agent is running</p>
-        </div>
-        <div class="card text-center">
-          <code class="font-mono text-sm text-primary block mb-2">127.0.0.1:9400/metrics</code>
-          <p class="text-sm text-gray-600">Prometheus metrics — internal queue depths, eBPF map pressure, export stats</p>
-        </div>
-        <div class="card text-center">
-          <code class="font-mono text-sm text-primary block mb-2">127.0.0.1:9400/graph</code>
-          <p class="text-sm text-gray-600">Resource graph JSON — TCP application-resource topology</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Download CTA -->
-  <section class="section bg-gray-900">
-    <div class="container">
-      <div class="mx-auto max-w-4xl text-center">
-        <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-4">
-          Ready to install Bee?
-        </h2>
-        <p class="mt-4 text-lg text-gray-300 mb-10">
-          Download the latest release and get started in minutes.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href={`${basePath}/download`}
-            class="btn-primary"
-            >Download Bee</a
-          >
-          <a
-            href={`${basePath}/pricing`}
-            class="btn-secondary border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-gray-500"
-            >View Licensing</a
-          >
-        </div>
-      </div>
+      <PricingTable variant="bee" />
     </div>
   </section>
 </Layout>
+
+<style>
+  .bee-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+
+  .trace { margin: 0; background: var(--ink-2); border: 1px solid rgba(99, 232, 176, 0.2); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); min-width: 0; }
+  .t-head { display: flex; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--on-dark-line); font-size: 12px; color: var(--on-dark-3); letter-spacing: 0.06em; text-transform: uppercase; }
+  .t-rows { padding: 10px 0; font-size: 12.5px; }
+  .t-row { display: grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr) 64px; gap: 14px; align-items: center; padding: 9px 20px; color: var(--on-dark-2); }
+  .t-row:first-child { color: var(--on-dark); }
+  .t-row.hot { background: rgba(99, 232, 176, 0.07); box-shadow: inset 2px 0 0 var(--mint); color: var(--mint); }
+  .t-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .t-track { height: 10px; background: rgba(232, 241, 242, 0.05); }
+  .t-bar { height: 10px; transform-origin: left; animation: grow 0.9s 0.3s cubic-bezier(.2, .7, .2, 1) both; }
+  .t-ms { text-align: right; }
+  .t-foot { display: flex; flex-direction: column; gap: 6px; padding: 16px 20px; border-top: 1px solid var(--on-dark-line); font-size: 12px; color: var(--on-dark-3); }
+  .t-foot b { color: var(--on-dark); font-weight: 500; }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  .four > .stack { gap: 12px; padding: 28px 28px 0; border-left: 1px solid var(--line); }
+  .four > .stack:first-child { padding-left: 0; border-left: none; }
+  .four .mono { font-size: 13px; color: var(--link); font-weight: 700; text-transform: uppercase; }
+
+  .bounded { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 72px; }
+  .limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid rgba(232, 241, 242, 0.16); align-self: center; }
+  .limit { display: flex; justify-content: space-between; gap: 16px; padding: 18px 24px 18px 0; border-bottom: 1px solid var(--on-dark-line); font-size: 13px; color: var(--on-dark-2); }
+  .limit:nth-child(even) { padding: 18px 0 18px 24px; border-left: 1px solid var(--on-dark-line); }
+  .limit .v { color: var(--mint); text-align: right; }
+  .limits-note { grid-column: 1 / -1; padding-top: 16px; font-size: 12px; color: var(--on-dark-3); }
+
+  .others { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 56px; padding-top: 48px; }
+  .others ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 40px; }
+  .others li { display: flex; gap: 12px; font-size: 15px; line-height: 1.6; }
+  .others li::before { content: "—"; font-family: var(--font-mono); color: var(--link); }
+  .reviewed { font-size: 12px; color: var(--muted); margin-top: 40px; }
+
+  .runs > .stack { padding: 48px; gap: 24px; }
+  .runs > .stack + .stack { border-left: 1px solid var(--line); }
+  .matrix { display: flex; flex-direction: column; font-size: 13px; }
+  .matrix div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+  .matrix div:last-child { border-bottom: none; }
+  .matrix span + span { color: var(--text-2); text-align: right; }
+
+  @media (max-width: 1100px) {
+    .bee-hero { grid-template-columns: minmax(0, 1fr); }
+    .bounded { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+    .four > .stack:nth-child(3) { padding-left: 0; border-left: none; }
+    .others { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  }
+  @media (max-width: 800px) {
+    .t-row { grid-template-columns: minmax(0, 1fr) 56px; }
+    .t-track { grid-column: 1 / -1; grid-row: 2; }
+    .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
+    .limits { grid-template-columns: minmax(0, 1fr); }
+    .limit, .limit:nth-child(even) { padding: 16px 0; border-left: none; }
+    .others ul { grid-template-columns: minmax(0, 1fr); }
+    .runs > .stack { padding: 24px; }
+    .runs > .stack + .stack { border-left: none; border-top: 1px solid var(--line); }
+  }
+</style>

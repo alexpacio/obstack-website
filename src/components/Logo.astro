@@ -1,0 +1,31 @@
+---
+interface Props {
+  /** Height of the mark in px. */
+  size?: number;
+  /** Hide the wordmark and render the mark alone. */
+  markOnly?: boolean;
+}
+
+const { size = 34, markOnly = false } = Astro.props;
+---
+
+<span class="logo">
+  <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
+    <path d="M7 27 L24 36.5 L41 27 L41 31.5 L24 41 L7 31.5 Z" fill="#19B8E2"></path>
+    <path d="M7 20 L24 29.5 L41 20 L41 24.5 L24 34 L7 24.5 Z" fill="#2ED0C3"></path>
+    <path d="M24 5 L41 14.5 L24 24 L7 14.5 Z" fill="#63E8B0"></path>
+    <circle cx="24" cy="14.5" r="3.4" fill="#0A1F2E"></circle>
+  </svg>
+  {!markOnly && <span class="logo-word" style={`font-size:${Math.round(size * 0.62)}px`}>obstack</span>}
+</span>
+
+<style>
+  .logo { display: inline-flex; align-items: center; gap: 10px; }
+  .logo-word {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--on-dark-strong);
+    line-height: 1;
+    padding-bottom: 2px;
+  }
+</style>

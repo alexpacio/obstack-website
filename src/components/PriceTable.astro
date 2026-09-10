@@ -1,0 +1,41 @@
+---
+interface Props {
+  /** Column headings; the first labels the row-header column. */
+  head: string[];
+  /** Each row starts with its row header. */
+  rows: string[][];
+  /** Index of the row to highlight, usually ours. */
+  highlight?: number;
+  minWidth?: number;
+}
+
+const { head, rows, highlight = -1, minWidth = 900 } = Astro.props;
+---
+
+<div class="pt-wrap panel">
+  <table class="pt" style={`min-width: ${minWidth}px`}>
+    <thead>
+      <tr>{head.map((h) => <th scope="col">{h}</th>)}</tr>
+    </thead>
+    <tbody>
+      {rows.map(([label, ...cells], i) => (
+        <tr class:list={{ ours: i === highlight }}>
+          <th scope="row">{label}</th>
+          {cells.map((c) => <td>{c}</td>)}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .pt-wrap { overflow-x: auto; }
+  .pt { border-collapse: collapse; width: 100%; }
+  .pt th, .pt td { text-align: left; vertical-align: top; padding: 16px 18px; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.55; }
+  thead th { background: var(--paper); font-weight: 700; font-size: 13px; color: var(--text); }
+  tbody th { width: 160px; font-weight: 800; color: var(--text); }
+  td { color: var(--text-2); }
+  tr.ours th, tr.ours td { background: var(--mint-wash); color: var(--ink); font-weight: 500; }
+  tr.ours th { box-shadow: inset 4px 0 0 var(--ink); font-weight: 800; }
+  tbody tr:last-child th, tbody tr:last-child td { border-bottom: none; }
+</style>

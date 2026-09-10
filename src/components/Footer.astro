@@ -1,0 +1,56 @@
+---
+import Logo from './Logo.astro';
+import { url, mailto, CONTACT_EMAIL } from '../lib/url';
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="cols">
+      <div class="stack brand">
+        <Logo size={32} />
+        <p>The observability stack for applications, infrastructure and IoT.</p>
+      </div>
+      <div class="stack col">
+        <div class="head">Products</div>
+        <a href={url('/bee')}>Bee</a>
+        <a href={url('/stack')}>Obstack Stack</a>
+        <a href={url('/#ai-sre')}>AI SRE agent</a>
+        <a href={url('/#eagle')}>Eagle</a>
+      </div>
+      <div class="stack col">
+        <div class="head">Buy</div>
+        <a href={url('/pricing')}>Pricing</a>
+        <a href={url('/pricing#configure')}>Configure a quote</a>
+        <a href={url('/buy?plan=bee')}>Buy Bee</a>
+        <a href={url('/buy?plan=cloud')}>Buy Obstack Cloud</a>
+        <a href={url('/terms')}>Commercial terms</a>
+      </div>
+      <div class="stack col">
+        <div class="head">Contact</div>
+        <a href={mailto()}>{CONTACT_EMAIL}</a>
+        <a href={mailto('Bee evaluation license')}>Evaluation license</a>
+      </div>
+    </div>
+    <div class="base">
+      <span>© {new Date().getFullYear()} Obstack</span>
+      <span class="mono">obstack.it</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { background: var(--ink-3); color: #9FB6BF; padding: 56px 0 40px; }
+  .cols { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 48px; }
+  .brand { gap: 16px; }
+  .brand p { font-size: 14px; line-height: 1.6; max-width: 340px; }
+  .col { gap: 12px; }
+  .head { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mint); }
+  .col a { color: #9FB6BF; text-decoration: none; font-size: 14px; }
+  .col a:hover { color: #fff; }
+  .base { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--on-dark-line); font-size: 13px; }
+  .base .mono { font-size: 12px; }
+  @media (max-width: 800px) {
+    .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+    .brand { grid-column: 1 / -1; }
+  }
+</style>
