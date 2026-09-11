@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react';
-import { BASELINE, DEFAULT_CONFIG, configFromSearch, configQuery, formatPrice, quote, type Config } from '../data/plans';
+import { BASELINE, CURRENCY_EVENT, DEFAULT_CONFIG, configFromSearch, configQuery, formatPrice, quote, type Config, type Currency } from '../data/plans';
 import { openMailto, url } from '../lib/url';
 import ConfigFields, { QuoteSummary, quoteText } from './ConfigFields';
 import './checkout.css';
 
 export default function Configurator() {
-  const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<Config>(() =>
+    typeof window === 'undefined' ? DEFAULT_CONFIG : configFromSearch(window.location.search),
+  );
   const q = quote(config);
   const baseline = q.nodes * BASELINE.perHost;
 
-  // Plan from the URL; currency from ?currency=, else browser language and timezone.
   useEffect(() => {
     setConfig(configFromSearch(window.location.search));
+    const onCur = (e: Event) => {
+      const c = (e as CustomEvent<Currency>).detail;
+      if (c !== 'eur' && c !== 'usd') return;
+      setConfig((prev) => (prev.currency === c ? prev : { ...prev, currency: c }));
+    };
+    window.addEventListener(CURRENCY_EVENT, onCur);
+    return () => window.removeEventListener(CURRENCY_EVENT, onCur);
   }, []);
 
   return (
@@ -30,7 +38,7 @@ export default function Configurator() {
           className="btn btn-outline"
           onClick={() => {
             openMailto(
-              `Quote: ${q.plan.name}, ${q.nodes} nodes${q.pagerootUsers > 0 ? `, PageRoot ${q.pagerootUsers}` : ''}`,
+              `Quote: ${q.plan.name}, ${q.nodes} nodes${q.pagerootUsers > 0 ? `, PageRoot ${q.pagerootUsers}` : ''}${q.aurora ? ', Aurora AI' : ''}`,
               quoteText(q).join('\n'),
             );
           }}

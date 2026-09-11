@@ -169,6 +169,7 @@
   color: var(--ink);
   cursor: pointer;
   border-radius: 0;
+  white-space: nowrap;
 }
 .co-seg button + button { border-left: 0; }
 .co-seg button.on { background: var(--ink); color: var(--on-dark-strong); }
@@ -193,9 +194,17 @@
 .co-lines .save dt, .co-lines .save dd { color: #0E7A55; }
 .co-lines .sum { padding-top: 14px; border-top: 1px dashed var(--line); font-weight: 700; }
 .co-lines .sum dt { color: var(--text); }
-.co-total { padding: 24px 28px; display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.co-total { padding: 24px 28px 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
 .co-total span { font-size: 15px; font-weight: 700; }
 .co-total strong { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
+.co-fx {
+  margin: 0;
+  padding: 0 28px 20px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
 .co-actions { padding: 0 28px 28px; display: flex; flex-direction: column; gap: 16px; }
 .co-pay { width: 100%; min-height: 56px; font-size: 16px; font-weight: 800; }
 .co-perks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 13px; line-height: 1.5; color: var(--text-2); }
@@ -241,8 +250,10 @@
   .co-tb input { flex: 1; width: auto; }
   .co-seg { width: 100%; }
   .co-seg button { flex: 1 1 0; padding: 0 10px; font-size: 13px; }
+  .co-seg-3 { flex-direction: column; }
+  .co-seg-3 button + button { border-left: 1px solid var(--ink); border-top: 0; }
   .co-paynote { padding: 16px; font-size: 14px; }
-  .co-sum-head, .co-lines, .co-total, .co-actions { padding-left: 20px; padding-right: 20px; }
+  .co-sum-head, .co-lines, .co-total, .co-fx, .co-actions { padding-left: 20px; padding-right: 20px; }
   .co-total strong { font-size: 26px; }
   .co-lines dd, .co-vs dd { white-space: normal; }
   .co-done { padding: 24px; box-shadow: 6px 6px 0 var(--mint); }

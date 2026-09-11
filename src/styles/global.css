@@ -37,14 +37,20 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; overflow-x: hidden; -webkit-text-size-adjust: 100%; max-width: 100%; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  max-width: 100%;
+  background: var(--night);
+}
 
 body {
   margin: 0;
   padding-top: 52px;
   min-width: 0;
   max-width: 100%;
-  background: var(--paper);
+  background: var(--night);
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 16px;
@@ -79,6 +85,39 @@ a:hover { color: var(--link-hover); }
 :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 
 .mono { font-family: var(--font-mono); }
+
+/* Site-wide currency: boot script sets html[data-currency] before paint. */
+.ob-price { white-space: nowrap; }
+.ob-usd, .ob-eur { display: none; }
+html:not([data-currency]) .ob-usd,
+html[data-currency="usd"] .ob-usd { display: inline; }
+html[data-currency="eur"] .ob-eur { display: inline; }
+
+.ob-cur {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1px solid rgba(232, 241, 242, 0.4);
+  background: rgba(0, 0, 0, 0.22);
+}
+.ob-cur button {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  padding: 7px 8px;
+  border: 0;
+  background: transparent;
+  color: #B9CCD3;
+  cursor: pointer;
+}
+.ob-cur button + button { border-left: 1px solid rgba(232, 241, 242, 0.28); }
+html:not([data-currency]) .ob-cur [data-set-currency="usd"],
+html[data-currency="usd"] .ob-cur [data-set-currency="usd"],
+html[data-currency="eur"] .ob-cur [data-set-currency="eur"] {
+  background: var(--mint);
+  color: var(--ink);
+}
 
 #obstack-human-layer {
   position: fixed;
@@ -115,7 +154,11 @@ a:hover { color: var(--link-hover); }
   box-sizing: border-box;
 }
 
-main { overflow-x: clip; max-width: 100%; }
+main {
+  overflow-x: clip;
+  max-width: 100%;
+  background: var(--paper);
+}
 
 .section { padding-top: 112px; padding-bottom: 112px; }
 .section-tight { padding-top: 0; padding-bottom: 112px; }

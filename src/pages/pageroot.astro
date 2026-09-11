@@ -34,7 +34,7 @@ const mcp = [
   ['Who is on call', 'Agents ask PageRoot for the current shift, the next rotation and who to page, instead of scraping a calendar.'],
   ['Work the alert group', 'List firing groups, read the payload and timeline, then acknowledge, silence or resolve through the same actions a human uses in the UI.'],
   ['Escalation progress', 'See which step is running, who was notified, and whether the chain is waiting, looping or stopped because someone acted.'],
-  ['On your infrastructure', 'The MCP server is part of PageRoot. It does not phone home. The AI SRE agent, and any other assistant you allow, talks to it on the network you already trust.'],
+  ['On your infrastructure', 'The MCP server is part of PageRoot. It does not phone home. Aurora AI, and any other assistant you allow, talks to it on the network you already trust.'],
 ];
 
 const split = [
@@ -111,7 +111,7 @@ const split = [
       <div class="stack" style="gap: 20px">
         <div class="eyebrow">03 / Built-in MCP</div>
         <h2 class="h2">Agents get the on-call interface, not a scrape of the UI.</h2>
-        <p class="body-2" style="font-size: 17px">Grafana OnCall stops at humans and ChatOps. PageRoot ships an MCP server in-process: the same alert groups, schedules and actions, on the same network as the rest of the stack. That is what the AI SRE agent uses, and what any assistant you allow can use.</p>
+        <p class="body-2" style="font-size: 17px">Grafana OnCall stops at humans and ChatOps. PageRoot ships an MCP server in-process: the same alert groups, schedules and actions, on the same network as the rest of the stack. That is what Aurora AI uses, and what any assistant you allow can use.</p>
       </div>
       <div class="gossip">
         {mcp.map(([t, d]) => (
@@ -163,7 +163,7 @@ const split = [
         <ul>
           <li>Live call routing, or a public status page as part of the same SKU. PageRoot sends SMS and phone calls through your Twilio account, not a bundle we meter.</li>
           <li>Slack-native incident command with roles, timelines and a meeting bot in the channel.</li>
-          <li>Vendor-run AIOps or a packaged AI SRE. PageRoot gives agents MCP; the model and the run are yours.</li>
+          <li>A SaaS AIOps SKU billed as a third product. Aurora AI is the AI SRE in this stack; it runs on your infrastructure, and the model is yours.</li>
         </ul>
       </div>
       <p class="mono reviewed">Public list prices, annual billing where offered, reviewed September 2026. PagerDuty Business is $41 per user; AIOps and Advance are extra. Rootly AI SRE is quoted. incident.io Pro with on-call is $45 per user.</p>
@@ -177,13 +177,13 @@ const split = [
           <div class="eyebrow">06 / Pricing</div>
           <h2 class="h2">Per on-call user, not per node. On-prem and cloud.</h2>
         </div>
-        <p class="body-2">PageRoot is optional on Obstack Stack and Obstack Cloud. Alertmanager is already in the stack. You add seats for people who can be paged. Volume and 3-year discounts match the rest of the subscription.</p>
+        <p class="body-2">PageRoot is optional on Obstack Stack and Obstack Cloud. Alertmanager is already in the stack. You add seats for people who can be paged. Volume, yearly and 3-year discounts match the rest of the subscription.</p>
       </div>
       <div class="panel grid-2 runs">
         <div class="stack">
           <div class="eyebrow">Self-hosted</div>
           <h2 class="h2" style="font-size: 32px">{sh} per user / month</h2>
-          <p class="body-2" style="font-size: 15px">On your servers, next to Grafana and Alertmanager. Requires Obstack Stack at {formatPrice(stackPlan.price, 'usd')} per node. Same support contract as the stack. Air-gapped delivery is quoted as Enterprise.</p>
+          <p class="body-2" style="font-size: 15px">On your servers, next to Grafana and Alertmanager. Requires Obstack Stack at {formatPrice(stackPlan.price, 'usd')} per node. The first month ships under a license key; after you sign the PolyForm Internal Use agreement, git access to the source. Air-gapped delivery is quoted as Enterprise.</p>
           <div class="matrix mono">
             <div><span>On-call users</span><span>Priced</span></div>
             <div><span>Incidents, schedules, MCP</span><span>Included</span></div>

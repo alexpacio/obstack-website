@@ -1,7 +1,8 @@
 ---
-import { PAGEROOT, PLANS, STORAGE, TERM_DISCOUNT, formatPrice, pct, volumeBands, type Deployment } from '../data/plans';
+import { AURORA, PAGEROOT, PLANS, STORAGE, TERM_DISCOUNT, dualPrice, pct, volumeBands, type Deployment } from '../data/plans';
 import { url } from '../lib/url';
 import ObfuscatedEmail from './ObfuscatedEmail.astro';
+import Price from './Price.astro';
 
 interface Props {
   /** `bee` features Bee and links straight to checkout; `all` adds Enterprise and links each plan to the configurator. */
@@ -13,11 +14,12 @@ const featured = variant === 'bee' ? 'bee' : 'cloud';
 const kind: Record<Deployment, string> = { 'self-hosted': 'Self-hosted', cloud: 'Managed cloud' };
 const storageLine = {
   none: 'Agent only · nothing to store',
-  optional: `Storage: your own, or ${formatPrice(STORAGE.pricePerGb, 'usd')} / GB / month`,
-  required: `+ storage at ${formatPrice(STORAGE.pricePerGb, 'usd')} / GB / month`,
+  optional: `Storage: your own, or ${dualPrice(STORAGE.pricePerGb)} / GB / month`,
+  required: `+ storage at ${dualPrice(STORAGE.pricePerGb)} / GB / month`,
 };
 const perks = [
   ...volumeBands().map((b) => `Nodes ${b}`),
+  `Yearly billing: ${pct(TERM_DISCOUNT[12])} off`,
   `3-year term: ${pct(TERM_DISCOUNT[36])} off, price locked`,
   'No meters on ingest, egress or queries',
 ];
@@ -31,8 +33,8 @@ const perks = [
         {p.id === featured && <span class="badge badge-mint">{variant === 'bee' ? 'Start here' : 'Recommended'}</span>}
       </div>
       <h3 class="h3">{p.name}</h3>
-      <div class="price"><span class="amount">{formatPrice(p.price, 'usd')}</span><span class="per mono">/ node / month</span></div>
-      <p class="addon mono">{storageLine[p.storage]}</p>
+      <div class="price"><span class="amount"><Price eur={p.price} /></span><span class="per mono">/ node / month</span></div>
+      <p class="addon mono" set:html={storageLine[p.storage]} />
       <p class="small">{p.blurb}</p>
       <ul>{p.features.map((f) => <li>{f}</li>)}</ul>
       <a
@@ -71,16 +73,31 @@ const perks = [
     <div class="module-prices">
       <div>
         <span class="mono">Self-hosted</span>
-        <strong>{formatPrice(PAGEROOT.selfHosted, 'usd')}</strong>
+        <strong><Price eur={PAGEROOT.selfHosted} /></strong>
         <span class="mono">/ user / month</span>
       </div>
       <div>
         <span class="mono">Obstack Cloud</span>
-        <strong>{formatPrice(PAGEROOT.cloud, 'usd')}</strong>
+        <strong><Price eur={PAGEROOT.cloud} /></strong>
         <span class="mono">/ user / month</span>
       </div>
     </div>
     <a class="btn btn-outline" href={url('/pageroot')}>Compare with PagerDuty and Rootly</a>
+  </aside>
+  <aside class="module">
+    <div class="stack" style="gap: 10px">
+      <div class="kind mono">Optional bundle · Stack and Cloud</div>
+      <h3 class="h3">Aurora AI</h3>
+      <p class="small">The AI SRE, bundled with unlimited {AURORA.model} hosted by Obstack. No per-token meter. Add it when you configure Stack or Cloud. Not available with Bee alone.</p>
+    </div>
+    <div class="module-prices">
+      <div>
+        <span class="mono">List</span>
+        <strong><Price eur={AURORA.price} /></strong>
+        <span class="mono">/ month</span>
+      </div>
+    </div>
+    <a class="btn btn-outline" href={url('/aurora')}>How Aurora works</a>
   </aside>
 )}
 

@@ -36,7 +36,7 @@ const { columns, ours = 0, rows } = Astro.props;
               return (
                 <td class:list={{ ours: isOurs, win: isWin }}>
                   {isWin && <span class="win-tag">{tag}</span>}
-                  {c}
+                  <Fragment set:html={c} />
                 </td>
               );
             })}

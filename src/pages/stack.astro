@@ -3,13 +3,13 @@ import Layout from '../layouts/Layout.astro';
 import Arrow from '../components/Arrow.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
 import { url } from '../lib/url';
-import { PAGEROOT, STORAGE, findPlan, formatPrice } from '../data/plans';
+import { AURORA, PAGEROOT, STORAGE, findPlan, formatPrice } from '../data/plans';
 
 const stackPlan = findPlan('stack');
 const cloud = findPlan('cloud');
 
 const services = [
-  ['Infrastructure, configured', 'We deploy and configure every component for your environment: agents on your nodes, Vector pipelines, Kafka where it helps, GreptimeDB with retention and object storage, Grafana and Prometheus Alertmanager. PageRoot if you add the module.'],
+  ['Infrastructure, configured', 'We deploy and configure every component for your environment: agents on your nodes, Vector pipelines, Kafka where it helps, GreptimeDB with retention on S3-compatible object storage, Grafana and Prometheus Alertmanager. PageRoot if you add the module.'],
   ['Reference dashboards', 'Grafana arrives connected to your data, with reference dashboards for hosts and Bee, so the first login shows your fleet, not an empty canvas.'],
   ['Custom work, quoted first', 'Dashboards built for your services, alert rules and routing, migration of your current dashboards, alerts, workflows and incidents: billed on time and materials, from a written quote you approve before we start.'],
   ['Storage in your datacenter', `Telemetry lands in Obstack storage at ${formatPrice(STORAGE.pricePerGb, 'usd')} per GB per month, in the EU or US datacenter you pick.`],
@@ -22,23 +22,25 @@ const components: {
   text: string;
   ours?: boolean;
   optional?: boolean;
+  early?: boolean;
   href?: string;
 }[] = [
   { layer: 'Collect', name: 'Bee', role: 'Application agent', text: 'Distributed tracing and profiling inside a microservice and on the host: HTTP, gRPC, TLS, MySQL, Redis and named Node.js awaits, no coordinator.', ours: true, href: url('/bee') },
   { layer: 'Collect', name: 'Grafana Beyla', role: 'Broad eBPF coverage', text: 'Covers the runtimes and protocols Bee does not reach yet, such as PostgreSQL, Kafka and MongoDB, with the same zero-code model.' },
   { layer: 'Ship', name: 'Vector', role: 'Node-local collector', text: 'Receives OTLP from the agents, collects host metrics and logs, and routes every signal onward.' },
   { layer: 'Ship', name: 'Kafka', role: 'Buffer, when needed', text: 'Sits between collectors and storage for large or bursty fleets, so storage maintenance never costs you data.', optional: true },
-  { layer: 'Store', name: 'GreptimeDB', role: 'Telemetry database', text: 'Metrics, logs and traces in one database, queried with SQL and PromQL.' },
-  { layer: 'See', name: 'Grafana', role: 'Dashboards and MCP', text: 'Exploration and dashboards on the tool your team already knows, with reference dashboards for Bee, plus the Grafana MCP server for agents.', href: url('/grafana') },
+  { layer: 'Store', name: 'GreptimeDB', role: 'Telemetry database', text: 'Metrics, logs and traces in one database, queried with SQL and PromQL. Data at rest lives in S3-compatible object storage, so the database and the files are one store you can see.' },
+  { layer: 'See', name: 'Grafana', role: 'Dashboards', text: 'Exploration and dashboards on the tool your team already knows, with reference dashboards for Bee. The Grafana MCP server sits next to it for agents.', href: url('/grafana') },
+  { layer: 'See', name: 'Grafana MCP server', role: 'Access for agents', text: 'A separate MCP server that ships with Grafana. Aurora AI, and any assistant you allow, query dashboards and datasources through Grafana RBAC.', href: url('/grafana#mcp') },
   { layer: 'Act', name: 'Prometheus Alertmanager', role: 'Alert routing', text: 'Groups, inhibits, silences and routes firing alerts from Prometheus and Grafana onto receivers. The Prometheus-native half of paging.' },
-  { layer: 'Act', name: 'PageRoot', role: 'On-call and incidents', text: `Optional module: schedules, escalation chains, ChatOps and a built-in MCP server. ${formatPrice(PAGEROOT.selfHosted, 'usd')} per user self-hosted, ${formatPrice(PAGEROOT.cloud, 'usd')} on Obstack Cloud.`, ours: true, optional: true, href: url('/pageroot') },
-  { layer: 'Act', name: 'Grafana MCP server', role: 'Access for agents', text: 'Lets AI assistants, and our AI SRE agent, query dashboards and datasources through Grafana RBAC. Ships with Grafana in the stack.', href: url('/grafana#mcp') },
+  { layer: 'Act', name: 'PageRoot', role: 'On-call and incidents', text: `Optional module: schedules, escalation chains, ChatOps to Slack and Telegram, phone calls, and a built-in MCP server. ${formatPrice(PAGEROOT.selfHosted, 'usd')} per user self-hosted, ${formatPrice(PAGEROOT.cloud, 'usd')} on Obstack Cloud.`, ours: true, optional: true, href: url('/pageroot') },
+  { layer: 'Act', name: 'Aurora AI', role: 'AI SRE', text: `Works incidents alongside your on-call through Grafana MCP and PageRoot MCP. Bundled with unlimited ${AURORA.model} hosted by Obstack, ${formatPrice(AURORA.price, 'eur')} per month.`, optional: true, href: url('/aurora') },
 ];
 ---
 
 <Layout
   title="Obstack Stack · Bee, Beyla, Vector, GreptimeDB, Grafana and Alertmanager"
-  description="The Obstack Stack: Bee and Beyla for collection, Vector and Kafka for transport, GreptimeDB for storage, Grafana for dashboards, Prometheus Alertmanager for alert routing, the Grafana MCP server, and optional PageRoot for on-call."
+  description="The Obstack Stack: Bee and Beyla for collection, Vector and Kafka for transport, GreptimeDB on S3 for storage, Grafana and its MCP server for dashboards and agents, Prometheus Alertmanager for alert routing, optional PageRoot for on-call to Slack, phone and Telegram, and Aurora AI as the AI SRE."
   active="stack"
 >
   <section class="hero">
@@ -62,7 +64,7 @@ const components: {
           <div class="eyebrow">01 / What's inside</div>
           <h2 class="h2">Every component has one job.</h2>
         </div>
-        <p class="body-2">Bee is ours. PageRoot, when you add it, is ours too. The rest are open-source projects we deploy, wire together and support, so you get one product instead of eight integrations.</p>
+        <p class="body-2">Bee is ours. PageRoot, when you add it, is ours too. Aurora AI is the AI SRE we deploy, bundled with unlimited {AURORA.model} hosted by Obstack. The rest are open-source projects we deploy, wire together and support, so you get one product instead of eight integrations.</p>
       </div>
       <div class="tile-grid grid-4 parts">
         {components.map((c) => (
@@ -72,6 +74,7 @@ const components: {
               <span class="part-badges">
                 {c.ours && <span class="badge badge-mint">Obstack</span>}
                 {c.optional && <span class="badge badge-dashed">Optional</span>}
+                {c.early && <span class="badge badge-dashed">Early access</span>}
               </span>
             </div>
             <h3 class="h3">{c.name}</h3>
@@ -111,38 +114,78 @@ const components: {
         <h2 class="h2">From the kernel to the person on call.</h2>
       </div>
       <div class="diagram-wrap">
-        <svg class="diagram" viewBox="0 0 1180 300" role="img" aria-label="Bee and Beyla send OTLP to Vector, optionally through Kafka, into GreptimeDB; Grafana reads from it; Prometheus Alertmanager routes alerts to PageRoot; PageRoot's MCP server serves the AI SRE agent">
+        <svg class="diagram" viewBox="0 0 1400 400" role="img" aria-label="Bee and Beyla send OTLP to Vector, optionally through Kafka, into GreptimeDB stored on S3; Grafana reads from it and exposes a Grafana MCP server; Prometheus Alertmanager routes alerts to PageRoot; PageRoot pages Slack, phone and Telegram; Grafana MCP and PageRoot MCP serve Aurora AI, the AI SRE">
           <g font-family="M PLUS 1 Code, monospace" font-size="13">
             <g fill="none" stroke="#2ED0C3" stroke-width="1.5">
-              <path d="M190 90 H250"></path><path d="M190 190 H220 V110 H250"></path>
-              <path d="M410 100 H470"></path>
-              <path d="M630 100 H690"></path>
-              <path d="M850 100 H890 V60 H930"></path><path d="M850 100 H890 V150 H930"></path>
-              <path d="M1030 180 V230"></path>
+              <path d="M190 90 H240"></path>
+              <path d="M190 190 H215 V100 H240"></path>
+              <path d="M400 100 H450"></path>
+              <path d="M610 100 H660"></path>
+              <path d="M820 100 H855 V60 H890"></path>
+              <path d="M820 100 H855 V150 H890"></path>
+              <path d="M740 130 V180"></path>
+              <path d="M1090 60 H1160"></path>
+              <path d="M1260 90 V120"></path>
+              <path d="M990 180 V230"></path>
+              <path d="M1090 260 H1125 V150 H1160"></path>
+              <path d="M990 290 V310 H940 V330"></path>
+              <path d="M990 310 H1054 V330"></path>
+              <path d="M990 310 H1183 V330"></path>
             </g>
-            <g fill="#2ED0C3"><path d="M250 90 l-8 -5 v10 z"></path><path d="M250 110 l-8 -5 v10 z"></path><path d="M470 100 l-8 -5 v10 z"></path><path d="M690 100 l-8 -5 v10 z"></path><path d="M930 60 l-8 -5 v10 z"></path><path d="M930 150 l-8 -5 v10 z"></path><path d="M1030 230 l-5 -8 h10 z"></path></g>
+            <g fill="#2ED0C3">
+              <path d="M240 90 l-8 -5 v10 z"></path>
+              <path d="M240 100 l-8 -5 v10 z"></path>
+              <path d="M450 100 l-8 -5 v10 z"></path>
+              <path d="M660 100 l-8 -5 v10 z"></path>
+              <path d="M890 60 l-8 -5 v10 z"></path>
+              <path d="M890 150 l-8 -5 v10 z"></path>
+              <path d="M740 180 l-5 -8 h10 z"></path>
+              <path d="M1160 60 l-8 -5 v10 z"></path>
+              <path d="M1260 120 l-5 -8 h10 z"></path>
+              <path d="M990 230 l-5 -8 h10 z"></path>
+              <path d="M1160 150 l-8 -5 v10 z"></path>
+              <path d="M940 330 l-5 -8 h10 z"></path>
+              <path d="M1054 330 l-5 -8 h10 z"></path>
+              <path d="M1183 330 l-5 -8 h10 z"></path>
+            </g>
 
             <rect x="30" y="60" width="160" height="60" fill="#63E8B0"></rect>
             <text x="48" y="96" fill="#0A1F2E" font-weight="700">Bee</text>
             <rect x="30" y="160" width="160" height="60" fill="none" stroke="#63E8B0" stroke-width="1.5"></rect>
             <text x="48" y="196" fill="#E8F1F2">Beyla</text>
 
-            <rect x="250" y="70" width="160" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
-            <text x="268" y="106" fill="#E8F1F2">Vector</text>
+            <rect x="240" y="70" width="160" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
+            <text x="258" y="106" fill="#E8F1F2">Vector</text>
 
-            <rect x="470" y="70" width="160" height="60" fill="none" stroke="#7FA3B3" stroke-width="1.5" stroke-dasharray="5 5"></rect>
-            <text x="488" y="106" fill="#A9BEC6">Kafka (optional)</text>
+            <rect x="450" y="70" width="160" height="60" fill="none" stroke="#7FA3B3" stroke-width="1.5" stroke-dasharray="5 5"></rect>
+            <text x="468" y="106" fill="#A9BEC6">Kafka (optional)</text>
 
-            <rect x="690" y="70" width="160" height="60" fill="#174D6B" stroke="#2ED0C3" stroke-width="1.5"></rect>
-            <text x="708" y="106" fill="#E8F1F2">GreptimeDB</text>
+            <rect x="660" y="70" width="160" height="60" fill="#174D6B" stroke="#2ED0C3" stroke-width="1.5"></rect>
+            <text x="678" y="106" fill="#E8F1F2">GreptimeDB</text>
+            <rect x="660" y="180" width="160" height="60" fill="none" stroke="#2ED0C3" stroke-width="1.5"></rect>
+            <text x="678" y="208" fill="#E8F1F2">S3 storage</text>
+            <text x="678" y="226" fill="#7FA3B3" font-size="11">object store</text>
 
-            <rect x="930" y="30" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
-            <text x="948" y="66" fill="#E8F1F2">Grafana · Eagle soon</text>
-            <rect x="930" y="120" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
-            <text x="948" y="156" fill="#E8F1F2">Alertmanager</text>
+            <rect x="890" y="30" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
+            <text x="908" y="66" fill="#E8F1F2">Grafana</text>
+            <rect x="1160" y="30" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
+            <text x="1178" y="66" fill="#E8F1F2">Grafana MCP</text>
 
-            <rect x="930" y="230" width="200" height="60" fill="none" stroke="#63E8B0" stroke-width="1.5" stroke-dasharray="5 5"></rect>
-            <text x="948" y="266" fill="#63E8B0">PageRoot · MCP</text>
+            <rect x="890" y="120" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
+            <text x="908" y="156" fill="#E8F1F2">Alertmanager</text>
+            <rect x="1160" y="120" width="200" height="60" fill="#63E8B0"></rect>
+            <text x="1178" y="148" fill="#0A1F2E" font-weight="700">Aurora AI</text>
+            <text x="1178" y="166" fill="#0A1F2E" font-size="11">AI SRE</text>
+
+            <rect x="890" y="230" width="200" height="60" fill="none" stroke="#63E8B0" stroke-width="1.5" stroke-dasharray="5 5"></rect>
+            <text x="908" y="266" fill="#63E8B0">PageRoot · MCP</text>
+
+            <rect x="890" y="330" width="100" height="44" fill="none" stroke="#7FA3B3" stroke-width="1.5"></rect>
+            <text x="908" y="358" fill="#A9BEC6">Slack</text>
+            <rect x="1004" y="330" width="100" height="44" fill="none" stroke="#7FA3B3" stroke-width="1.5"></rect>
+            <text x="1022" y="358" fill="#A9BEC6">Phone</text>
+            <rect x="1118" y="330" width="130" height="44" fill="none" stroke="#7FA3B3" stroke-width="1.5"></rect>
+            <text x="1136" y="358" fill="#A9BEC6">Telegram</text>
           </g>
         </svg>
       </div>
@@ -205,7 +248,7 @@ const components: {
       </div>
       <div class="stack" style="gap: 18px">
         <p class="body-2">Prometheus Alertmanager groups, inhibits, silences and routes firing alerts from Prometheus and Grafana. It is the receiver layer operators already know.</p>
-        <p class="body-2">PageRoot is the optional on-call module: schedules, escalation chains, ChatOps and a built-in MCP server. {formatPrice(PAGEROOT.selfHosted, 'usd')} per user self-hosted, {formatPrice(PAGEROOT.cloud, 'usd')} on Obstack Cloud — a fraction of PagerDuty or Rootly.</p>
+        <p class="body-2">PageRoot is the optional on-call module: schedules, escalation chains, ChatOps to Slack and Telegram, phone calls, and a built-in MCP server. {formatPrice(PAGEROOT.selfHosted, 'usd')} per user self-hosted, {formatPrice(PAGEROOT.cloud, 'usd')} on Obstack Cloud — a fraction of PagerDuty or Rootly.</p>
         <a class="text-link" href={url('/pageroot')}>Read how PageRoot compares <Arrow size={16} /></a>
       </div>
     </div>
@@ -214,9 +257,9 @@ const components: {
   <section class="section-tight">
     <div class="wrap grid-2 next">
       <article class="panel">
-        <div class="next-top"><h3 class="h3">AI SRE agent</h3><span class="badge badge-dashed">Early access</span></div>
-        <p class="body-2">Works incidents alongside your on-call through PageRoot's MCP server and the Grafana MCP server, reading the same telemetry and alert groups your team does, without it leaving your infrastructure.</p>
-        <ObfuscatedEmail label="Request early access" class="text-link" subject="AI SRE agent early access" />
+        <div class="next-top"><h3 class="h3">Aurora AI</h3><span class="badge badge-dashed">Optional</span></div>
+        <p class="body-2">The AI SRE in the stack, bundled with unlimited {AURORA.model} hosted by Obstack, {formatPrice(AURORA.price, 'eur')} per month. It works incidents through PageRoot MCP and Grafana MCP.</p>
+        <a class="text-link" href={url('/aurora')}>How Aurora works <Arrow size={16} /></a>
       </article>
       <article class="panel">
         <div class="next-top"><h3 class="h3">Eagle</h3><span class="badge badge-line">Coming soon</span></div>
@@ -253,7 +296,7 @@ const components: {
 
   .flow-sec { display: flex; flex-direction: column; gap: 48px; }
   .diagram-wrap { overflow-x: auto; }
-  .diagram { width: 100%; min-width: 900px; height: auto; }
+  .diagram { width: 100%; min-width: 1040px; height: auto; }
 
   .grafana-shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
   .grafana-shots figure { margin: 0; }
@@ -275,7 +318,7 @@ const components: {
     .stack-hero { padding-top: 48px; padding-bottom: 56px; }
     .grafana-shots { grid-template-columns: minmax(0, 1fr); }
     .grafana-shots img { height: 220px; }
-    .diagram { min-width: 640px; }
+    .diagram { min-width: 760px; }
     .next .panel { padding: 24px; }
   }
 </style>

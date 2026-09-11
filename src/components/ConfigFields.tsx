@@ -1,19 +1,25 @@
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import {
   MAX_NODES,
+  AURORA,
   PAGEROOT,
   PLANS,
   STORAGE,
   TERM_DISCOUNT,
+  allowsAurora,
   allowsPageroot,
   findPlan,
   formatGb,
   formatPrice,
   fxDisclaimer,
+  invoiceLabel,
   needsDatacenter,
   normalize,
+  persistCurrency,
   pagerootUnitPrice,
   pct,
+  termLabel,
+  termSavingLabel,
   volumeBands,
   type Config,
   type Currency,
@@ -29,7 +35,7 @@ const DEPLOYMENTS: { id: Deployment; label: string; plan: PlanId; note: string }
     id: 'self-hosted',
     label: 'Self-hosted',
     plan: 'stack',
-    note: 'On your servers. Setup, updates, rollout and monitoring of the infrastructure are included. Custom Grafana dashboards, alerts and similar are Professional Services, quoted in advance. Bee is licensed under PolyForm Internal Use; source and updates come with the subscription. Air-gapped delivery is quoted as Enterprise.',
+    note: 'On your servers. Setup, updates, rollout and monitoring of the infrastructure are included. Custom Grafana dashboards, alerts and similar are Professional Services, quoted in advance. Bee and PageRoot ship under a license key for the first month; after you sign the PolyForm Internal Use agreement, git access to the source. Air-gapped delivery is quoted as Enterprise.',
   },
   {
     id: 'cloud',
@@ -56,6 +62,7 @@ export function configSteps(config: Config): number {
   if (plan.storage !== 'none') n += 1;
   if (needsDatacenter(config)) n += 1;
   if (allowsPageroot(plan.id)) n += 1;
+  if (allowsAurora(plan.id)) n += 1;
   return n;
 }
 
@@ -75,7 +82,10 @@ export default function ConfigFields({ config, onChange }: Props) {
   const [lastGb, setLastGb] = useState(config.storageGb || 2000);
   const [lastSeats, setLastSeats] = useState(config.pagerootUsers || PAGEROOT.defaultUsers);
 
-  const update = (patch: Partial<Config>) => onChange(normalize({ ...config, ...patch }));
+  const update = (patch: Partial<Config>) => {
+    if (patch.currency) persistCurrency(patch.currency);
+    onChange(normalize({ ...config, ...patch }));
+  };
   const setGb = (gb: number) => {
     const next = Math.max(STORAGE.minGb, gb);
     setLastGb(next);
@@ -189,6 +199,34 @@ export default function ConfigFields({ config, onChange }: Props) {
         </fieldset>
       )}
 
+      {allowsAurora(plan.id) && (
+        <fieldset className="co-block">
+          {legend('Aurora AI')}
+          <Segmented
+            label="Aurora AI"
+            value={config.aurora ? 'on' : 'off'}
+            options={[
+              { value: 'off', label: 'Without Aurora' },
+              { value: 'on', label: 'Add Aurora' },
+            ]}
+            onChange={(v) => update({ aurora: v === 'on' })}
+          />
+          {config.aurora ? (
+            <p className="co-paynote">
+              <strong>
+                Aurora AI + unlimited {AURORA.model} at {formatPrice(AURORA.price, config.currency)}
+              </strong>{' '}
+              per month list. The model is hosted by Obstack, with no per-token meter, for Aurora investigations on this subscription. Aurora reads Grafana MCP and works incidents through PageRoot MCP. Prompts go to {AURORA.model} in the datacenter you pick; telemetry stays in GreptimeDB.
+            </p>
+          ) : (
+            <p className="co-paynote">
+              Add Aurora when you want an AI SRE bundled with unlimited {AURORA.model}, hosted by Obstack.{' '}
+              {formatPrice(AURORA.price, config.currency)} per month on Stack and Cloud. Not available with Bee alone. Your own model, or an air-gapped one, is quoted as Enterprise.
+            </p>
+          )}
+        </fieldset>
+      )}
+
       {plan.storage !== 'none' && (
         <fieldset className="co-block">
           {legend('Storage')}
@@ -257,7 +295,11 @@ export default function ConfigFields({ config, onChange }: Props) {
             ]}
             onChange={(v) => update({ dc: v as Datacenter })}
           />
-          <p className="small">Telemetry and managed storage stay in the datacenter you pick. EU data stays in the EU.</p>
+          <p className="small">
+            {config.aurora && plan.storage !== 'required' && config.storageGb === 0
+              ? `${AURORA.model} for Aurora runs in the datacenter you pick. EU prompts stay in the EU.`
+              : `Telemetry and managed storage stay in the datacenter you pick. EU data stays in the EU.${config.aurora ? ` ${AURORA.model} for Aurora runs there too.` : ''}`}
+          </p>
         </fieldset>
       )}
 
@@ -276,28 +318,31 @@ export default function ConfigFields({ config, onChange }: Props) {
       </fieldset>
 
       <fieldset className="co-block">
-        {legend('Term')}
+        {legend('Billing')}
         <Segmented
-          label="Term"
+          label="Billing"
+          className="co-seg-3"
           value={String(config.term)}
           options={[
-            { value: '12', label: '1 year' },
-            { value: '36', label: `3 years · ${pct(TERM_DISCOUNT[36])} off` },
+            { value: '1', label: 'Monthly' },
+            { value: '12', label: `Yearly · ${pct(TERM_DISCOUNT[12])}` },
+            { value: '36', label: `3 years · ${pct(TERM_DISCOUNT[36])}` },
           ]}
           onChange={(v) => update({ term: Number(v) as Term })}
         />
         <p className="small">
-          Billed yearly in advance. A 3-year term locks your unit prices; its discount applies to node
-          {allowsPageroot(plan.id) ? ' and PageRoot' : ''} fees, not storage.
+          Monthly is billed each month at list. Yearly is billed in advance, {pct(TERM_DISCOUNT[12])} off node
+          {allowsPageroot(plan.id) ? ' and PageRoot' : ''} fees. A 3-year term is billed yearly, locks those unit prices, and takes {pct(TERM_DISCOUNT[36])} off.
+          {' '}Storage{allowsAurora(plan.id) ? ' and Aurora' : ''} are not discounted.
         </p>
       </fieldset>
     </>
   );
 }
 
-function Segmented<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { value: T; label: string }[]; onChange: (value: T) => void }) {
+function Segmented<T extends string>({ label, value, options, onChange, className }: { label: string; value: T; options: { value: T; label: string }[]; onChange: (value: T) => void; className?: string }) {
   return (
-    <div className="co-seg" role="radiogroup" aria-label={label}>
+    <div className={['co-seg', className].filter(Boolean).join(' ')} role="radiogroup" aria-label={label}>
       {options.map((o) => (
         <button type="button" role="radio" key={o.value} aria-checked={o.value === value} className={o.value === value ? 'on' : ''} onClick={() => onChange(o.value)}>
           {o.label}
@@ -366,21 +411,26 @@ export function quoteText(q: Quote): string[] {
     `Plan: ${q.plan.name} (${q.plan.deployment === 'cloud' ? `managed cloud, ${q.dc.toUpperCase()} datacenter` : 'self-hosted'})`,
     `Nodes: ${q.nodes} at ${formatPrice(q.plan.price, q.currency)} per node per month list`,
     q.volumeSaving > 0 ? `Volume discount: -${formatPrice(q.volumeSaving, q.currency)} per month` : null,
-    q.termSaving > 0 ? `3-year term discount on nodes: -${formatPrice(q.termSaving, q.currency)} per month` : null,
+    q.termSaving > 0 ? `${termSavingLabel(q.term)} discount on nodes: -${formatPrice(q.termSaving, q.currency)} per month` : null,
     q.pagerootUsers > 0
       ? `PageRoot: ${q.pagerootUsers} on-call ${q.pagerootUsers === 1 ? 'user' : 'users'} at ${formatPrice(pagerootUnitPrice(q.planId), q.currency)} per user per month list`
       : allowsPageroot(q.planId)
         ? 'PageRoot: not included'
         : null,
     q.pagerootVolumeSaving > 0 ? `PageRoot volume discount: -${formatPrice(q.pagerootVolumeSaving, q.currency)} per month` : null,
-    q.pagerootTermSaving > 0 ? `3-year term discount on PageRoot: -${formatPrice(q.pagerootTermSaving, q.currency)} per month` : null,
+    q.pagerootTermSaving > 0 ? `${termSavingLabel(q.term)} discount on PageRoot: -${formatPrice(q.pagerootTermSaving, q.currency)} per month` : null,
+    q.aurora
+      ? `Aurora AI: ${AURORA.model} unlimited, hosted by Obstack, ${formatPrice(AURORA.price, q.currency)} per month list`
+      : allowsAurora(q.planId)
+        ? 'Aurora AI: not included'
+        : null,
     q.plan.storage === 'none'
       ? null
       : `Storage: ${q.storageGb > 0 ? `${formatGb(q.storageGb)} of Obstack storage at ${formatPrice(STORAGE.pricePerGb, q.currency)} per GB per month` : 'customer-provided'}`,
     needsDatacenter(q) ? `Datacenter: ${q.dc.toUpperCase()}` : null,
     `Monthly equivalent: ${formatPrice(q.monthly, q.currency)}`,
-    `Term: ${q.term} months, billed yearly`,
-    `Billed yearly: ${formatPrice(q.annual, q.currency)} (VAT on invoice)`,
+    `Billing: ${termLabel(q.term)}`,
+    `${invoiceLabel(q.term)}: ${formatPrice(q.invoice, q.currency)} (VAT on invoice)`,
     `Currency: ${q.currency.toUpperCase()}. ${fxDisclaimer()}`,
   ];
   return lines.filter((l): l is string => l !== null);
@@ -396,7 +446,7 @@ export function QuoteSummary({ q, eyebrow, children }: { q: Quote; eyebrow: stri
       <dl className="co-lines mono">
         <div><dt>{q.nodes} nodes × {formatPrice(q.plan.price, q.currency)}</dt><dd>{formatPrice(q.listNodes, q.currency)} / mo</dd></div>
         {q.volumeSaving > 0 && <div className="save"><dt>Volume discount</dt><dd>−{formatPrice(q.volumeSaving, q.currency)} / mo</dd></div>}
-        {q.termSaving > 0 && <div className="save"><dt>3-year term, nodes</dt><dd>−{formatPrice(q.termSaving, q.currency)} / mo</dd></div>}
+        {q.termSaving > 0 && <div className="save"><dt>{termSavingLabel(q.term)}, nodes</dt><dd>−{formatPrice(q.termSaving, q.currency)} / mo</dd></div>}
         {q.pagerootUsers > 0 && (
           <div>
             <dt>PageRoot, {q.pagerootUsers} × {formatPrice(pagerootUnitPrice(q.planId), q.currency)}</dt>
@@ -404,7 +454,13 @@ export function QuoteSummary({ q, eyebrow, children }: { q: Quote; eyebrow: stri
           </div>
         )}
         {q.pagerootVolumeSaving > 0 && <div className="save"><dt>PageRoot volume</dt><dd>−{formatPrice(q.pagerootVolumeSaving, q.currency)} / mo</dd></div>}
-        {q.pagerootTermSaving > 0 && <div className="save"><dt>3-year term, PageRoot</dt><dd>−{formatPrice(q.pagerootTermSaving, q.currency)} / mo</dd></div>}
+        {q.pagerootTermSaving > 0 && <div className="save"><dt>{termSavingLabel(q.term)}, PageRoot</dt><dd>−{formatPrice(q.pagerootTermSaving, q.currency)} / mo</dd></div>}
+        {q.aurora && (
+          <div>
+            <dt>Aurora AI, {AURORA.model}</dt>
+            <dd>{formatPrice(q.auroraMonthly, q.currency)} / mo</dd>
+          </div>
+        )}
         {q.plan.storage !== 'none' && (
           <div>
             <dt>{q.storageGb > 0 ? `Storage, ${formatGb(q.storageGb)} × ${formatPrice(STORAGE.pricePerGb, q.currency)}` : 'Storage'}</dt>
@@ -414,14 +470,14 @@ export function QuoteSummary({ q, eyebrow, children }: { q: Quote; eyebrow: stri
         <div className="sum"><dt>Monthly equivalent</dt><dd>{formatPrice(q.monthly, q.currency)}</dd></div>
         <div><dt>Effective per node</dt><dd>{formatPrice(q.perNode, q.currency)} / mo</dd></div>
         {needsDatacenter(q) && <div><dt>Datacenter</dt><dd>{q.dc.toUpperCase()}</dd></div>}
-        <div><dt>Term</dt><dd>{q.term === 36 ? '3 years' : '12 months'}</dd></div>
+        <div><dt>Billing</dt><dd>{termLabel(q.term)}</dd></div>
         <div><dt>VAT</dt><dd>on invoice</dd></div>
       </dl>
       <div className="co-total">
-        <span>Billed yearly</span>
-        <strong>{formatPrice(q.annual, q.currency)}</strong>
+        <span>{invoiceLabel(q.term)}</span>
+        <strong>{formatPrice(q.invoice, q.currency)}</strong>
       </div>
-      <p className="small">{fxDisclaimer()}</p>
+      <p className="co-fx">{fxDisclaimer()}</p>
       <div className="co-actions">{children}</div>
     </aside>
   );

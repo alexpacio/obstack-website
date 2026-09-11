@@ -6,7 +6,7 @@ import Configurator from '../components/Configurator';
 import Arrow from '../components/Arrow.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
 import PageRootCompare from '../components/PageRootCompare.astro';
-import { PAGEROOT, STORAGE, findPlan, formatPrice } from '../data/plans';
+import { AURORA, PAGEROOT, STORAGE, TERM_DISCOUNT, findPlan, formatPrice, pct } from '../data/plans';
 import { url } from '../lib/url';
 
 const bee = findPlan('bee');
@@ -31,23 +31,24 @@ const whyStorage = [
 ];
 
 const keyTerms = [
-  ['Billing', 'Yearly in advance, in USD or EUR. USD is 25% above the euro list. VAT on invoice. Bank transfer within 30 days. Card payments are not accepted.'],
-  ['Changes', 'Add nodes, gigabytes or PageRoot seats any time, prorated to your renewal date. Reduce at renewal.'],
-  ['Renewal', 'Renews for the same term unless cancelled 30 days before. 1-year renewals rise at most 5%; 3-year terms are locked.'],
+  ['Billing', `Monthly at list, or yearly in advance at ${pct(TERM_DISCOUNT[12])} off node and PageRoot fees, in USD or EUR. A 3-year term is billed yearly at ${pct(TERM_DISCOUNT[36])} off and locks those prices. USD is 25% above the euro list. VAT on invoice. Bank transfer within 30 days. Card payments are not accepted.`],
+  ['Changes', 'Add nodes, gigabytes, PageRoot seats or Aurora any time, prorated to your renewal date. Reduce at renewal.'],
+  ['Renewal', 'Monthly renews each month unless cancelled. Yearly and 3-year renew for the same term unless cancelled 30 days before. Yearly renewals rise at most 5%; 3-year terms are locked.'],
   ['Refund', 'Full refund within 30 days of your first order. Cloud outages earn service credits.'],
 ];
 
 const faqs = [
   ['What counts as a node?', 'One Linux host, VM or Kubernetes worker node running an Obstack agent. Pods and containers are not counted, and autoscaling bursts of up to 20% for a few days a month are covered.'],
-  ['Self-hosted or Cloud?', 'Self-hosted runs on your servers. Bee is licensed under PolyForm Internal Use; source and updates come with the subscription. Obstack Cloud is the same stack operated by us: you install the agents, we run and upgrade the rest. Data exports in open formats either way.'],
+  ['Self-hosted or Cloud?', 'Self-hosted runs on your servers. The first month Bee and PageRoot ship under a license key; after you sign the PolyForm Internal Use agreement, you get git access to the source. Obstack Cloud is the same stack operated by us: you install the agents, we run and upgrade the rest. Data exports in open formats either way.'],
   ['Do list plans include air-gapped sites?', 'No. Bee, Stack, Cloud and PageRoot on the public price list assume the site can receive updates. Air-gapped delivery, offline updates and sites with no outbound connectivity are quoted as Enterprise.'],
   ['Do you set it up for us?', 'Yes. Obstack Stack on-prem and Obstack Cloud both include first setup, the release of updates, and the ongoing rollout and monitoring of the infrastructure.'],
   ['What about custom work?', 'Custom Grafana dashboards, alert setup and anything else tailored to your environment are Professional Services, quoted in advance. We send a written quote you approve before we start, then invoice the time spent.'],
-  ['Is anything metered?', 'No. Ingest, egress and queries are free. Grafana users are unlimited. Storage is a capacity you choose: when it fills, the oldest data expires first and we warn you at 80%. There is never an overage bill. PageRoot is optional and priced per on-call user.'],
+  ['Is anything metered?', 'No. Ingest, egress and queries are free. Grafana users are unlimited. Storage is a capacity you choose: when it fills, the oldest data expires first and we warn you at 80%. There is never an overage bill. PageRoot is optional and priced per on-call user. Aurora AI includes unlimited DeepSeek 4 Flash for investigations; it is not a general-purpose token meter.'],
   ['What is PageRoot?', `An optional on-call module on Stack and Cloud: schedules, escalations, ChatOps and a built-in MCP server. ${formatPrice(PAGEROOT.selfHosted, 'usd')} per user self-hosted, ${formatPrice(PAGEROOT.cloud, 'usd')} on Obstack Cloud. Alertmanager is already in the stack.`],
+  ['What is Aurora AI?', `An optional AI SRE on Stack and Cloud, bundled with unlimited ${AURORA.model} hosted by Obstack. ${formatPrice(AURORA.price, 'eur')} per month list (${formatPrice(AURORA.price, 'usd')} in USD). It reads Grafana MCP and works incidents through PageRoot MCP. Your own model, or an air-gapped one, is quoted as Enterprise.`],
   ['How much storage do I need?', 'Nodes × stored GB per node per day × retention days. The configurator does the arithmetic. Start with the retention you need today; you can add gigabytes at any time.'],
   ['Where does our data live?', `In the EU or US datacenter you pick in the configurator. Managed storage is Obstack storage at ${gb} per GB per month. Self-hosted customers can use their own S3-compatible bucket or local disk instead.`],
-  ['How is Bee licensed?', 'Under the PolyForm Internal Use License: use and modify it for your own operations; do not distribute it. Pay the subscription and you get the source and every update. Stop paying and updates stop.'],
+  ['How are Bee and PageRoot licensed?', 'The first month under a license key, as Ubuntu packages, without source. After that the PolyForm Internal Use License applies: use and modify them for your own operations; do not distribute them. We send an agreement to sign, then grant git access. Stop paying and git access stops.'],
   ['Can we try it first?', 'Yes. Ask for a 30-day evaluation license, or a 30-day Cloud trial with 1,000 GB of storage.'],
 ];
 ---
@@ -76,9 +77,9 @@ const faqs = [
       <div class="section-head">
         <div class="stack">
           <div class="eyebrow">01 / Plans</div>
-          <h2 class="h2">Three products, plus an optional on-call module.</h2>
+          <h2 class="h2">Three products, plus optional PageRoot and Aurora AI.</h2>
         </div>
-        <p class="body-2">Per node, per month. Stack on-prem and Cloud include setup, updates, rollout and monitoring. PageRoot is an optional on-call module, priced per user. Custom Grafana dashboards and alerts are Professional Services, quoted in advance.</p>
+        <p class="body-2">Per node, per month. Stack on-prem and Cloud include setup, updates, rollout and monitoring. PageRoot is optional, priced per on-call user. Aurora AI is optional, {formatPrice(AURORA.price, 'eur')} per month with unlimited {AURORA.model} hosted by Obstack. Custom Grafana dashboards and alerts are Professional Services, quoted in advance.</p>
       </div>
       <PricingTable variant="all" />
     </div>
@@ -89,7 +90,7 @@ const faqs = [
       <div class="section-head">
         <div class="stack">
           <div class="eyebrow">02 / Quote</div>
-          <h2 class="h2">Pick the deployment, the nodes, the gigabytes and PageRoot if you want it.</h2>
+          <h2 class="h2">Pick the deployment, the nodes, the gigabytes, PageRoot and Aurora if you want them.</h2>
         </div>
         <p class="body-2">Discounts apply as you go. Take the quote to checkout, or send it to sales for a purchase order.</p>
       </div>

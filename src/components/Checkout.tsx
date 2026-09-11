@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { DEFAULT_CONFIG, configFromSearch, formatPrice, quote, type Config } from '../data/plans';
+import { CURRENCY_EVENT, DEFAULT_CONFIG, configFromSearch, formatPrice, quote, type Config, type Currency } from '../data/plans';
 import { openMailto, url } from '../lib/url';
 import ConfigFields, { QuoteSummary, configSteps, quoteText } from './ConfigFields';
 import './checkout.css';
@@ -26,7 +26,9 @@ function Check() {
 }
 
 export default function Checkout() {
-  const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<Config>(() =>
+    typeof window === 'undefined' ? DEFAULT_CONFIG : configFromSearch(window.location.search),
+  );
   const [details, setDetails] = useState<Details>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Details, string>>>({});
   const [sent, setSent] = useState<null | { orderMail: string; email: string }>(null);
@@ -39,6 +41,13 @@ export default function Checkout() {
 
   useEffect(() => {
     setConfig(configFromSearch(window.location.search));
+    const onCur = (e: Event) => {
+      const c = (e as CustomEvent<Currency>).detail;
+      if (c !== 'eur' && c !== 'usd') return;
+      setConfig((prev) => (prev.currency === c ? prev : { ...prev, currency: c }));
+    };
+    window.addEventListener(CURRENCY_EVENT, onCur);
+    return () => window.removeEventListener(CURRENCY_EVENT, onCur);
   }, []);
 
   const set = (key: keyof Details) => (value: string) => {
@@ -71,7 +80,7 @@ export default function Checkout() {
     e.preventDefault();
     if (!validate()) return;
 
-    const subject = `Order: ${q.plan.name}, ${q.nodes} nodes${q.storageGb > 0 ? `, ${q.storageGb} GB` : ''}${q.pagerootUsers > 0 ? `, PageRoot ${q.pagerootUsers}` : ''}`;
+    const subject = `Order: ${q.plan.name}, ${q.nodes} nodes${q.storageGb > 0 ? `, ${q.storageGb} GB` : ''}${q.pagerootUsers > 0 ? `, PageRoot ${q.pagerootUsers}` : ''}${q.aurora ? ', Aurora AI' : ''}`;
     openMailto(subject, orderText, (orderMail, email) => {
       setSent({ orderMail, email });
     });
@@ -89,7 +98,7 @@ export default function Checkout() {
             Your email app opened with the order addressed to {sent.email || 'us'}. Send it and we reply with a pro-forma invoice with our bank details. Once the transfer arrives,{' '}
             {cloud
               ? `the OTLP endpoint and Grafana login for your tenant go to ${details.licenseEmail}.`
-              : `Bee source, updates and Ubuntu packages for ${q.nodes} nodes go to ${details.licenseEmail}.`}
+              : `a license key and Ubuntu packages for ${q.nodes} nodes go to ${details.licenseEmail}. After the first month we send the PolyForm Internal Use agreement; once it is signed, git access to the source.`}
           </p>
           <pre className="co-order mono">{orderText}</pre>
           <div className="btn-row">
@@ -98,7 +107,7 @@ export default function Checkout() {
           </div>
           {!cloud && (
             <p className="small">
-              Bee is licensed under the PolyForm Internal Use License. An active subscription is how you get the source and every update.
+              The first month Bee{q.pagerootUsers > 0 ? ' and PageRoot' : ''} run under a license key. After you sign the PolyForm Internal Use agreement, we grant git access to the source.
             </p>
           )}
         </div>
@@ -134,21 +143,23 @@ export default function Checkout() {
           <p className="small">
             {cloud
               ? 'Tenant credentials go to the technical contact. The tenant name becomes part of your endpoint address.'
-              : 'Source access and Ubuntu packages go to the license contact. The customer ID is how we label the subscription.'}
+              : 'The license key, Ubuntu packages and, after you sign, git access go to the license contact. The customer ID is how we label the subscription.'}
           </p>
         </fieldset>
 
         <fieldset className="co-block">
           <legend><span className="mono">{step + 2}</span> Payment</legend>
           <p className="co-paynote">
-            We email a pro-forma invoice with our bank details, payable within 30 days. USD prices are 25% above EUR; the invoice is issued in the currency you pick. Your order is fulfilled as soon as the transfer arrives. No card payments accepted.
+            {q.term === 1
+              ? 'We email a pro-forma invoice each month with our bank details, payable within 30 days. Invoice is issued in the currency you pick. Your order is fulfilled as soon as the first transfer arrives. No card payments accepted.'
+              : 'We email a pro-forma invoice for the year with our bank details, payable within 30 days. Invoice is issued in the currency you pick. Your order is fulfilled as soon as the transfer arrives. No card payments accepted.'}
           </p>
         </fieldset>
       </div>
 
       <QuoteSummary q={q} eyebrow="Order summary">
         <button type="submit" className="btn btn-primary co-pay">
-          Request invoice · {formatPrice(q.annual, q.currency)}
+          Request invoice · {formatPrice(q.invoice, q.currency)}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </button>
         <ul className="co-perks">
@@ -159,11 +170,12 @@ export default function Checkout() {
             </>
           ) : (
             <>
-              <li><Check /><span>Bee source and updates for the term of the subscription, under PolyForm Internal Use</span></li>
-              <li><Check /><span>.deb packages for Ubuntu 24.04 and 26.04, no license server, no phone-home</span></li>
+              <li><Check /><span>First month: license key and Ubuntu packages for 24.04 and 26.04</span></li>
+              <li><Check /><span>After you sign: PolyForm Internal Use, and git access to the source</span></li>
             </>
           )}
-          <li><Check /><span>Add nodes, gigabytes or PageRoot seats any time, prorated at your rate</span></li>
+          {q.aurora && <li><Check /><span>Unlimited DeepSeek 4 Flash for Aurora investigations, hosted by Obstack</span></li>}
+          <li><Check /><span>Add nodes, gigabytes, PageRoot seats or Aurora any time, prorated at your rate</span></li>
           <li><Check /><span>Full refund within 30 days of your first order</span></li>
         </ul>
         <p className="small">

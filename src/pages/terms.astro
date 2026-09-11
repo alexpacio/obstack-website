@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import PriceTable from '../components/PriceTable.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
-import { PAGEROOT, STORAGE, TERM_DISCOUNT, findPlan, formatPrice, pct, volumeBands } from '../data/plans';
+import { AURORA, PAGEROOT, STORAGE, TERM_DISCOUNT, findPlan, formatPrice, pct, volumeBands } from '../data/plans';
 import { url } from '../lib/url';
 
 const bee = findPlan('bee');
@@ -31,7 +31,7 @@ const sections: Section[] = [
     id: 'plans',
     title: 'Plans',
     paras: [
-      `${bee.name}, ${formatPrice(bee.price, 'usd')} per node per month: the application agent, released under the PolyForm Internal Use License. Source and updates come with the subscription. It exports to a collector you run and stores nothing itself.`,
+      `${bee.name}, ${formatPrice(bee.price, 'usd')} per node per month: the application agent. The first month ships under a license key. After that the PolyForm Internal Use License applies; once you sign the agreement, you get the source over git. It exports to a collector you run and stores nothing itself.`,
       `${stack.name}, ${formatPrice(stack.price, 'usd')} per node per month: Bee plus our support for Beyla, Vector, Kafka, GreptimeDB, Grafana and Prometheus Alertmanager, on your infrastructure. We deploy and configure the infrastructure, with reference Grafana dashboards. Storage is your own, or Obstack storage at ${gb} per GB per month.`,
       `${cloud.name}, ${formatPrice(cloud.price, 'usd')} per node per month: we deploy and operate the backend in the EU or US datacenter you choose, with the same setup, and you run the agents. Storage is bought by the gigabyte, from ${STORAGE.minGb} GB.`,
       `${stack.name} and ${cloud.name} start at ${stack.minNodes} nodes. Enterprise terms are agreed per contract.`,
@@ -44,8 +44,18 @@ const sections: Section[] = [
     paras: [
       `PageRoot is an optional on-call module on ${stack.name} and ${cloud.name}. It is not available with Bee alone.`,
       `Self-hosted PageRoot is ${formatPrice(PAGEROOT.selfHosted, 'usd')} per on-call user per month. PageRoot on Obstack Cloud is ${formatPrice(PAGEROOT.cloud, 'usd')} per on-call user per month. An on-call user is a person who can be placed on a schedule or receive a page. People who only watch ChatOps are not billed.`,
-      'Volume discounts and the 3-year term discount that apply to node fees also apply to PageRoot seats. Storage is not discounted.',
+      'Volume discounts and the yearly and 3-year billing discounts that apply to node fees also apply to PageRoot seats. Storage is not discounted.',
       'PageRoot can be added to an existing Stack or Cloud subscription at any time, prorated to the renewal date. Reduce seats at renewal.',
+    ],
+  },
+  {
+    id: 'aurora',
+    title: 'Aurora AI module',
+    paras: [
+      `Aurora AI is an optional module on ${stack.name} and ${cloud.name}. It is not available with Bee alone. The list SKU is a bundle: Aurora plus unlimited ${AURORA.model} inference hosted by Obstack, at ${formatPrice(AURORA.price, 'eur')} per month (${formatPrice(AURORA.price, 'usd')} in USD).`,
+      `Unlimited means Aurora investigations on that subscription are not token-metered. It is not a general-purpose API for other workloads. Prompts go to ${AURORA.model} in the EU or US datacenter you pick; telemetry stays in GreptimeDB.`,
+      'Volume discounts and the yearly and 3-year billing discounts do not apply to Aurora. Storage and Aurora are not discounted.',
+      'Aurora can be added to an existing Stack or Cloud subscription at any time, prorated to the renewal date. Remove it at renewal. Running Aurora against your own model, or air-gapped with a local model, is quoted as Enterprise.',
     ],
   },
   {
@@ -62,7 +72,7 @@ const sections: Section[] = [
     paras: [
       'A node is one Linux host, virtual machine or Kubernetes worker node running an Obstack agent. Pods and containers are not counted.',
       'Bursts are covered: autoscaling up to 20% above your node count, for up to 7 days in a calendar month, costs nothing extra. There are no retroactive true-ups.',
-      'Add nodes or PageRoot seats at any time; they are billed prorated to your renewal date at your current rate. Reduce nodes or seats at renewal.',
+      'Add nodes, PageRoot seats or Aurora at any time; they are billed prorated to your renewal date at your current rate. Reduce nodes or seats, or remove Aurora, at renewal.',
     ],
   },
   {
@@ -87,23 +97,23 @@ const sections: Section[] = [
     title: 'Discounts',
     paras: [
       `Volume discounts are graduated and apply to node fees and to PageRoot seats: ${volumeBands().join(', ')}. Each unit is priced by the band it falls in, so adding a node or a seat never lowers the total.`,
-      `A 3-year term takes ${pct(TERM_DISCOUNT[36])} off node fees and PageRoot fees, on top of volume discounts, and locks those unit prices for the whole term. Storage is not discounted.`,
+      `Yearly billing takes ${pct(TERM_DISCOUNT[12])} off node fees and PageRoot fees, on top of volume discounts. A 3-year term takes ${pct(TERM_DISCOUNT[36])} off those same fees, is billed yearly, and locks the unit prices for the whole term. Storage and Aurora are not discounted. Monthly billing is at list, after volume.`,
     ],
   },
   {
     id: 'billing',
     title: 'Billing and payment',
     paras: [
-      'Subscriptions are billed yearly in advance, 3-year terms included. Pay by bank transfer within 30 days of the invoice date. Card payments are not accepted.',
-      'If an invoice is more than 30 days overdue, Cloud access may be suspended after 14 days’ written notice. Self-hosted source and update access is suspended the same way; copies you already have remain usable under the PolyForm Internal Use License for internal business operations.',
+      'Subscriptions are billed monthly at list, or yearly in advance. 3-year terms are billed yearly. Pay by bank transfer within 30 days of the invoice date. Card payments are not accepted.',
+      'If an invoice is more than 30 days overdue, Cloud access may be suspended after 14 days’ written notice. Self-hosted license keys, git access and updates are suspended the same way; copies you already have remain usable under the PolyForm Internal Use License for internal business operations.',
     ],
   },
   {
     id: 'renewal',
     title: 'Term, renewal and cancellation',
     paras: [
-      'Subscriptions renew for the same length of term unless either side cancels in writing at least 30 days before the renewal date.',
-      '1-year renewals can rise by at most 5% over the previous per-node price. 3-year terms are locked for their full length.',
+      'Monthly subscriptions renew each month unless cancelled in writing before the next invoice. Yearly and 3-year subscriptions renew for the same length of term unless either side cancels in writing at least 30 days before the renewal date.',
+      'Yearly renewals can rise by at most 5% over the previous per-node price. 3-year terms are locked for their full length. Monthly list can rise on 30 days’ notice, at most 5% in a calendar year.',
       'A first order can be cancelled within 30 days for a full refund. After that, fees for the current term are not refunded, except as service credits.',
     ],
   },
@@ -142,10 +152,11 @@ const sections: Section[] = [
     id: 'licenses',
     title: 'Self-hosted licenses',
     paras: [
-      'Bee is released under the PolyForm Internal Use License 1.0.0. You may use and modify it for the internal business operations of you and your company. You may not distribute it, sublicense it or transfer the license.',
-      'An active paid subscription is how you get the Bee source and every update. When the subscription ends, we stop sending source and updates. Copies you already have remain usable under that license for internal use.',
-      'PageRoot is Obstack software. When it is on the order, it is licensed for the internal business operations of you and your company for the term of the subscription, on the deployment you bought. It is not distributed as a standalone product without Stack or Cloud.',
-      'The open-source components of the stack (Beyla, Vector, Kafka, GreptimeDB, Grafana and Prometheus Alertmanager) stay under their own licenses. The subscription pays for Bee, PageRoot when purchased, our integration work and our support.',
+      'The first month of a self-hosted subscription, Bee and PageRoot (when PageRoot is on the order) are delivered under a license key: Ubuntu packages you run, without source.',
+      'After that first month the PolyForm Internal Use License 1.0.0 applies to Bee and to PageRoot. We send an agreement to sign. Once it is signed, you are granted git access to the source. You may use and modify that software for the internal business operations of you and your company. You may not distribute it, sublicense it or transfer the license.',
+      'An active paid subscription is how you keep git access and updates. When the subscription ends, git access stops. Copies you already have remain usable under PolyForm Internal Use for internal use. PageRoot is not distributed as a standalone product without Stack or Cloud.',
+      'Aurora is Apache 2.0 software. When it is on the order, Obstack deploys it and hosts DeepSeek 4 Flash for Aurora investigations on that subscription. Aurora is not distributed as a standalone Obstack product without Stack or Cloud.',
+      'The open-source components of the stack (Beyla, Vector, Kafka, GreptimeDB, Grafana and Prometheus Alertmanager) stay under their own licenses. The subscription pays for Bee, PageRoot when purchased, Aurora when purchased, our integration work and our support.',
     ],
   },
   {
@@ -177,7 +188,7 @@ const sections: Section[] = [
       <div class="stack" style="gap: 22px; max-width: 820px">
         <div class="eyebrow rise">Commercial terms</div>
         <h1 class="display rise">Plain terms, no fine print.</h1>
-        <p class="lead rise-2">What you pay for, what is included, and what happens at renewal. Last updated 10 September 2026.</p>
+        <p class="lead rise-2">What you pay for, what is included, and what happens at renewal. Last updated 11 September 2026.</p>
       </div>
     </div>
   </section>

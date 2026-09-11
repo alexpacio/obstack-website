@@ -1,13 +1,14 @@
 export type Deployment = 'self-hosted' | 'cloud';
 export type PlanId = 'bee' | 'stack' | 'cloud';
-export type Term = 12 | 36;
+/** 1 = billed monthly at list; 12 = billed yearly, 10% off; 36 = 3-year, 20% off, billed yearly. */
+export type Term = 1 | 12 | 36;
 
 export interface Plan {
   id: PlanId;
   deployment: Deployment;
   name: string;
   short: string;
-  /** Euro list per node per month on a 12-month term, before volume and term discounts. USD is list × USD_MARKUP. */
+  /** Euro list per node per month, billed monthly, before volume and billing discounts. USD is list × USD_MARKUP. */
   price: number;
   /** Smallest node count the plan is sold for. */
   minNodes: number;
@@ -49,6 +50,7 @@ export const PLANS: Plan[] = [
     features: [
       'Bee plus Beyla, Vector, Kafka, GreptimeDB, Grafana and Alertmanager',
       'PageRoot on-call module optional, priced per user',
+      'Aurora AI optional: unlimited DeepSeek 4 Flash, hosted by Obstack',
       'Setup, updates, ongoing rollout and monitoring of the infrastructure included',
       'Unlimited Grafana users, dashboards and alert rules',
       'P1 answered in 4 business hours',
@@ -67,6 +69,7 @@ export const PLANS: Plan[] = [
     features: [
       'Same stack, operated by us; you install the agents',
       'PageRoot on-call module optional, priced per user',
+      'Aurora AI optional: unlimited DeepSeek 4 Flash, hosted by Obstack',
       'Setup, updates, ongoing rollout and monitoring of the infrastructure included',
       'Datacenter in the EU or the US, you choose',
       '99.9% SLA, P1 answered in 1 hour, 24/7',
@@ -84,7 +87,7 @@ export const PLANS: Plan[] = [
  */
 /**
  * Optional on-call module on Stack and Cloud. Priced per on-call user, not
- * per node. Euro list on a 12-month term; USD is list × USD_MARKUP.
+ * per node. Euro list billed monthly; USD is list × USD_MARKUP.
  */
 export const PAGEROOT = {
   selfHosted: 4,
@@ -103,6 +106,20 @@ export function pagerootUnitPrice(planId: PlanId): number {
   if (planId === 'cloud') return PAGEROOT.cloud;
   if (planId === 'stack') return PAGEROOT.selfHosted;
   return 0;
+}
+
+/**
+ * Optional Aurora AI bundle on Stack and Cloud: the AI SRE plus unlimited
+ * DeepSeek 4 Flash inference hosted by Obstack. Flat euro list per month;
+ * USD is list × USD_MARKUP. Not volume- or billing-discounted.
+ */
+export const AURORA = {
+  price: 199,
+  model: 'DeepSeek 4 Flash',
+} as const;
+
+export function allowsAurora(planId: PlanId): boolean {
+  return planId === 'stack' || planId === 'cloud';
 }
 
 export const STORAGE = {
@@ -130,8 +147,27 @@ export const VOLUME_TIERS = [
   { from: 100, to: Infinity, off: 0.2 },
 ];
 
-/** Applies to node fees only, on top of volume discounts. */
-export const TERM_DISCOUNT: Record<Term, number> = { 12: 0, 36: 0.15 };
+/** Billing discount on node and PageRoot fees, on top of volume. Storage and Aurora are not discounted. */
+export const TERM_DISCOUNT: Record<Term, number> = { 1: 0, 12: 0.1, 36: 0.2 };
+
+export function parseTerm(n: number): Term {
+  if (n === 1 || n === 12 || n === 36) return n;
+  return 12;
+}
+
+export function termLabel(term: Term): string {
+  if (term === 1) return 'Monthly';
+  if (term === 36) return '3 years';
+  return 'Yearly';
+}
+
+export function invoiceLabel(term: Term): string {
+  return term === 1 ? 'Billed monthly' : 'Billed yearly';
+}
+
+export function termSavingLabel(term: Term): string {
+  return term === 36 ? '3-year term' : 'Yearly billing';
+}
 
 export const MAX_NODES = 9999;
 
@@ -216,6 +252,37 @@ export function currencyFromBrowser(): Currency {
   return currencyFromTimezone() ?? 'usd';
 }
 
+export const CURRENCY_STORAGE_KEY = 'obstack-currency';
+export const CURRENCY_EVENT = 'obstack:currency';
+
+export function readStoredCurrency(): Currency | null {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    const c = localStorage.getItem(CURRENCY_STORAGE_KEY);
+    if (c === 'eur' || c === 'usd') return c;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+/** Stored choice, else browser language and timezone. */
+export function preferredCurrency(): Currency {
+  return readStoredCurrency() ?? currencyFromBrowser();
+}
+
+/** Writes the site-wide currency and notifies the configurator. */
+export function persistCurrency(c: Currency): void {
+  if (typeof document === 'undefined') return;
+  try {
+    localStorage.setItem(CURRENCY_STORAGE_KEY, c);
+  } catch {
+    /* ignore */
+  }
+  document.documentElement.setAttribute('data-currency', c);
+  window.dispatchEvent(new CustomEvent(CURRENCY_EVENT, { detail: c }));
+}
+
 export interface Config {
   planId: PlanId;
   nodes: number;
@@ -226,9 +293,11 @@ export interface Config {
   currency: Currency;
   /** 0 means PageRoot is not on the order. Stack and Cloud only. */
   pagerootUsers: number;
+  /** Aurora AI plus Obstack-hosted DeepSeek 4 Flash. Stack and Cloud only. */
+  aurora: boolean;
 }
 
-export const DEFAULT_CONFIG: Config = { planId: 'cloud', nodes: 10, storageGb: 2000, dc: 'eu', term: 12, currency: 'usd', pagerootUsers: 0 };
+export const DEFAULT_CONFIG: Config = { planId: 'cloud', nodes: 10, storageGb: 2000, dc: 'eu', term: 12, currency: 'usd', pagerootUsers: 0, aurora: false };
 
 export interface Quote extends Config {
   plan: Plan;
@@ -245,8 +314,12 @@ export interface Quote extends Config {
   pagerootTermSaving: number;
   /** PageRoot fees per month after discounts. */
   pagerootMonthly: number;
+  /** Aurora bundle per month at list. Zero when not on the order. */
+  auroraMonthly: number;
   monthly: number;
   annual: number;
+  /** Amount due on this invoice: one month, or twelve months in advance. */
+  invoice: number;
   /** Node fee per node after discounts. */
   perNode: number;
 }
@@ -272,20 +345,22 @@ export function normalize(config: Config): Config {
       ? clampInt(config.pagerootUsers, PAGEROOT.minUsers, PAGEROOT.maxUsers)
       : 0
     : 0;
+  const aurora = allowsAurora(plan.id) && Boolean(config.aurora);
   return {
     planId: plan.id,
     nodes: clampInt(config.nodes, plan.minNodes, MAX_NODES),
     storageGb,
     dc: config.dc === 'us' ? 'us' : 'eu',
-    term: config.term === 36 ? 36 : 12,
+    term: parseTerm(config.term),
     currency: config.currency || 'usd',
     pagerootUsers,
+    aurora,
   };
 }
 
 export function needsDatacenter(config: Config): boolean {
   const plan = findPlan(config.planId);
-  return plan.storage === 'required' || config.storageGb > 0;
+  return plan.storage === 'required' || config.storageGb > 0 || config.aurora;
 }
 
 /** Node fees per month, before the term discount. */
@@ -304,7 +379,8 @@ export function quote(config: Config): Quote {
   const listPageroot = prPrice * c.pagerootUsers;
   const pagerootAfterVolume = c.pagerootUsers > 0 ? nodeFees(prPrice, c.pagerootUsers) : 0;
   const pagerootMonthly = round2(pagerootAfterVolume * (1 - TERM_DISCOUNT[c.term]));
-  const monthly = round2(nodesMonthly + storageMonthly + pagerootMonthly);
+  const auroraMonthly = c.aurora ? AURORA.price : 0;
+  const monthly = round2(nodesMonthly + storageMonthly + pagerootMonthly + auroraMonthly);
   return {
     ...c,
     plan,
@@ -317,13 +393,15 @@ export function quote(config: Config): Quote {
     pagerootVolumeSaving: round2(listPageroot - pagerootAfterVolume),
     pagerootTermSaving: round2(pagerootAfterVolume - pagerootMonthly),
     pagerootMonthly,
+    auroraMonthly,
     monthly,
     annual: round2(monthly * 12),
+    invoice: round2(c.term === 1 ? monthly : monthly * 12),
     perNode: round2(nodesMonthly / c.nodes),
   };
 }
 
-/** Reads `?plan=&nodes=&gb=&term=`, as written by `configQuery`. `tb=` is treated as thousands of GB. */
+/** Reads `?plan=&nodes=&gb=&term=&seats=&aurora=`, as written by `configQuery`. `tb=` is treated as thousands of GB. */
 export function configFromSearch(search: string): Config {
   const params = new URLSearchParams(search);
   const num = (key: string, fallback: number) => {
@@ -331,7 +409,8 @@ export function configFromSearch(search: string): Config {
     return Number.isFinite(n) ? n : fallback;
   };
   const currencyParam = params.get('currency');
-  const currency = currencyParam === 'eur' || currencyParam === 'usd' ? currencyParam : currencyFromBrowser();
+  const currency = currencyParam === 'eur' || currencyParam === 'usd' ? currencyParam : preferredCurrency();
+  if (currencyParam === 'eur' || currencyParam === 'usd') persistCurrency(currencyParam);
   const dc = params.get('dc') === 'us' ? 'us' : 'eu';
   const gb = params.has('gb')
     ? num('gb', DEFAULT_CONFIG.storageGb)
@@ -343,9 +422,10 @@ export function configFromSearch(search: string): Config {
     nodes: num('nodes', DEFAULT_CONFIG.nodes),
     storageGb: gb,
     dc,
-    term: num('term', DEFAULT_CONFIG.term) === 36 ? 36 : 12,
+    term: parseTerm(num('term', DEFAULT_CONFIG.term)),
     currency,
     pagerootUsers: num('seats', 0),
+    aurora: params.get('aurora') === '1' || params.get('aurora') === 'on',
   });
 }
 
@@ -359,6 +439,7 @@ export function configQuery(config: Config): string {
     term: String(c.term),
     currency: c.currency,
     seats: String(c.pagerootUsers),
+    aurora: c.aurora ? '1' : '0',
   }).toString();
 }
 
@@ -379,7 +460,7 @@ export function toDisplayAmount(amountEur: number, currency: Currency): number {
 }
 
 export function fxDisclaimer(): string {
-  return `USD prices are ${Math.round((USD_MARKUP - 1) * 100)}% above EUR. The invoice is issued in the currency you pick.`;
+  return `The invoice is issued in the currency you pick.`;
 }
 
 /** Whole dollars (or euros) when the amount is whole, cents otherwise. */
@@ -398,4 +479,9 @@ export function formatPrice(amountEur: number, currency: Currency = 'usd'): stri
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }).format(value);
+}
+
+/** Both currencies, so the page can switch from `data-currency` without a reload. */
+export function dualPrice(amountEur: number): string {
+  return `<span class="ob-price"><span class="ob-usd">${formatPrice(amountEur, 'usd')}</span><span class="ob-eur">${formatPrice(amountEur, 'eur')}</span></span>`;
 }

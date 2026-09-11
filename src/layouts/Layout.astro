@@ -8,7 +8,7 @@ import { url } from '../lib/url';
 interface Props {
   title?: string;
   description?: string;
-  active?: 'bee' | 'pageroot' | 'grafana' | 'stack' | 'pricing' | 'buy';
+  active?: 'bee' | 'pageroot' | 'grafana' | 'aurora' | 'stack' | 'pricing' | 'buy';
   checkout?: boolean;
 }
 
@@ -37,6 +37,38 @@ const turnstileSitekey = (import.meta.env.PUBLIC_TURNSTILE_SITEKEY as string | u
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=M+PLUS+1+Code:wght@400;500;700&display=swap"
     />
     <title>{title}</title>
+    <script is:inline>
+      (function () {
+        var KEY = 'obstack-currency';
+        var c = null;
+        try { c = localStorage.getItem(KEY); } catch (e) {}
+        if (c !== 'eur' && c !== 'usd') {
+          c = null;
+          var langs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language]) || [];
+          var euroLang = /^(it|de|fr|es|nl|pt|fi|el|sk|sl|et|lv|lt|ga|mt|lb|ca|eu|gl|hr|sv|da|nb|nn|no|pl|cs|hu|ro|bg|is)(-|$)/i;
+          var euroRegion = /(AT|BE|BG|HR|CY|CZ|DK|EE|FI|FR|DE|GR|HU|IE|IT|LV|LT|LU|MT|NL|PL|PT|RO|SK|SI|ES|SE|IS|LI|NO|CH|AD|MC|SM|VA|GB|150)$/;
+          for (var i = 0; i < langs.length; i++) {
+            var tag = String(langs[i] || '').replace(/_/g, '-');
+            var parts = tag.split('-');
+            var lang = (parts[0] || '').toLowerCase();
+            var region = (parts[1] || '').toUpperCase();
+            if (region && euroRegion.test(region)) { c = 'eur'; break; }
+            if (euroLang.test(lang) && !region) { c = 'eur'; break; }
+            if (euroLang.test(lang) && region && euroRegion.test(region)) { c = 'eur'; break; }
+            if (!region && euroLang.test(lang)) { c = 'eur'; break; }
+          }
+          if (!c) {
+            try {
+              var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+              if (/^Europe\//.test(tz) && !/Istanbul|Moscow|Minsk|Kaliningrad|Simferopol|Kirov|Volgograd|Samara|Astrakhan|Saratov|Ulyanovsk|Kyiv|Kiev|Zaporozhye|Uzhgorod/.test(tz)) c = 'eur';
+              if (tz === 'Atlantic/Canary' || tz === 'Atlantic/Reykjavik' || tz === 'Atlantic/Azores' || tz === 'Atlantic/Madeira' || tz === 'Arctic/Longyearbyen') c = 'eur';
+            } catch (e) {}
+          }
+          if (!c) c = 'usd';
+        }
+        document.documentElement.setAttribute('data-currency', c);
+      })();
+    </script>
   </head>
   <body>
     <Header active={active} checkout={checkout} />

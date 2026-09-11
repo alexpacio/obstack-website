@@ -4,7 +4,8 @@ import IsoDiagram from '../components/IsoDiagram.astro';
 import Arrow from '../components/Arrow.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
 import { url } from '../lib/url';
-import { PAGEROOT, findPlan, formatPrice } from '../data/plans';
+import { AURORA, PAGEROOT, findPlan } from '../data/plans';
+import Price from '../components/Price.astro';
 
 const bee = findPlan('bee');
 const stackPlan = findPlan('stack');
@@ -52,7 +53,7 @@ const pipeline = [
           <p class="p-line">Distributed tracing and profiling, on its own.</p>
           <p class="body-2">Bee traces and profiles inside a microservice and between processes on the same host, then continues the same trace across hosts. HTTP, gRPC, TLS, MySQL, Redis and named Node.js awaits, no SDK. Exports OTLP to any OpenTelemetry collector.</p>
           <div class="p-foot">
-            <span class="mono p-price">{formatPrice(bee.price, 'usd')} / node / month</span>
+            <span class="mono p-price"><Price eur={bee.price} /> / node / month</span>
             <div class="btn-row">
               <a class="btn btn-dark" href={url('/buy?plan=bee')}>Buy Bee</a>
               <a class="text-link" href={url('/bee')}>How Bee works <Arrow size={16} /></a>
@@ -65,7 +66,7 @@ const pipeline = [
           <p class="p-line">The complete stack, built around Bee.</p>
           <p class="body-2">Bee and Beyla for collection, Vector and Kafka for transport, GreptimeDB for storage, Grafana for dashboards, Prometheus Alertmanager for alert routing, and the Grafana MCP server for agents. PageRoot, the on-call module, is optional. Self-hosted, or run by us in the region you choose. We configure it end to end; custom dashboards, alerts and migration are quoted and billed on time and materials. One support contract.</p>
           <div class="p-foot">
-            <span class="mono p-price">{formatPrice(stackPlan.price, 'usd')} self-hosted · {formatPrice(cloud.price, 'usd')} cloud, / node / month</span>
+            <span class="mono p-price"><Price eur={stackPlan.price} /> self-hosted · <Price eur={cloud.price} /> cloud, / node / month</span>
             <div class="btn-row">
               <a class="btn btn-dark" href={url('/buy?plan=stack')}>Buy the stack</a>
               <a class="text-link" href={url('/stack')}>What's inside <Arrow size={16} /></a>
@@ -78,9 +79,9 @@ const pipeline = [
       <div class="products products-rest">
         <article class="product" id="pageroot">
           <div class="p-head"><span class="p-name">PageRoot</span><span class="badge badge-mint">Optional module</span></div>
-          <p class="body-2">On-call, escalations, ChatOps and a built-in MCP server. Optional on Stack and Cloud, {formatPrice(PAGEROOT.selfHosted, 'usd')} per user self-hosted, {formatPrice(PAGEROOT.cloud, 'usd')} on Obstack Cloud. A fraction of PagerDuty or Rootly.</p>
+          <p class="body-2">On-call, escalations, ChatOps and a built-in MCP server. Optional on Stack and Cloud, <Price eur={PAGEROOT.selfHosted} /> per user self-hosted, <Price eur={PAGEROOT.cloud} /> on Obstack Cloud. A fraction of PagerDuty or Rootly.</p>
           <div class="p-foot">
-            <span class="mono p-price">{formatPrice(PAGEROOT.selfHosted, 'usd')} / {formatPrice(PAGEROOT.cloud, 'usd')} / user / month</span>
+            <span class="mono p-price"><Price eur={PAGEROOT.selfHosted} /> / <Price eur={PAGEROOT.cloud} /> / user / month</span>
             <div class="btn-row">
               <a class="btn btn-dark" href={url(`/buy?plan=stack&seats=${PAGEROOT.defaultUsers}`)}>Buy PageRoot</a>
               <a class="text-link" href={url('/pageroot')}>How it compares <Arrow size={16} /></a>
@@ -95,11 +96,15 @@ const pipeline = [
         </article>
 
         <article class="product" id="ai-sre">
-          <div class="p-head"><span class="p-name">AI SRE agent</span><span class="badge badge-dashed">Early access</span></div>
-          <p class="body-2">An agent that works incidents alongside your on-call. It reads the same traces, metrics, logs and alerts your team does, through the Grafana MCP server and PageRoot's MCP, on your infrastructure.</p>
-          <ObfuscatedEmail class="text-link" subject="AI SRE agent early access" label="Request early access">
-            Request early access <Arrow size={16} />
-          </ObfuscatedEmail>
+          <div class="p-head"><span class="p-name">Aurora AI</span><span class="badge badge-mint">Optional module</span></div>
+          <p class="body-2">An AI SRE that works incidents alongside your on-call through Grafana MCP and PageRoot MCP, bundled with unlimited {AURORA.model} hosted by Obstack.</p>
+          <div class="p-foot">
+            <span class="mono p-price"><Price eur={AURORA.price} /> / month</span>
+            <div class="btn-row">
+              <a class="btn btn-dark" href={url('/buy?plan=stack&aurora=1')}>Buy Aurora</a>
+              <a class="text-link" href={url('/aurora')}>How it works <Arrow size={16} /></a>
+            </div>
+          </div>
         </article>
 
         <article class="product" id="eagle">
@@ -171,7 +176,7 @@ const pipeline = [
       <div class="grid-3 principles">
         <div class="stack">
           <h3 class="h3">Your data stays on your servers</h3>
-          <p class="body-2">Telemetry goes to collectors and databases you run. Bee is licensed under PolyForm Internal Use: you get the source and every update for as long as you subscribe. Air-gapped delivery is quoted as Enterprise, not on the list plans.</p>
+          <p class="body-2">Telemetry goes to collectors and databases you run. Bee ships under a license key for the first month; after you sign the PolyForm Internal Use agreement, you get the source over git for as long as you subscribe. Air-gapped delivery is quoted as Enterprise, not on the list plans.</p>
         </div>
         <div class="stack">
           <h3 class="h3">Open formats in and out</h3>

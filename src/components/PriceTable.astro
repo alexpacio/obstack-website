@@ -32,7 +32,7 @@ const { head, rows, highlight = -1, wins, minWidth = 900 } = Astro.props;
             {cells.map((c, j) => (
               <td class:list={{ win: rowWins.includes(j) }}>
                 {rowWins.includes(j) && <span class="win-tag">{tag}</span>}
-                {c}
+                <Fragment set:html={c} />
               </td>
             ))}
           </tr>

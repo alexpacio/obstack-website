@@ -1,0 +1,268 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Arrow from '../components/Arrow.astro';
+import { url } from '../lib/url';
+import { AURORA, findPlan, formatPrice } from '../data/plans';
+
+const stackPlan = findPlan('stack');
+const cloud = findPlan('cloud');
+
+const jobs = [
+  ['Receive the alert', 'PageRoot, Grafana, Alertmanager or another source hands Aurora an alert group. It starts investigating in the background, so the person on call is not the first to look.'],
+  ['Investigate', 'Agents pick from thirty-plus tools. In Obstack that means Grafana MCP for graphs, logs and traces, PageRoot MCP for the incident, and sandboxed commands when the cluster is in reach.'],
+  ['Write the RCA', 'A structured report: timeline, root cause, blast radius, what to do next. Postmortems can be generated from the same investigation, not written days later from memory.'],
+  ['Hand it back', 'The on-call still owns acknowledge, silence and resolve. Aurora works through PageRoot MCP with the same actions a human uses in the UI.'],
+];
+
+const notJobs = [
+  ['Not the pager', 'It does not know the rota or place the phone call. That is PageRoot, optional, and Alertmanager for routing.'],
+  ['Not the screen', 'It is not a replacement for Grafana. It reads the same dashboards and datasources your team does, through the Grafana MCP server.'],
+  ['Not the database', 'Telemetry stays in GreptimeDB, on S3. Aurora queries it; it does not become a second store.'],
+  ['Not a SaaS that phones home', 'Aurora is Apache 2.0 software we deploy on your infrastructure, or next to the rest of Obstack Cloud. Incident data does not leave for Arvo AI.'],
+];
+
+const inStack = [
+  ['Grafana MCP', 'Search dashboards, run a panel, query GreptimeDB in PromQL, hand you the same link the agent just read. Ships with Grafana in the stack.'],
+  ['PageRoot MCP', 'Who is on call, the firing alert group, acknowledge, silence or resolve. Only if you add PageRoot.'],
+  ['Obstack-hosted model', `${AURORA.model}, unlimited, for Aurora investigations. Prompts go to Obstack in the EU or US datacenter you pick. Your own model, or an air-gapped one, is quoted as Enterprise.`],
+  ['Sandboxed commands', 'When Aurora needs kubectl or a cloud CLI, those run in isolated pods with network policy, not on the Grafana host or the control plane.'],
+];
+
+const qualities = [
+  ['Agentic investigation', 'LangGraph agents choose tools as they go: dashboards, logs, deployments, kubectl, runbooks. Parallel work, one incident thread you can read afterwards.', '30+ tools · sandboxed execution'],
+  ['Infrastructure graph', 'Services and dependencies as a graph. When something fires, Aurora traces blast radius instead of staring at one dashboard.', 'Memgraph · Terraform / IaC'],
+  ['Postmortems from the investigation', 'Timeline, root cause, impact, remediation. Export if you want it in Confluence, Notion or SharePoint. The report is a by-product of the work, not a separate project.', 'auto-generated · exportable'],
+  ['Knowledge that stays', 'Runbooks, previous RCAs and the reasoning from this incident go into a knowledge base, so the next engineer is not starting from Slack history.', 'RAG · artifacts'],
+];
+
+const privacy = [
+  ['On your infrastructure', 'Docker or Kubernetes, self-hosted with the stack or on Obstack Cloud in the region you pick. Nothing is sent to Arvo AI for telemetry or training.'],
+  ['Secrets stay put', `Vault or AWS Secrets Manager. On the list SKU, prompts go to ${AURORA.model} hosted by Obstack in the datacenter you pick, not to Arvo AI.`],
+  ['Guardrails on the agent', 'RBAC (admin, editor, viewer), SigmaHQ signatures on commands, prompt-injection detection on each turn. Closed registration: the first user is admin, everyone else is invited.'],
+  ['Air-gapped is possible', 'Aurora has an air-tight bundle and can talk to a local model. Air-gapped Obstack delivery is quoted as Enterprise, the same as the rest of the stack.'],
+];
+---
+
+<Layout
+  title="Aurora AI in Obstack · the AI SRE"
+  description={`Aurora AI is the AI SRE in the Obstack Stack: Grafana MCP, PageRoot MCP, and unlimited ${AURORA.model} hosted by Obstack at ${formatPrice(AURORA.price, 'eur')} per month.`}
+  active="aurora"
+>
+  <section class="hero">
+    <div class="wrap hero-grid aurora-hero">
+      <div class="stack" style="gap: 26px">
+        <div class="eyebrow rise">Aurora AI in the stack</div>
+        <h1 class="display rise">The AI SRE. It investigates while you get to the laptop.</h1>
+        <p class="lead rise-2">When an alert fires, Aurora starts the investigation: Grafana MCP for what the graphs say, PageRoot MCP for the incident, unlimited {AURORA.model} hosted by Obstack. {formatPrice(AURORA.price, 'eur')} per month on Stack and Cloud.</p>
+        <div class="btn-row rise-2" style="padding-top: 8px">
+          <a class="btn btn-primary" href={url('/pricing?plan=stack&aurora=1#configure')}>Configure Aurora · {formatPrice(AURORA.price, 'eur')} / month <Arrow /></a>
+          <a class="btn btn-ghost" href={url('/stack')}>See the stack</a>
+        </div>
+      </div>
+
+      <figure class="shot rise-3">
+        <img src={url('/images/aurora_incidents.png')} alt="Aurora incidents: analyzed alerts with severity, related groups and RCA history" width="1587" height="871" />
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" id="meant-for">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">01 / What Aurora does</div>
+          <h2 class="h2">Four jobs. The on-call still owns the page.</h2>
+        </div>
+        <p class="body-2">Without it, the first half hour of an incident is always the same: open dashboards, grep logs, check deploys, ask Slack. Aurora does that pass autonomously and leaves a trail you can audit.</p>
+      </div>
+      <div class="grid-4 rule-top four">
+        {jobs.map(([t, d]) => (
+          <div class="stack">
+            <span class="mono">→ {t}</span>
+            <p class="body-2">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">02 / What it is not</div>
+          <h2 class="h2">The rest of the stack keeps its job.</h2>
+        </div>
+        <p class="body-2">Aurora is the investigator. It is not a new place to store telemetry, and it is not a replacement for the person on call.</p>
+      </div>
+      <div class="tile-grid grid-2">
+        {notJobs.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight" id="screenshots">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">03 / What it looks like</div>
+          <h2 class="h2">An investigation you can read. A postmortem that fell out of it.</h2>
+        </div>
+        <p class="body-2">The shots below are Aurora itself: an agent working a payment-gateway incident with kubectl in a sandbox, and the postmortem that investigation produced.</p>
+      </div>
+      <div class="aurora-shots">
+        <figure>
+          <img src={url('/images/aurora_investigation.png')} alt="Aurora investigating a payment-gateway incident with knowledge-base search and kubectl" width="919" height="751" loading="lazy" />
+          <figcaption>Investigation: runbooks, then kubectl in a sandbox, then a working theory you can follow.</figcaption>
+        </figure>
+        <figure>
+          <img src={url('/images/aurora_postmortem.png')} alt="Aurora postmortem with timeline, root cause and impact for an API gateway incident" width="1009" height="932" loading="lazy" />
+          <figcaption>Postmortem: timeline, root cause, impact — generated from the investigation, not from memory.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="dark" id="in-stack">
+    <div class="wrap section bounded">
+      <div class="stack" style="gap: 20px">
+        <div class="eyebrow">04 / In this stack</div>
+        <h2 class="h2">Grafana MCP to look. PageRoot MCP to act. {AURORA.model} to think.</h2>
+        <p class="body-2" style="font-size: 17px">That is the point of the two MCP servers. Aurora does not scrape the UI and it does not take a copy of GreptimeDB off-box. It calls the same tools your team already trusts. The list SKU includes unlimited {AURORA.model}, hosted by Obstack in the datacenter you pick.</p>
+      </div>
+      <div class="gossip">
+        {inStack.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 18px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">05 / Under the hood</div>
+          <h2 class="h2">Open-source agentic incident management, deployed with the stack.</h2>
+        </div>
+        <p class="body-2">Aurora is Apache 2.0 software from Arvo AI. Obstack deploys it next to Grafana and PageRoot. It is not an Obstack-owned product the way Bee and PageRoot are; it is the AI SRE we run for you.</p>
+      </div>
+      <div class="tile-grid grid-2">
+        {qualities.map(([t, d, m]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+            <div class="tile-meta">{m}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">06 / On your infrastructure</div>
+          <h2 class="h2">Telemetry stays put. The model runs in our cloud.</h2>
+        </div>
+        <p class="body-2">Same rule as the rest of Obstack for your traces, metrics and logs. On the list SKU, investigation prompts go to {AURORA.model} hosted by Obstack in the EU or US datacenter you pick. Nothing is sent to Arvo AI.</p>
+      </div>
+      <div class="tile-grid grid-2">
+        {privacy.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+      <p class="mono reviewed">Capabilities from the <a class="text-link" href="https://github.com/Arvo-AI/aurora">Arvo-AI/aurora</a> public repository, reviewed September 2026. Aurora is Apache 2.0 software. Aurora and Arvo AI are names of their respective owners. Obstack deploys it as the AI SRE in the stack; we do not claim the trademark.</p>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="panel grid-2 runs">
+        <div class="stack">
+          <div class="eyebrow">07 / The bundle</div>
+          <h2 class="h2" style="font-size: 32px">Not sold on its own. {formatPrice(AURORA.price, 'eur')} / month on the stack.</h2>
+          <p class="body-2" style="font-size: 15px">Aurora AI plus unlimited {AURORA.model}, hosted by Obstack. Grafana MCP is already in the deployment. PageRoot MCP comes with the optional on-call module. No per-token meter on investigations.</p>
+          <div class="matrix mono">
+            <div><span>Available on</span><span>Obstack Stack and Obstack Cloud</span></div>
+            <div><span>Sold separately</span><span>No</span></div>
+            <div><span>List</span><span>{formatPrice(AURORA.price, 'eur')} / month · {formatPrice(AURORA.price, 'usd')} in USD</span></div>
+            <div><span>Model</span><span>{AURORA.model}, unlimited, hosted by Obstack</span></div>
+            <div><span>Reads telemetry via</span><span>Grafana MCP</span></div>
+            <div><span>Works the incident via</span><span>PageRoot MCP, optional</span></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="eyebrow">{formatPrice(AURORA.price, 'eur')} / month</div>
+          <h2 class="h2" style="font-size: 32px">Add Aurora when you configure the stack.</h2>
+          <p class="body-2" style="font-size: 15px">Self-hosted from {formatPrice(stackPlan.price, 'usd')} per node, or Obstack Cloud from {formatPrice(cloud.price, 'usd')} per node, plus {formatPrice(AURORA.price, 'eur')} for Aurora. Custom runbooks and connector work are Professional Services, quoted in advance.</p>
+          <div class="btn-row" style="padding-top: 8px">
+            <a class="btn btn-dark" href={url('/buy?plan=stack&aurora=1')}>Buy on Stack <Arrow /></a>
+            <a class="text-link" href={url('/pricing?plan=stack&aurora=1#configure')}>Configure a quote <Arrow size={16} /></a>
+          </div>
+          <a class="text-link" href="https://github.com/Arvo-AI/aurora">Aurora on GitHub <Arrow size={16} /></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .aurora-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  #meant-for, #in-stack, #screenshots { scroll-margin-top: 64px; }
+
+  .shot { margin: 0; min-width: 0; border-radius: 14px; overflow: hidden; border: 1px solid rgba(232, 241, 242, 0.14); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); background: #080D10; }
+  .shot img { width: 100%; height: auto; display: block; }
+
+  .four > .stack { gap: 12px; padding: 28px 28px 0; border-left: 1px solid var(--line); }
+  .four > .stack:first-child { padding-left: 0; border-left: none; }
+  .four .mono { font-size: 13px; color: var(--link); font-weight: 700; text-transform: uppercase; }
+
+  .bounded { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 72px; align-items: start; }
+  .gossip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--on-dark-line); align-self: stretch; }
+  .gossip > div { background: var(--night); padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 10px; }
+  .gossip .h3 { color: var(--on-dark-strong); }
+  .gossip .body-2 { color: var(--on-dark-2); }
+
+  .reviewed { font-size: 12px; color: var(--muted); margin-top: 40px; }
+
+  .aurora-shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start; }
+  .aurora-shots figure { margin: 0; }
+  .aurora-shots img { width: 100%; height: 420px; object-fit: cover; object-position: top left; border-radius: 12px; border: 1px solid var(--line); display: block; background: #111; }
+  .aurora-shots figcaption { font-size: 13px; color: var(--text-2); margin-top: 8px; line-height: 1.5; }
+
+  .runs > .stack { padding: 48px; gap: 24px; }
+  .runs > .stack + .stack { border-left: 1px solid var(--line); }
+  .matrix { display: flex; flex-direction: column; font-size: 13px; }
+  .matrix div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+  .matrix div:last-child { border-bottom: none; }
+  .matrix span + span { color: var(--text-2); text-align: right; }
+
+  @media (max-width: 1100px) {
+    .aurora-hero { grid-template-columns: minmax(0, 1fr); }
+    .bounded { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+    .four > .stack:nth-child(3) { padding-left: 0; border-left: none; }
+    .aurora-shots { grid-template-columns: minmax(0, 1fr); }
+    .aurora-shots img { height: 220px; }
+  }
+  @media (max-width: 800px) {
+    .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
+    .gossip { grid-template-columns: minmax(0, 1fr); }
+    .gossip > div { padding: 20px 0; background: transparent; }
+    .runs > .stack { padding: 24px; }
+    .runs > .stack + .stack { border-left: none; border-top: 1px solid var(--line); }
+    .matrix { font-size: 12px; }
+  }
+</style>
