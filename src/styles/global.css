@@ -166,6 +166,8 @@ main {
 
 .section { padding-top: 112px; padding-bottom: 112px; }
 .section-tight { padding-top: 0; padding-bottom: 112px; }
+/* a tight section right after a dark band has no preceding padding to borrow */
+.dark + .section-tight { padding-top: 112px; }
 
 .stack { display: flex; flex-direction: column; }
 
@@ -380,6 +382,7 @@ main {
   .hero-grid { grid-template-columns: minmax(0, 1fr); padding-top: 64px; padding-bottom: 72px; }
   .section { padding-top: 88px; padding-bottom: 88px; }
   .section-tight { padding-bottom: 88px; }
+  .dark + .section-tight { padding-top: 88px; }
 }
 
 @media (max-width: 800px) {
@@ -388,6 +391,7 @@ main {
   .tile-grid { row-gap: 1px; }
   .section { padding-top: 56px; padding-bottom: 56px; }
   .section-tight { padding-bottom: 56px; }
+  .dark + .section-tight { padding-top: 56px; }
   .section-head { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 32px; }
   .cta-band { grid-template-columns: minmax(0, 1fr); padding-top: 56px; padding-bottom: 56px; }
   .cta-band .btn-row { justify-content: flex-start; }

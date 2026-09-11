@@ -1,5 +1,5 @@
 ---
-import { AURORA, PAGEROOT, PLANS, STORAGE, TERM_DISCOUNT, dualPrice, pct, volumeBands, type Deployment } from '../data/plans';
+import { AURORA, PAGEROOT, PLANS, STORAGE, TERM_DISCOUNT, VOLUME_TIERS, dualPrice, pct, type Deployment } from '../data/plans';
 import { url } from '../lib/url';
 import ObfuscatedEmail from './ObfuscatedEmail.astro';
 import Price from './Price.astro';
@@ -17,11 +17,14 @@ const storageLine = {
   optional: `Storage: your own, or ${dualPrice(STORAGE.pricePerGb)} / GB / month`,
   required: `+ storage at ${dualPrice(STORAGE.pricePerGb)} / GB / month`,
 };
-const perks = [
-  ...volumeBands().map((b) => `Nodes ${b}`),
-  `Yearly billing: ${pct(TERM_DISCOUNT[12])} off`,
-  `3-year term: ${pct(TERM_DISCOUNT[36])} off, price locked`,
-  'No meters on ingest, egress or queries',
+/** The strip reads as a discount board: the figure first, what earns it underneath. */
+const discounts = [
+  ...VOLUME_TIERS.filter((t) => t.off > 0).map((t) => ({
+    value: `${pct(t.off)} off`,
+    label: Number.isFinite(t.to) ? `${t.from}–${t.to} nodes` : `${t.from} nodes and up`,
+  })),
+  { value: `${pct(TERM_DISCOUNT[12])} off`, label: 'Yearly billing' },
+  { value: `${pct(TERM_DISCOUNT[36])} off`, label: '3-year term, price locked' },
 ];
 ---
 
@@ -92,7 +95,7 @@ const perks = [
     </div>
     <div class="module-prices">
       <div>
-        <span class="mono">List</span>
+        <span class="mono">Self-hosted or Cloud</span>
         <strong><Price eur={AURORA.price} /></strong>
         <span class="mono">/ month</span>
       </div>
@@ -102,10 +105,23 @@ const perks = [
 )}
 
 <div class="strip">
-  <ul class="perks mono">{perks.map((p) => <li>{p}</li>)}</ul>
-  {variant === 'bee'
-    ? <a class="btn btn-primary" href={url('/pricing#configure')}>Configure a quote</a>
-    : <a class="btn btn-primary" href="#configure">Configure a quote</a>}
+  <div class="strip-head">
+    <span class="strip-title mono">Discounts, applied automatically</span>
+    <span class="strip-note mono">No meters on ingest, egress or queries</span>
+  </div>
+  <div class="strip-body">
+    <div class="discounts">
+      {discounts.map((d) => (
+        <div class="discount">
+          <span class="d-value">{d.value}</span>
+          <span class="d-label mono">{d.label}</span>
+        </div>
+      ))}
+    </div>
+    {variant === 'bee'
+      ? <a class="btn btn-primary" href={url('/pricing#configure')}>Configure a quote</a>
+      : <a class="btn btn-primary" href="#configure">Configure a quote</a>}
+  </div>
 </div>
 
 <style>
@@ -125,15 +141,23 @@ const perks = [
   li::before { content: ""; width: 8px; height: 8px; background: var(--teal); margin-top: 7px; flex-shrink: 0; }
   .plan :global(.btn) { margin-top: auto; }
 
-  .module { margin-top: 24px; background: var(--white); border: 1px solid var(--line); border-top: 4px solid var(--ink); padding: 28px 32px; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 32px; align-items: center; }
+  /* Fixed price and button tracks so every module card lines up, whatever its labels say. */
+  .module { margin-top: 24px; background: var(--white); border: 1px solid var(--line); border-top: 4px solid var(--ink); padding: 28px 32px; display: grid; grid-template-columns: minmax(0, 1fr) 300px 340px; gap: 32px; align-items: center; }
   .module-prices { display: flex; gap: 32px; }
   .module-prices div { display: flex; flex-direction: column; gap: 4px; }
   .module-prices strong { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
   .module :global(.btn) { justify-self: end; }
 
-  .strip { margin-top: 24px; display: flex; justify-content: space-between; align-items: center; gap: 32px; background: var(--night); color: var(--on-dark); padding: 24px 32px; }
-  .perks { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 32px; font-size: 13px; color: var(--on-dark-2); border: 0; }
-  .perks li::before { background: var(--mint); margin-top: 6px; }
+  .strip { margin-top: 24px; background: var(--night); color: var(--on-dark); padding: 26px 32px 28px; display: flex; flex-direction: column; gap: 22px; }
+  .strip-head { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding-bottom: 18px; border-bottom: 1px solid rgba(232, 241, 242, 0.16); }
+  .strip-title { color: var(--mint); font-weight: 700; }
+  .strip-note { color: var(--on-dark-2); }
+  .strip-body { display: flex; justify-content: space-between; align-items: center; gap: 32px; flex-wrap: wrap; }
+  .discounts { display: flex; flex-wrap: wrap; }
+  .discount { display: flex; flex-direction: column; gap: 6px; padding: 2px 28px; border-left: 1px solid rgba(232, 241, 242, 0.16); }
+  .discount:first-child { padding-left: 0; border-left: 0; }
+  .d-value { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; line-height: 1; color: var(--on-dark-strong); }
+  .d-label { font-size: 12px; color: var(--on-dark-2); }
 
   @media (max-width: 1300px) {
     .plans-all { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -146,7 +170,12 @@ const perks = [
   }
   @media (max-width: 800px) {
     .plans-all { grid-template-columns: minmax(0, 1fr); }
-    .strip { flex-direction: column; align-items: flex-start; padding: 24px; }
+    .strip { padding: 24px; }
+    .strip-body { align-items: flex-start; }
+    .discounts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 0; width: 100%; }
+    .discount { padding: 2px 20px; }
+    .discount:nth-child(odd) { padding-left: 0; border-left: 0; }
+    .strip :global(.btn) { width: 100%; }
     .module { grid-template-columns: minmax(0, 1fr); padding: 24px; gap: 20px; }
     .module :global(.btn) { justify-self: start; }
     .plan { padding: 24px; }
