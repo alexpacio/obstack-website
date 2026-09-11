@@ -6,16 +6,20 @@ import Configurator from '../components/Configurator';
 import Arrow from '../components/Arrow.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
 import PageRootCompare from '../components/PageRootCompare.astro';
-import { AURORA, PAGEROOT, STORAGE, TERM_DISCOUNT, findPlan, formatPrice, pct } from '../data/plans';
+import { AURORA, PAGEROOT, STORAGE, TERM_DISCOUNT, dualPrice, findPlan, formatPrice, pct } from '../data/plans';
+import Price from '../components/Price.astro';
 import { url } from '../lib/url';
+import { breadcrumbSchema, faqSchema, plainText } from '../lib/seo';
 
 const bee = findPlan('bee');
 const cloud = findPlan('cloud');
+// `gb` is the USD string for meta and JSON-LD; `gbHtml` follows the currency switch.
 const gb = formatPrice(STORAGE.pricePerGb, 'usd');
+const gbHtml = dualPrice(STORAGE.pricePerGb);
 
 const vendorHead = ['', 'Pricing model', 'Per host', 'Logs and traces', 'Stored data', 'Users', 'During an incident'];
 const vendors = [
-  ['Obstack', 'Flat per node, storage by the gigabyte', `${formatPrice(bee.price, 'usd')}–${formatPrice(cloud.price, 'usd')} / node / month`, 'Included, not metered', `${gb} / GB / month, capacity you choose`, 'Unlimited, included', 'Unchanged'],
+  ['Obstack', 'Flat per node, storage by the gigabyte', `${dualPrice(bee.price)}–${dualPrice(cloud.price)} / node / month`, 'Included, not metered', `${gbHtml} / GB / month, capacity you choose`, 'Unlimited, included', 'Unchanged'],
   ['Datadog', 'Per host, plus per GB and per event', '$46 / host / month for Infrastructure Pro + APM Pro', '$0.10 / GB ingested, plus $1.70 per million log events indexed', 'Priced into indexing; longer retention costs more', 'Included', 'Host, span and log meters rise'],
   ['Dynatrace', 'Per memory GiB-hour, plus per GiB ingested', '≈ $58 / month for an 8 GiB host on Full-Stack', '$0.20 / GiB ingested', 'Retention billed per GiB-day', 'Included', 'Ingest rises; bigger hosts cost more'],
   ['Grafana Cloud', '$19 platform fee plus usage', '$0.025 / host-hour, ≈ $18 / host / month', '$0.45 / GB written', '$0.10 / GB / month, ≈ $100 / TB', 'Varies by plan', 'Series, GB written and retention rise'],
@@ -24,7 +28,7 @@ const vendors = [
 ];
 
 const whyStorage = [
-  ['Priced per gigabyte', `Obstack storage is ${gb} per GB per month of compressed data at rest. Egress and API calls are included.`],
+  ['Priced per gigabyte', `Obstack storage is ${gbHtml} per GB per month of compressed data at rest. Egress and API calls are included.`],
   ['Requests that cost nothing', 'GreptimeDB writes, compacts and reads Parquet files all day. Those requests are included, so that activity never reaches your bill.'],
   ['No minimum storage duration', 'Retention deletes telemetry every day. You only pay for what is stored, not for data already gone.'],
   ['Your datacenter, EU or US', 'Choose EU or US in the configurator. Telemetry and managed storage stay there; EU data stays in the EU.'],
@@ -44,19 +48,23 @@ const faqs = [
   ['Do you set it up for us?', 'Yes. Obstack Stack on-prem and Obstack Cloud both include first setup, the release of updates, and the ongoing rollout and monitoring of the infrastructure.'],
   ['What about custom work?', 'Custom Grafana dashboards, alert setup and anything else tailored to your environment are Professional Services, quoted in advance. We send a written quote you approve before we start, then invoice the time spent.'],
   ['Is anything metered?', 'No. Ingest, egress and queries are free. Grafana users are unlimited. Storage is a capacity you choose: when it fills, the oldest data expires first and we warn you at 80%. There is never an overage bill. PageRoot is optional and priced per on-call user. Aurora AI includes unlimited DeepSeek 4 Flash for investigations; it is not a general-purpose token meter.'],
-  ['What is PageRoot?', `An optional on-call module on Stack and Cloud: schedules, escalations, ChatOps and a built-in MCP server. ${formatPrice(PAGEROOT.selfHosted, 'usd')} per user self-hosted, ${formatPrice(PAGEROOT.cloud, 'usd')} on Obstack Cloud. Alertmanager is already in the stack.`],
-  ['What is Aurora AI?', `An optional AI SRE on Stack and Cloud, bundled with unlimited ${AURORA.model} hosted by Obstack. ${formatPrice(AURORA.price, 'eur')} per month list (${formatPrice(AURORA.price, 'usd')} in USD). It reads Grafana MCP and works incidents through PageRoot MCP. Your own model, or an air-gapped one, is quoted as Enterprise.`],
+  ['What is PageRoot?', `An optional on-call module on Stack and Cloud: schedules, escalations, ChatOps and a built-in MCP server. ${dualPrice(PAGEROOT.selfHosted)} per user self-hosted, ${dualPrice(PAGEROOT.cloud)} on Obstack Cloud. Alertmanager is already in the stack.`],
+  ['What is Aurora AI?', `An optional AI SRE on Stack and Cloud, bundled with unlimited ${AURORA.model} hosted by Obstack. ${dualPrice(AURORA.price)} per month. It reads Grafana MCP and works incidents through PageRoot MCP. Your own model, or an air-gapped one, is quoted as Enterprise.`],
   ['How much storage do I need?', 'Nodes × stored GB per node per day × retention days. The configurator does the arithmetic. Start with the retention you need today; you can add gigabytes at any time.'],
-  ['Where does our data live?', `In the EU or US datacenter you pick in the configurator. Managed storage is Obstack storage at ${gb} per GB per month. Self-hosted customers can use their own S3-compatible bucket or local disk instead.`],
+  ['Where does our data live?', `In the EU or US datacenter you pick in the configurator. Managed storage is Obstack storage at ${gbHtml} per GB per month. Self-hosted customers can use their own S3-compatible bucket or local disk instead.`],
   ['How are Bee and PageRoot licensed?', 'The first month under a license key, as Ubuntu packages, without source. After that the PolyForm Internal Use License applies: use and modify them for your own operations; do not distribute them. We send an agreement to sign, then grant git access. Stop paying and git access stops.'],
   ['Can we try it first?', 'Yes. Ask for a 30-day evaluation license, or a 30-day Cloud trial with 1,000 GB of storage.'],
 ];
 ---
 
 <Layout
-  title="Pricing · Obstack"
-  description={`Obstack pricing: self-hosted from ${formatPrice(bee.price, 'usd')} per node per month, Obstack Cloud from ${formatPrice(cloud.price, 'usd')} per node plus storage at ${gb} per GB. No ingest, egress, query or user meters.`}
+  title="Obstack pricing · flat per node, storage by the gigabyte"
+  description={`Obstack pricing: self-hosted from ${formatPrice(bee.price, 'usd')} per node per month, Obstack Cloud from ${formatPrice(cloud.price, 'usd')} per node plus storage at ${gb} per GB. No ingest, egress, query or user meters. Compared with Datadog, Dynatrace, Grafana Cloud, New Relic and Elastic.`}
   active="pricing"
+  schema={[
+    faqSchema('/pricing', faqs.map(([q, a]) => [q, plainText(a)] as [string, string])),
+    breadcrumbSchema('/pricing', 'Pricing'),
+  ]}
 >
   <section class="hero">
     <div class="wrap price-hero">
@@ -79,7 +87,7 @@ const faqs = [
           <div class="eyebrow">01 / Plans</div>
           <h2 class="h2">Three products, plus optional PageRoot and Aurora AI.</h2>
         </div>
-        <p class="body-2">Per node, per month. Stack on-prem and Cloud include setup, updates, rollout and monitoring. PageRoot is optional, priced per on-call user. Aurora AI is optional, {formatPrice(AURORA.price, 'eur')} per month with unlimited {AURORA.model} hosted by Obstack. Custom Grafana dashboards and alerts are Professional Services, quoted in advance.</p>
+        <p class="body-2">Per node, per month. Stack on-prem and Cloud include setup, updates, rollout and monitoring. PageRoot is optional, priced per on-call user. Aurora AI is optional, <Price eur={AURORA.price} /> per month with unlimited {AURORA.model} hosted by Obstack. Custom Grafana dashboards and alerts are Professional Services, quoted in advance.</p>
       </div>
       <PricingTable variant="all" />
     </div>
@@ -108,7 +116,7 @@ const faqs = [
         <p class="body-2">The other platforms price the traffic you send them, so an incident that triples your telemetry triples part of the invoice. Obstack prices the fleet.</p>
       </div>
       <PriceTable head={vendorHead} rows={vendors} highlight={0} minWidth={1100} />
-      <p class="mono note">Public list prices, annual billing where offered, reviewed September 2026. Stored sizes are not directly comparable: Obstack bills compressed bytes at rest, Elastic bills size before compression, Grafana bills volume written. Enterprise agreements differ from list.</p>
+      <p class="mono note">Obstack figures follow the EUR/USD switch in the header; the other vendors are quoted at US list in USD. Public list prices, annual billing where offered, reviewed September 2026. Stored sizes are not directly comparable: Obstack bills compressed bytes at rest, Elastic bills size before compression, Grafana bills volume written. Enterprise agreements differ from list.</p>
     </div>
   </section>
 
@@ -117,12 +125,12 @@ const faqs = [
       <div class="section-head">
         <div class="stack">
           <div class="eyebrow">04 / PageRoot</div>
-          <h2 class="h2">On-call at {formatPrice(PAGEROOT.selfHosted, 'usd')}–{formatPrice(PAGEROOT.cloud, 'usd')} per user. PagerDuty starts at $21.</h2>
+          <h2 class="h2">On-call at <Price eur={PAGEROOT.selfHosted} />–<Price eur={PAGEROOT.cloud} /> per user. PagerDuty starts at $21.</h2>
         </div>
-        <p class="body-2">Optional on Stack and Cloud. Ten on-call users are {formatPrice(PAGEROOT.selfHosted * 10, 'usd')} / month self-hosted, versus $210 on PagerDuty Professional and $400 if you buy both Rootly products.</p>
+        <p class="body-2">Optional on Stack and Cloud. Ten on-call users are <Price eur={PAGEROOT.selfHosted * 10} /> / month self-hosted, versus $210 on PagerDuty Professional and $400 if you buy both Rootly products.</p>
       </div>
       <PageRootCompare />
-      <p class="mono note">Public list prices, annual billing where offered, reviewed September 2026. See the <a class="text-link" href={url('/pageroot')}>PageRoot page</a> for the full comparison and where the others win.</p>
+      <p class="mono note">Obstack figures follow the EUR/USD switch; PagerDuty, Rootly and incident.io are at US list in USD. Public list prices, annual billing where offered, reviewed September 2026. See the <a class="text-link" href={url('/pageroot')}>PageRoot page</a> for the full comparison and where the others win.</p>
     </div>
   </section>
 
@@ -139,7 +147,7 @@ const faqs = [
         {whyStorage.map(([t, d]) => (
           <div class="stack">
             <h3 class="h3" style="font-size: 18px">{t}</h3>
-            <p class="body-2" style="font-size: 15px">{d}</p>
+            <p class="body-2" style="font-size: 15px" set:html={d} />
           </div>
         ))}
       </div>
@@ -177,7 +185,7 @@ const faqs = [
         {faqs.map(([q, a]) => (
           <div>
             <dt>{q}</dt>
-            <dd>{a}</dd>
+            <dd set:html={a} />
           </div>
         ))}
       </dl>
@@ -198,5 +206,8 @@ const faqs = [
   dt { font-weight: 800; font-size: 17px; margin-bottom: 6px; }
   dd { margin: 0; color: var(--text-2); font-size: 15px; line-height: 1.65; }
   @media (max-width: 1100px) { .faq { gap: 32px; } .why { gap: 32px; } }
-  @media (max-width: 800px) { .price-hero { padding-top: 48px; padding-bottom: 48px; } }
+  @media (max-width: 800px) {
+    .price-hero { padding-top: 48px; padding-bottom: 56px; }
+    .note { margin-top: 16px; }
+  }
 </style>

@@ -82,10 +82,14 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
               ))}
               <div class="mg">
                 <span class="mgl">Buy</span>
+                <p class="mga">Plans, the configurator and a quote you can take to procurement</p>
                 <a href={buy.href}>{buy.label}</a>
                 <a href={url('/pricing#configure')}>Get a quote</a>
               </div>
-              <ObfuscatedEmail label="Contact" class="nl" />
+              <div class="mg">
+                <span class="mgl">Talk to us</span>
+                <ObfuscatedEmail label="Contact" />
+              </div>
             </nav>
           </details>
         </div>
@@ -148,7 +152,7 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
     .aurora::before,
     .aurora::after { animation: none; }
   }
-  .bar { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; height: 52px; gap: 24px; min-width: 0; }
+  .bar { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; height: var(--hdr-h); gap: 24px; min-width: 0; }
   .home { text-decoration: none; min-width: 0; flex: 1 1 auto; }
   .home :global(.logo) { max-width: 100%; }
   .links { display: flex; gap: 24px; align-items: center; }
@@ -197,23 +201,34 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
   .mnav summary::-webkit-details-marker { display: none; }
   .mnav nav {
     position: fixed;
-    left: 50%;
-    right: auto;
-    top: 56px;
-    transform: translateX(-50%);
-    width: calc(100vw - 32px);
-    max-width: 280px;
+    left: 0;
+    right: 0;
+    top: var(--hdr-h);
+    width: 100%;
+    max-width: none;
+    height: calc(100dvh - var(--hdr-h));
+    max-height: calc(100dvh - var(--hdr-h));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     background: #0A0F12;
-    border: 1px solid var(--on-dark-line);
+    border: 0;
     display: flex;
     flex-direction: column;
-    padding: 6px;
+    padding: 0 0 32px;
     z-index: 80;
     box-shadow: 0 16px 40px rgba(0,0,0,0.55);
   }
-  .mnav nav :global(a) { color: var(--on-dark); text-decoration: none; padding: 12px 16px; font-size: 16px; font-family: var(--font-sans); }
+  .mnav nav :global(a) {
+    color: var(--on-dark);
+    text-decoration: none;
+    padding: 14px var(--gutter);
+    font-size: 17px;
+    font-family: var(--font-sans);
+  }
   .mnav nav :global(a:hover) { background: rgba(99, 232, 176, 0.08); }
-  .mg { display: flex; flex-direction: column; padding: 8px 0; border-bottom: 1px solid var(--on-dark-line); }
+  .mnav nav :global(a:active) { background: rgba(99, 232, 176, 0.14); }
+  .mg { display: flex; flex-direction: column; padding: 10px 0 12px; border-bottom: 1px solid var(--on-dark-line); }
   .mg:last-of-type { border-bottom: none; }
   .mgl {
     font-family: var(--font-mono);
@@ -222,9 +237,11 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
     text-transform: uppercase;
     color: var(--mint);
     font-weight: 700;
-    padding: 8px 16px 2px;
+    padding: 10px var(--gutter) 2px;
   }
-  .mga { margin: 0; padding: 0 16px 6px; font-size: 12px; line-height: 1.4; color: var(--on-dark-3); }
+  .mga { margin: 0; padding: 0 var(--gutter) 8px; font-size: 12px; line-height: 1.4; color: var(--on-dark-3); }
+
+  .mnav[open] summary { border-color: var(--mint); color: var(--mint); }
 
   @media (max-width: 1100px) {
     .links { display: none; }
@@ -232,13 +249,36 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
     .right .btn { display: none; }
   }
   @media (max-width: 800px) {
-    .bar { gap: 12px; height: 48px; }
+    .bar { gap: 12px; }
     .secure { font-size: 13px; }
     .secure span { display: none; }
   }
 </style>
 
 <script is:inline>
+  (function () {
+    var mnav = document.querySelector('details.mnav');
+    if (!mnav) return;
+    var close = function () { mnav.open = false; };
+    // A full-height sheet covers the page, so stop the page scrolling behind it.
+    mnav.addEventListener('toggle', function () {
+      document.body.style.overflow = mnav.open ? 'hidden' : '';
+    });
+    // A full-width sheet has no visible edge to tap, so close on anything outside it.
+    document.addEventListener('click', function (e) {
+      if (mnav.open && !mnav.contains(e.target)) close();
+    });
+    mnav.addEventListener('click', function (e) {
+      if (e.target.closest('a')) close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') close();
+    });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 1100) close();
+    });
+  })();
+
   document.querySelectorAll('[data-set-currency]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var c = btn.getAttribute('data-set-currency');

@@ -3,6 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import Arrow from '../components/Arrow.astro';
 import { url } from '../lib/url';
 import { AURORA, findPlan, formatPrice } from '../data/plans';
+import Price from '../components/Price.astro';
+import { breadcrumbSchema, softwareSchema } from '../lib/seo';
 
 const stackPlan = findPlan('stack');
 const cloud = findPlan('cloud');
@@ -47,15 +49,27 @@ const privacy = [
   title="Aurora AI in Obstack · the AI SRE"
   description={`Aurora AI is the AI SRE in the Obstack Stack: Grafana MCP, PageRoot MCP, and unlimited ${AURORA.model} hosted by Obstack at ${formatPrice(AURORA.price, 'eur')} per month.`}
   active="aurora"
+  schema={[
+    softwareSchema({
+      path: '/aurora',
+      name: 'Aurora AI in Obstack',
+      description:
+        'Aurora AI is the AI SRE in the Obstack Stack. It investigates firing alerts through the Grafana MCP server and PageRoot MCP, writes a structured RCA and generates postmortems, bundled with an unlimited Obstack-hosted model. Deployed on your infrastructure or on Obstack Cloud.',
+      category: 'BusinessApplication',
+      offers: [{ price: AURORA.price, unit: 'per month' }],
+      sameAs: ['https://github.com/Arvo-AI/aurora'],
+    }),
+    breadcrumbSchema('/aurora', 'Aurora AI'),
+  ]}
 >
   <section class="hero">
     <div class="wrap hero-grid aurora-hero">
       <div class="stack" style="gap: 26px">
         <div class="eyebrow rise">Aurora AI in the stack</div>
         <h1 class="display rise">The AI SRE. It investigates while you get to the laptop.</h1>
-        <p class="lead rise-2">When an alert fires, Aurora starts the investigation: Grafana MCP for what the graphs say, PageRoot MCP for the incident, unlimited {AURORA.model} hosted by Obstack. {formatPrice(AURORA.price, 'eur')} per month on Stack and Cloud.</p>
+        <p class="lead rise-2">When an alert fires, Aurora starts the investigation: Grafana MCP for what the graphs say, PageRoot MCP for the incident, unlimited {AURORA.model} hosted by Obstack. <Price eur={AURORA.price} /> per month on Stack and Cloud.</p>
         <div class="btn-row rise-2" style="padding-top: 8px">
-          <a class="btn btn-primary" href={url('/pricing?plan=stack&aurora=1#configure')}>Configure Aurora · {formatPrice(AURORA.price, 'eur')} / month <Arrow /></a>
+          <a class="btn btn-primary" href={url('/pricing?plan=stack&aurora=1#configure')}>Configure Aurora · <Price eur={AURORA.price} /> / month <Arrow /></a>
           <a class="btn btn-ghost" href={url('/stack')}>See the stack</a>
         </div>
       </div>
@@ -193,21 +207,21 @@ const privacy = [
       <div class="panel grid-2 runs">
         <div class="stack">
           <div class="eyebrow">07 / The bundle</div>
-          <h2 class="h2" style="font-size: 32px">Not sold on its own. {formatPrice(AURORA.price, 'eur')} / month on the stack.</h2>
+          <h2 class="h2" style="font-size: 32px">Not sold on its own. <Price eur={AURORA.price} /> / month on the stack.</h2>
           <p class="body-2" style="font-size: 15px">Aurora AI plus unlimited {AURORA.model}, hosted by Obstack. Grafana MCP is already in the deployment. PageRoot MCP comes with the optional on-call module. No per-token meter on investigations.</p>
           <div class="matrix mono">
             <div><span>Available on</span><span>Obstack Stack and Obstack Cloud</span></div>
             <div><span>Sold separately</span><span>No</span></div>
-            <div><span>List</span><span>{formatPrice(AURORA.price, 'eur')} / month · {formatPrice(AURORA.price, 'usd')} in USD</span></div>
+            <div><span>List</span><span><Price eur={AURORA.price} /> / month</span></div>
             <div><span>Model</span><span>{AURORA.model}, unlimited, hosted by Obstack</span></div>
             <div><span>Reads telemetry via</span><span>Grafana MCP</span></div>
             <div><span>Works the incident via</span><span>PageRoot MCP, optional</span></div>
           </div>
         </div>
         <div class="stack">
-          <div class="eyebrow">{formatPrice(AURORA.price, 'eur')} / month</div>
+          <div class="eyebrow"><Price eur={AURORA.price} /> / month</div>
           <h2 class="h2" style="font-size: 32px">Add Aurora when you configure the stack.</h2>
-          <p class="body-2" style="font-size: 15px">Self-hosted from {formatPrice(stackPlan.price, 'usd')} per node, or Obstack Cloud from {formatPrice(cloud.price, 'usd')} per node, plus {formatPrice(AURORA.price, 'eur')} for Aurora. Custom runbooks and connector work are Professional Services, quoted in advance.</p>
+          <p class="body-2" style="font-size: 15px">Self-hosted from <Price eur={stackPlan.price} /> per node, or Obstack Cloud from <Price eur={cloud.price} /> per node, plus <Price eur={AURORA.price} /> for Aurora. Custom runbooks and connector work are Professional Services, quoted in advance.</p>
           <div class="btn-row" style="padding-top: 8px">
             <a class="btn btn-dark" href={url('/buy?plan=stack&aurora=1')}>Buy on Stack <Arrow /></a>
             <a class="text-link" href={url('/pricing?plan=stack&aurora=1#configure')}>Configure a quote <Arrow size={16} /></a>
@@ -259,10 +273,17 @@ const privacy = [
   }
   @media (max-width: 800px) {
     .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
-    .gossip { grid-template-columns: minmax(0, 1fr); }
+    /* One column: drop the grid hairlines and separate with real rules. */
+    .gossip { grid-template-columns: minmax(0, 1fr); gap: 0; background: transparent; }
     .gossip > div { padding: 20px 0; background: transparent; }
+    .gossip > div + div { border-top: 1px solid var(--on-dark-line); }
     .runs > .stack { padding: 24px; }
     .runs > .stack + .stack { border-left: none; border-top: 1px solid var(--line); }
     .matrix { font-size: 12px; }
+  }
+  @media (max-width: 480px) {
+    /* Label and value stop fighting for the same line. */
+    .matrix div { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .matrix span + span { text-align: left; }
   }
 </style>

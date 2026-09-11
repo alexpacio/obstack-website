@@ -123,7 +123,7 @@ export function allowsAurora(planId: PlanId): boolean {
 }
 
 export const STORAGE = {
-  /** USD per GB per month of compressed data at rest. */
+  /** Euro list per GB per month of compressed data at rest; USD is list × USD_MARKUP. */
   pricePerGb: 0.007,
   regions: ['EU', 'US'] as const,
   minGb: 100,
@@ -187,20 +187,39 @@ export const CURRENCY = {
 } as const;
 export type Currency = keyof typeof CURRENCY;
 
-const EURO_LANGS = new Set([
-  'it', 'de', 'fr', 'es', 'nl', 'pt', 'fi', 'el', 'sk', 'sl', 'et', 'lv', 'lt', 'ga', 'mt', 'lb', 'ca', 'eu', 'gl', 'hr',
-  'sv', 'da', 'nb', 'nn', 'no', 'pl', 'cs', 'hu', 'ro', 'bg', 'is',
+/**
+ * Countries and territories whose legal tender is the euro: the euro area,
+ * the states that use it by monetary agreement, and the EU outermost regions.
+ * A visitor anywhere else is billed in USD.
+ */
+export const EURO_COUNTRIES = new Set([
+  // Euro area
+  'AT', 'BE', 'BG', 'HR', 'CY', 'EE', 'FI', 'FR', 'DE', 'GR', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PT', 'SK', 'SI', 'ES',
+  // By monetary agreement, or unilaterally
+  'AD', 'MC', 'SM', 'VA', 'ME', 'XK',
+  // Outermost regions and territories that use the euro
+  'GF', 'GP', 'MQ', 'YT', 'RE', 'PM', 'BL', 'MF', 'AX',
 ]);
-const EURO_REGIONS = new Set([
-  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU',
-  'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'IS', 'LI', 'NO', 'CH', 'AD', 'MC', 'SM', 'VA', 'GB',
+
+/**
+ * Languages spoken essentially only in euro countries, used when the locale
+ * carries no region. Deliberately excludes ambiguous ones (`es` covers Latin
+ * America, `sv`/`da`/`pl`/`cs`/`hu`/`ro`/`is` are non-euro countries).
+ */
+const EURO_ONLY_LANGS = new Set([
+  'it', 'de', 'fr', 'nl', 'pt', 'fi', 'el', 'sk', 'sl', 'et', 'lv', 'lt', 'ga', 'mt', 'lb', 'ca', 'eu', 'gl', 'hr', 'bg',
 ]);
-/** UN M.49: Europe and its subregions (Chrome reports `en-150` for English in Europe). */
-const EUROPE_M49 = new Set(['150', '154', '155', '151', '039']);
-const NON_EURO_TZ = new Set([
-  'Europe/Istanbul', 'Europe/Moscow', 'Europe/Minsk', 'Europe/Kaliningrad', 'Europe/Simferopol',
-  'Europe/Kirov', 'Europe/Volgograd', 'Europe/Samara', 'Europe/Astrakhan', 'Europe/Saratov',
-  'Europe/Ulyanovsk', 'Europe/Kyiv', 'Europe/Kiev', 'Europe/Zaporozhye', 'Europe/Uzhgorod',
+
+/** IANA zones that sit in a euro country, for when the locale has no region. */
+const EURO_TIMEZONES = new Set([
+  'Europe/Vienna', 'Europe/Brussels', 'Europe/Sofia', 'Europe/Zagreb', 'Asia/Nicosia', 'Europe/Nicosia',
+  'Europe/Tallinn', 'Europe/Helsinki', 'Europe/Mariehamn', 'Europe/Paris', 'Europe/Berlin', 'Europe/Busingen',
+  'Europe/Athens', 'Europe/Dublin', 'Europe/Rome', 'Europe/Riga', 'Europe/Vilnius', 'Europe/Luxembourg',
+  'Europe/Malta', 'Europe/Amsterdam', 'Europe/Lisbon', 'Atlantic/Madeira', 'Atlantic/Azores',
+  'Europe/Bratislava', 'Europe/Ljubljana', 'Europe/Madrid', 'Africa/Ceuta', 'Atlantic/Canary',
+  'Europe/Andorra', 'Europe/Monaco', 'Europe/San_Marino', 'Europe/Vatican', 'Europe/Podgorica',
+  'America/Cayenne', 'America/Guadeloupe', 'America/Martinique', 'Indian/Mayotte', 'Indian/Reunion',
+  'America/Miquelon', 'America/St_Barthelemy', 'America/Marigot',
 ]);
 
 function parseLocale(tag: string): { lang: string; region: string } {
@@ -210,46 +229,46 @@ function parseLocale(tag: string): { lang: string; region: string } {
     return { lang: (loc.language || '').toLowerCase(), region: (loc.region || '').toUpperCase() };
   } catch {
     const parts = normalized.split('-');
-    const lang = (parts[0] || '').toLowerCase();
-    const region = parts.slice(1).map((p) => p.toUpperCase()).find((p) => p.length === 2 || EUROPE_M49.has(p)) ?? '';
-    return { lang, region };
+    return {
+      lang: (parts[0] || '').toLowerCase(),
+      region: (parts.slice(1).map((x) => x.toUpperCase()).find((x) => x.length === 2) ?? ''),
+    };
   }
 }
 
-/** EUR for euro-area and European locales; USD otherwise. */
-export function currencyFromLocales(locales: readonly string[]): Currency {
+/** EUR when the locale names a euro country; otherwise no answer. */
+export function currencyFromLocales(locales: readonly string[]): Currency | null {
+  // A region is hard evidence, so take the first locale that carries one.
   for (const raw of locales) {
     if (!raw) continue;
-    const { lang, region } = parseLocale(raw);
-    if (region && (EURO_REGIONS.has(region) || EUROPE_M49.has(region))) return 'eur';
-    if (region && region.length === 2) continue;
-    if (EURO_LANGS.has(lang)) return 'eur';
+    const { region } = parseLocale(raw);
+    if (region) return EURO_COUNTRIES.has(region) ? 'eur' : 'usd';
   }
-  return 'usd';
+  // No region anywhere: fall back to languages that name one country group.
+  for (const raw of locales) {
+    if (!raw) continue;
+    const { lang } = parseLocale(raw);
+    if (EURO_ONLY_LANGS.has(lang)) return 'eur';
+  }
+  return null;
 }
 
-function currencyFromTimezone(): Currency | null {
+/** EUR when the browser's time zone sits in a euro country; otherwise no answer. */
+export function currencyFromTimezone(): Currency | null {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-    if (!tz) return null;
-    if (NON_EURO_TZ.has(tz)) return null;
-    if (tz.startsWith('Europe/')) return 'eur';
-    if (tz === 'Atlantic/Canary' || tz === 'Atlantic/Reykjavik' || tz === 'Atlantic/Azores' || tz === 'Atlantic/Madeira' || tz === 'Arctic/Longyearbyen') {
-      return 'eur';
-    }
+    if (tz && EURO_TIMEZONES.has(tz)) return 'eur';
   } catch {
     /* ignore */
   }
   return null;
 }
 
-/** Browser language, then timezone. English UI in Europe still yields EUR. */
+/** Browser locale first, then time zone. USD when neither names a euro country. */
 export function currencyFromBrowser(): Currency {
   if (typeof navigator === 'undefined') return 'usd';
   const list = (navigator.languages?.length ? navigator.languages : [navigator.language]).filter(Boolean);
-  const fromLang = currencyFromLocales(list);
-  if (fromLang === 'eur') return 'eur';
-  return currencyFromTimezone() ?? 'usd';
+  return currencyFromLocales(list) ?? currencyFromTimezone() ?? 'usd';
 }
 
 export const CURRENCY_STORAGE_KEY = 'obstack-currency';
@@ -268,6 +287,12 @@ export function readStoredCurrency(): Currency | null {
 
 /** Stored choice, else browser language and timezone. */
 export function preferredCurrency(): Currency {
+  // The boot script in the layout already made this decision before first
+  // paint; reuse it so the islands and the CSS-driven prices never disagree.
+  if (typeof document !== 'undefined') {
+    const attr = document.documentElement.getAttribute('data-currency');
+    if (attr === 'eur' || attr === 'usd') return attr;
+  }
   return readStoredCurrency() ?? currencyFromBrowser();
 }
 

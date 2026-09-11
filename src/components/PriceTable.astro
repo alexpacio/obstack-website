@@ -41,6 +41,7 @@ const { head, rows, highlight = -1, wins, minWidth = 900 } = Astro.props;
     </tbody>
   </table>
 </div>
+{minWidth > 0 && <p class="scroll-hint">Swipe the table sideways to reach every column.</p>}
 
 <style>
   .pt-wrap { overflow-x: auto; }

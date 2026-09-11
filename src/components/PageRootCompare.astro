@@ -1,9 +1,10 @@
 ---
-import { PAGEROOT, formatPrice } from '../data/plans';
+import { PAGEROOT, dualPrice } from '../data/plans';
 import CompareTable from './CompareTable.astro';
 
-const sh = formatPrice(PAGEROOT.selfHosted, 'usd');
-const cloud = formatPrice(PAGEROOT.cloud, 'usd');
+// Obstack cells follow the EUR/USD switch; the vendor columns are US list in USD.
+const sh = dualPrice(PAGEROOT.selfHosted);
+const cloud = dualPrice(PAGEROOT.cloud);
 
 const columns = ['Obstack PageRoot', 'PagerDuty Professional', 'Rootly On-Call + IR', 'incident.io Team + on-call'];
 
@@ -16,6 +17,16 @@ const rows = [
       '$21 per user / month',
       '$20 On-Call + $20 Incident Response = $40 per user / month',
       '$15 Team + $10 on-call = $25 per user / month',
+    ],
+  },
+  {
+    label: 'Ten on-call users, per year',
+    win: [0],
+    cells: [
+      `${dualPrice(PAGEROOT.selfHosted * 10 * 12)} self-hosted / ${dualPrice(PAGEROOT.cloud * 10 * 12)} cloud`,
+      '$2,520',
+      '$4,800',
+      '$3,000',
     ],
   },
   {
@@ -39,10 +50,40 @@ const rows = [
     ],
   },
   {
-    label: 'On-call schedules',
-    win: [2],
+    label: 'Where your incident data lives',
+    win: [0],
     cells: [
-      'Web rotations, iCal import, Terraform, shift swaps',
+      'Your servers, or the EU or US datacenter you pick on Obstack Cloud',
+      'Vendor SaaS, region by plan',
+      'Vendor SaaS',
+      'Vendor SaaS',
+    ],
+  },
+  {
+    label: 'Next to your telemetry',
+    win: [0],
+    cells: [
+      'Same stack as Grafana, Alertmanager and GreptimeDB, one vendor and one support contract',
+      'Integrates with your monitoring; separate vendor',
+      'Integrates with your monitoring; separate vendor',
+      'Integrates with your monitoring; separate vendor',
+    ],
+  },
+  {
+    label: 'Source code access',
+    win: [0],
+    cells: [
+      'Git access under the PolyForm Internal Use License while you subscribe',
+      'No',
+      'No',
+      'No',
+    ],
+  },
+  {
+    label: 'On-call schedules',
+    win: [0, 2],
+    cells: [
+      'Web rotations, iCal import, Terraform-managed shifts, shift swaps',
       'Yes, more schedules than Free',
       'Yes, plus shadow rotations, PTO calendars and a pay calculator',
       'Yes, on the on-call add-on',
@@ -50,9 +91,9 @@ const rows = [
   },
   {
     label: 'Escalation chains',
-    win: [0, 1, 2, 3],
+    win: [0],
     cells: [
-      'Wait, notify on-call, round-robin, time windows, thresholds, webhooks, repeat',
+      'Wait, notify on-call, round-robin, time windows, alert-count thresholds, outgoing webhooks as steps, repeat the chain',
       'Yes, more policies than Free',
       'Yes',
       'Yes',
@@ -60,9 +101,9 @@ const rows = [
   },
   {
     label: 'Alert grouping',
-    win: [2],
+    win: [0, 2],
     cells: [
-      'Grouping id and routes from the payload, next to Prometheus Alertmanager',
+      'Grouping id and routes from the payload, on top of Alertmanager grouping, inhibition and silences in the same stack',
       'Dedup and basic grouping; ML grouping is AIOps, extra',
       'Alert grouping and noise reduction included on On-Call',
       'On the incident product',
@@ -70,9 +111,9 @@ const rows = [
   },
   {
     label: 'ChatOps',
-    win: [2, 3],
+    win: [0],
     cells: [
-      'Slack, Microsoft Teams, Telegram, outgoing webhooks',
+      'Slack, Microsoft Teams, Telegram and outgoing webhooks, all on the one plan',
       'Basic Slack and Teams on Professional',
       'Slack-first; Teams on Incident Response',
       'Slack and Teams native',
@@ -86,6 +127,16 @@ const rows = [
       'No',
       'MCP on AI SRE, a separate product, quoted',
       'No public MCP for on-call',
+    ],
+  },
+  {
+    label: 'AI / AIOps',
+    win: [0, 3],
+    cells: [
+      'MCP for agents you run, including Aurora AI in the same stack, with no per-event meter',
+      'PagerDuty Advance and AIOps are extra',
+      'AI SRE is a third product, quoted',
+      'AI included on Team and Pro',
     ],
   },
   {
@@ -126,16 +177,6 @@ const rows = [
       'Basic chat experience on Professional',
       'Yes: roles, timelines, @Rootly',
       'Yes: @incident, roles, timelines',
-    ],
-  },
-  {
-    label: 'AI / AIOps',
-    win: [3],
-    cells: [
-      'MCP for agents you run, including Aurora AI',
-      'PagerDuty Advance and AIOps are extra',
-      'AI SRE is a third product, quoted',
-      'AI included on Team and Pro',
     ],
   },
   {

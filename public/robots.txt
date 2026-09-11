@@ -1,0 +1,11 @@
+# https://obstack.it/robots.txt
+User-agent: *
+Allow: /
+
+# Checkout funnel: no landing-page value, keep it out of the index.
+Disallow: /buy
+Disallow: /buy?
+Disallow: /*?plan=
+Disallow: /*?seats=
+
+Sitemap: https://obstack.it/sitemap-index.xml

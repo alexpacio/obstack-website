@@ -85,6 +85,19 @@ const sinks = [
   labelAt: read(k.x + KW / 2 + 5.5, KY + KD / 2, KH),
 }));
 
+// AI SRE: the one side of the core that had nothing on it, upper left.
+const AW = 96, AD = 130, AH = 62;
+const AX = -333, AY = -60;
+const ai = {
+  body: box(AX, AY, 0, AW, AD, AH),
+  inset: square(AX + 8, AY + 8, AW - 16, AD - 16, AH),
+  vents: [14, 21, 28, 35, 42].map((z) => path(P(AX + 10, AY + AD, z), P(AX + 58, AY + AD, z))),
+  leds: [P(AX + AW, AY + AD - 16, AH - 14), P(AX + AW, AY + AD - 30, AH - 14)],
+  // In this frame a world-x offset moves across the text, world-y along it.
+  labelAt: read(AX + AW / 2 - 4, AY + AD / 2, AH),
+  subAt: read(AX + AW / 2 + 20, AY + AD / 2, AH),
+};
+
 // Signals: pills on the lower right.
 const PY = -56, PD = 200, PW = 54, PT = 9;
 const signals = ['Traces', 'Metrics', 'Logs'].map((name, i) => {
@@ -108,6 +121,7 @@ const spinners = [[3, 150], [150, 10]].map(([cx, cy]) => ({
 const flows = [
   ...sources.map((s) => path(P(s.cx, SY), P(s.cx, 104))),
   path(P(104, 10), P(196, 10)),
+  path(P(-104, 5), P(AX + AW, 5)),
   path(P(-50, -104), P(-50, -160), P(-105, -160), P(-105, KY + KD)),
   path(P(0, -104), P(0, KY + KD)),
   path(P(50, -104), P(50, -160), P(105, -160), P(105, KY + KD)),
@@ -118,6 +132,7 @@ const drops = [
   ...sources.flatMap((s) => [[s.x, SY + SD], [s.x + SW, SY + SD]]),
   ...sinks.flatMap((k) => [[k.x, KY + KD], [k.x + KW, KY + KD], [k.x + KW, KY]]),
   ...signals.map((s) => [s.x + PW / 2, PY + PD]),
+  [AX, AY + AD], [AX + AW, AY + AD], [AX + AW, AY],
   [-15, 168], [132, 28],
 ].map(([x, y]) => path(P(x, y, 0), P(x, y, FLOOR)));
 
@@ -143,7 +158,7 @@ for (let k = -10; k <= 12; k++) {
   class="iso"
   viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
   role="img"
-  aria-label="Applications, infrastructure and IoT feed the Obstack core, which stores traces, metrics and logs in GreptimeDB for Grafana and PageRoot"
+  aria-label="Applications, infrastructure and IoT feed the Obstack core, which stores traces, metrics and logs in GreptimeDB for Grafana and PageRoot, with Aurora AI, the AI SRE, reading the same core"
 >
   <defs>
     <radialGradient id="iso-fade" gradientUnits="userSpaceOnUse" cx="0" cy={-FLOOR / 2} r={r1(vb.w * 0.55)}>
@@ -163,6 +178,17 @@ for (let k = -10; k <= 12; k++) {
   <g class="grid" mask="url(#iso-grid-mask)">{grid.map((g) => <path d={g}></path>)}</g>
   <g class="drop">{drops.map((g) => <path d={g}></path>)}</g>
   <g>{flows.map((g) => <path class="flow" d={g}></path>)}</g>
+
+  <g>
+    <polygon class="f-l" points={ai.body.left}></polygon>
+    <polygon class="f-r" points={ai.body.right}></polygon>
+    <polygon class="f-t" points={ai.body.top}></polygon>
+    <polygon class="inset" points={ai.inset}></polygon>
+    <g class="vent">{ai.vents.map((v) => <path d={v}></path>)}</g>
+    {ai.leds.map(([x, y], i) => <circle class:list={['led', { on: i === 0 }]} cx={r1(x)} cy={r1(y)} r="2.2"></circle>)}
+    <text class="lbl sm" transform={ai.labelAt} text-anchor="middle">Aurora AI</text>
+    <text class="lbl xs" transform={ai.subAt} text-anchor="middle">AI SRE</text>
+  </g>
 
   {sinks.map((k) => (
     <g>
@@ -258,6 +284,7 @@ for (let k = -10; k <= 12; k++) {
 
   .lbl { font-family: var(--font-mono); font-size: 20px; letter-spacing: 0.01em; fill: rgba(232, 241, 242, 0.82); }
   .lbl.sm { font-size: 15px; }
+  .lbl.xs { font-size: 11px; fill: rgba(232, 241, 242, 0.55); letter-spacing: 0.1em; }
 
   .icon * { fill: none; stroke: rgba(232, 241, 242, 0.85); stroke-width: 1.5; }
   .icon .accent { stroke: #63E8B0; }

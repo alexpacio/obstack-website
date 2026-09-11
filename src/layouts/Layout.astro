@@ -4,12 +4,19 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import HumanChallenge from '../components/HumanChallenge.astro';
 import { url } from '../lib/url';
+import { EURO_COUNTRIES } from '../data/plans';
 
 interface Props {
   title?: string;
   description?: string;
   active?: 'bee' | 'pageroot' | 'grafana' | 'aurora' | 'stack' | 'pricing' | 'buy';
   checkout?: boolean;
+  /** Social card image, site-relative. Defaults to the site-wide card. */
+  image?: string;
+  /** Keep the page out of search indexes (checkout and other funnel pages). */
+  noindex?: boolean;
+  /** Extra JSON-LD documents for this page, on top of the site-wide graph. */
+  schema?: Record<string, unknown>[];
 }
 
 const {
@@ -17,9 +24,83 @@ const {
   description = 'Obstack is a self-hosted observability stack for applications, infrastructure and IoT: the Bee eBPF agent, Beyla, Vector, GreptimeDB, Grafana and Prometheus Alertmanager, on servers you own. PageRoot is the optional on-call module.',
   active,
   checkout = false,
+  image = '/og-obstack.png',
+  noindex = false,
+  schema = [],
 } = Astro.props;
 
 const turnstileSitekey = (import.meta.env.PUBLIC_TURNSTILE_SITEKEY as string | undefined) || undefined;
+
+const SITE = Astro.site ?? new URL('https://obstack.it');
+
+/**
+ * Canonical URL. GitHub Pages serves each page as a directory index, so the
+ * trailing-slash form is the one that answers 200 — and the one the sitemap
+ * lists. Query and hash are dropped.
+ */
+const path = `${Astro.url.pathname.replace(/\/+$/, '')}/`;
+const canonical = new URL(path, SITE).href;
+const ogImage = new URL(url(image), SITE).href;
+
+const organisation = {
+  '@type': 'Organization',
+  '@id': `${SITE.origin}/#organization`,
+  name: 'Obstack',
+  legalName: 'Netter srl',
+  url: `${SITE.origin}/`,
+  logo: {
+    '@type': 'ImageObject',
+    url: new URL(url('/logo-obstack-mark.svg'), SITE).href,
+  },
+  image: ogImage,
+  description:
+    'Obstack builds and supports a self-hosted observability stack for applications, infrastructure and IoT.',
+  vatID: 'IT03569900545',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Via Indipendenza',
+    postalCode: '06081',
+    addressLocality: 'Assisi',
+    addressRegion: 'PG',
+    addressCountry: 'IT',
+  },
+};
+
+const website = {
+  '@type': 'WebSite',
+  '@id': `${SITE.origin}/#website`,
+  url: `${SITE.origin}/`,
+  name: 'Obstack',
+  description:
+    'Obstack is a self-hosted observability stack for applications, infrastructure and IoT: the Bee eBPF agent, Beyla, Vector, GreptimeDB, Grafana and Prometheus Alertmanager, on servers you own.',
+  inLanguage: 'en',
+  publisher: { '@id': `${SITE.origin}/#organization` },
+};
+
+const webPage = {
+  '@type': 'WebPage',
+  '@id': `${canonical}#webpage`,
+  url: canonical,
+  name: title,
+  description,
+  isPartOf: { '@id': `${SITE.origin}/#website` },
+  about: { '@id': `${SITE.origin}/#organization` },
+  primaryImageOfPage: ogImage,
+  inLanguage: 'en',
+};
+
+const graph = {
+  '@context': 'https://schema.org',
+  '@graph': [organisation, website, webPage, ...schema],
+};
+
+/**
+ * Currency boot script, inlined so the right prices are already showing at
+ * first paint. It runs before the bundle loads, so it repeats the rules in
+ * `currencyFromBrowser()` in plain ES5 — but over the same country list, which
+ * is injected here rather than copied.
+ */
+const euroCountries: string[] = [...EURO_COUNTRIES];
 ---
 
 <!doctype html>
@@ -27,41 +108,98 @@ const turnstileSitekey = (import.meta.env.PUBLIC_TURNSTILE_SITEKEY as string | u
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
     <meta name="theme-color" content="#030607" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="generator" content={Astro.generator} />
+
+    {noindex
+      ? <meta name="robots" content="noindex, nofollow" />
+      : <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />}
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Obstack" />
+    <meta property="og:locale" content="en" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Obstack — one observability stack for applications, infrastructure and IoT" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
     <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+    <link rel="apple-touch-icon" href={url('/og-obstack.png')} />
+    <link rel="sitemap" type="application/xml" href={url('/sitemap-index.xml')} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=M+PLUS+1+Code:wght@400;500;700&display=swap"
     />
-    <title>{title}</title>
-    <script is:inline>
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(graph)} />
+    <script is:inline define:vars={{ euroCountries }}>
       (function () {
         var KEY = 'obstack-currency';
-        var c = null;
-        try { c = localStorage.getItem(KEY); } catch (e) {}
-        if (c !== 'eur' && c !== 'usd') {
-          c = null;
+        var EURO = {};
+        for (var n = 0; n < euroCountries.length; n++) EURO[euroCountries[n]] = 1;
+
+        // Only languages spoken essentially in euro countries; ambiguous ones
+        // (es, sv, da, pl, cs, hu, ro, is) fall through to USD.
+        var EURO_LANGS = /^(it|de|fr|nl|pt|fi|el|sk|sl|et|lv|lt|ga|mt|lb|ca|eu|gl|hr|bg)$/;
+        var EURO_TZ = {
+          'Europe/Vienna': 1, 'Europe/Brussels': 1, 'Europe/Sofia': 1, 'Europe/Zagreb': 1,
+          'Asia/Nicosia': 1, 'Europe/Nicosia': 1, 'Europe/Tallinn': 1, 'Europe/Helsinki': 1,
+          'Europe/Mariehamn': 1, 'Europe/Paris': 1, 'Europe/Berlin': 1, 'Europe/Busingen': 1,
+          'Europe/Athens': 1, 'Europe/Dublin': 1, 'Europe/Rome': 1, 'Europe/Riga': 1,
+          'Europe/Vilnius': 1, 'Europe/Luxembourg': 1, 'Europe/Malta': 1, 'Europe/Amsterdam': 1,
+          'Europe/Lisbon': 1, 'Atlantic/Madeira': 1, 'Atlantic/Azores': 1, 'Europe/Bratislava': 1,
+          'Europe/Ljubljana': 1, 'Europe/Madrid': 1, 'Africa/Ceuta': 1, 'Atlantic/Canary': 1,
+          'Europe/Andorra': 1, 'Europe/Monaco': 1, 'Europe/San_Marino': 1, 'Europe/Vatican': 1,
+          'Europe/Podgorica': 1, 'America/Cayenne': 1, 'America/Guadeloupe': 1,
+          'America/Martinique': 1, 'Indian/Mayotte': 1, 'Indian/Reunion': 1, 'America/Miquelon': 1,
+          'America/St_Barthelemy': 1, 'America/Marigot': 1
+        };
+
+        var stored = null;
+        try { stored = localStorage.getItem(KEY); } catch (e) {}
+        var c = stored === 'eur' || stored === 'usd' ? stored : null;
+
+        if (!c) {
           var langs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language]) || [];
-          var euroLang = /^(it|de|fr|es|nl|pt|fi|el|sk|sl|et|lv|lt|ga|mt|lb|ca|eu|gl|hr|sv|da|nb|nn|no|pl|cs|hu|ro|bg|is)(-|$)/i;
-          var euroRegion = /(AT|BE|BG|HR|CY|CZ|DK|EE|FI|FR|DE|GR|HU|IE|IT|LV|LT|LU|MT|NL|PL|PT|RO|SK|SI|ES|SE|IS|LI|NO|CH|AD|MC|SM|VA|GB|150)$/;
+          var parsed = [];
           for (var i = 0; i < langs.length; i++) {
-            var tag = String(langs[i] || '').replace(/_/g, '-');
-            var parts = tag.split('-');
-            var lang = (parts[0] || '').toLowerCase();
-            var region = (parts[1] || '').toUpperCase();
-            if (region && euroRegion.test(region)) { c = 'eur'; break; }
-            if (euroLang.test(lang) && !region) { c = 'eur'; break; }
-            if (euroLang.test(lang) && region && euroRegion.test(region)) { c = 'eur'; break; }
-            if (!region && euroLang.test(lang)) { c = 'eur'; break; }
+            var parts = String(langs[i] || '').replace(/_/g, '-').split('-');
+            var region = '';
+            for (var j = 1; j < parts.length; j++) {
+              if (parts[j].length === 2) { region = parts[j].toUpperCase(); break; }
+            }
+            parsed.push({ lang: (parts[0] || '').toLowerCase(), region: region });
+          }
+          // A country in the locale is hard evidence: use it and stop.
+          for (var k = 0; k < parsed.length; k++) {
+            if (parsed[k].region) { c = EURO[parsed[k].region] ? 'eur' : 'usd'; break; }
+          }
+          // No country anywhere: try the language, then the time zone.
+          if (!c) {
+            for (var m = 0; m < parsed.length; m++) {
+              if (EURO_LANGS.test(parsed[m].lang)) { c = 'eur'; break; }
+            }
           }
           if (!c) {
             try {
               var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-              if (/^Europe\//.test(tz) && !/Istanbul|Moscow|Minsk|Kaliningrad|Simferopol|Kirov|Volgograd|Samara|Astrakhan|Saratov|Ulyanovsk|Kyiv|Kiev|Zaporozhye|Uzhgorod/.test(tz)) c = 'eur';
-              if (tz === 'Atlantic/Canary' || tz === 'Atlantic/Reykjavik' || tz === 'Atlantic/Azores' || tz === 'Atlantic/Madeira' || tz === 'Arctic/Longyearbyen') c = 'eur';
+              if (EURO_TZ[tz]) c = 'eur';
             } catch (e) {}
           }
           if (!c) c = 'usd';

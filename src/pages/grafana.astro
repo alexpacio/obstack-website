@@ -3,7 +3,9 @@ import Layout from '../layouts/Layout.astro';
 import Arrow from '../components/Arrow.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
 import { url } from '../lib/url';
-import { findPlan, formatPrice } from '../data/plans';
+import { breadcrumbSchema } from '../lib/seo';
+import { findPlan } from '../data/plans';
+import Price from '../components/Price.astro';
 
 const stackPlan = findPlan('stack');
 const cloud = findPlan('cloud');
@@ -37,8 +39,9 @@ const split = [
 
 <Layout
   title="Grafana in Obstack · where you look at the fleet"
-  description="Grafana is the screen for metrics, logs and traces in the Obstack Stack: dashboards you keep, Explore for one-off questions, and alert rules that fire when a graph crosses a line."
+  description="Grafana is the screen for metrics, logs and traces in the Obstack Stack: dashboards you keep, Explore for one-off questions, alert rules that fire when a graph crosses a line, and the Grafana MCP server so agents query the same datasources your team does."
   active="grafana"
+  schema={[breadcrumbSchema('/grafana', 'Grafana')]}
 >
   <section class="hero">
     <div class="wrap hero-grid grafana-hero">
@@ -198,9 +201,9 @@ const split = [
           </div>
         </div>
         <div class="stack">
-          <div class="eyebrow">From {formatPrice(stackPlan.price, 'usd')} / node / month</div>
+          <div class="eyebrow">From <Price eur={stackPlan.price} /> / node / month</div>
           <h2 class="h2" style="font-size: 32px">Buy the stack. Grafana comes with it.</h2>
-          <p class="body-2" style="font-size: 15px">Self-hosted from {formatPrice(stackPlan.price, 'usd')} per node, or Obstack Cloud from {formatPrice(cloud.price, 'usd')} per node in the region you choose. Custom dashboards and alert design are Professional Services, quoted in advance.</p>
+          <p class="body-2" style="font-size: 15px">Self-hosted from <Price eur={stackPlan.price} /> per node, or Obstack Cloud from <Price eur={cloud.price} /> per node in the region you choose. Custom dashboards and alert design are Professional Services, quoted in advance.</p>
           <div class="btn-row" style="padding-top: 8px">
             <a class="btn btn-dark" href={url('/buy?plan=stack')}>Buy the stack <Arrow /></a>
             <a class="text-link" href={url('/stack')}>What's inside <Arrow size={16} /></a>
@@ -252,10 +255,17 @@ const split = [
   }
   @media (max-width: 800px) {
     .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
-    .gossip { grid-template-columns: minmax(0, 1fr); }
+    /* One column: drop the grid hairlines and separate with real rules. */
+    .gossip { grid-template-columns: minmax(0, 1fr); gap: 0; background: transparent; }
     .gossip > div { padding: 20px 0; background: transparent; }
+    .gossip > div + div { border-top: 1px solid var(--on-dark-line); }
     .runs > .stack { padding: 24px; }
     .runs > .stack + .stack { border-left: none; border-top: 1px solid var(--line); }
     .matrix { font-size: 12px; }
+  }
+  @media (max-width: 480px) {
+    /* Label and value stop fighting for the same line. */
+    .matrix div { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .matrix span + span { text-align: left; }
   }
 </style>

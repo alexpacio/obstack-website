@@ -5,10 +5,13 @@ import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
 import PageRootCompare from '../components/PageRootCompare.astro';
 import PriceTable from '../components/PriceTable.astro';
 import { url } from '../lib/url';
-import { PAGEROOT, findPlan, formatPrice } from '../data/plans';
+import { PAGEROOT, dualPrice, findPlan, formatPrice } from '../data/plans';
+import Price from '../components/Price.astro';
+import { breadcrumbSchema, softwareSchema } from '../lib/seo';
 
 const stackPlan = findPlan('stack');
 const cloud = findPlan('cloud');
+// USD strings for the meta description and JSON-LD, which are not interactive.
 const sh = formatPrice(PAGEROOT.selfHosted, 'usd');
 const prCloud = formatPrice(PAGEROOT.cloud, 'usd');
 const ten = 10;
@@ -47,13 +50,27 @@ const split = [
   title="Obstack PageRoot · on-call, escalations and MCP"
   description={`PageRoot is Obstack's optional on-call module: schedules, escalation chains, ChatOps and a built-in MCP server. ${sh} per user self-hosted, ${prCloud} on Obstack Cloud. Much cheaper than PagerDuty or Rootly.`}
   active="pageroot"
+  schema={[
+    softwareSchema({
+      path: '/pageroot',
+      name: 'Obstack PageRoot',
+      description:
+        'PageRoot is the optional on-call module on Obstack Stack and Obstack Cloud: on-call schedules, escalation chains, alert grouping and routing, ChatOps to Slack, Microsoft Teams and Telegram, phone and SMS through Twilio, and a built-in MCP server. Self-hosted or run by Obstack.',
+      category: 'BusinessApplication',
+      offers: [
+        { price: PAGEROOT.selfHosted, unit: 'per on-call user per month, self-hosted' },
+        { price: PAGEROOT.cloud, unit: 'per on-call user per month, Obstack Cloud' },
+      ],
+    }),
+    breadcrumbSchema('/pageroot', 'PageRoot'),
+  ]}
 >
   <section class="hero">
     <div class="wrap hero-grid pageroot-hero">
       <div class="stack" style="gap: 26px">
         <div class="eyebrow rise">Obstack PageRoot</div>
         <h1 class="display rise">On-call that costs a fraction of PagerDuty. Self-hosted or on our cloud.</h1>
-        <p class="lead rise-2">An optional module on Obstack Stack and Obstack Cloud. Schedules, escalations, ChatOps and a built-in MCP server, at {sh} per on-call user self-hosted or {prCloud} when we run it. Alertmanager stays in the stack either way.</p>
+        <p class="lead rise-2">An optional module on Obstack Stack and Obstack Cloud. Schedules, escalations, ChatOps and a built-in MCP server, at <Price eur={PAGEROOT.selfHosted} /> per on-call user self-hosted or <Price eur={PAGEROOT.cloud} /> when we run it. Alertmanager stays in the stack either way.</p>
         <div class="btn-row rise-2" style="padding-top: 8px">
           <a class="btn btn-primary" href="#pricing">See PageRoot pricing <Arrow /></a>
           <a class="btn btn-ghost" href={url(`/buy?plan=stack&${seatsQuery}`)}>Buy self-hosted</a>
@@ -152,7 +169,7 @@ const split = [
           <div class="eyebrow">05 / Against PagerDuty, Rootly and incident.io</div>
           <h2 class="h2">The same job as the on-call SaaS tools. A fraction of the seat price, and you can run it yourself.</h2>
         </div>
-        <p class="body-2">PagerDuty Professional is $21 per user. Rootly sells On-Call and Incident Response as two $20 seats. incident.io's Team plan is $15 plus $10 for on-call. PageRoot is {sh} self-hosted, {prCloud} on our cloud, unlimited incidents, MCP included.</p>
+        <p class="body-2">PagerDuty Professional is $21 per user. Rootly sells On-Call and Incident Response as two $20 seats. incident.io's Team plan is $15 plus $10 for on-call. PageRoot is <Price eur={PAGEROOT.selfHosted} /> self-hosted, <Price eur={PAGEROOT.cloud} /> on our cloud, unlimited incidents, MCP included.</p>
       </div>
       <PageRootCompare />
       <div class="others">
@@ -166,7 +183,7 @@ const split = [
           <li>A SaaS AIOps SKU billed as a third product. Aurora AI is the AI SRE in this stack; it runs on your infrastructure, and the model is yours.</li>
         </ul>
       </div>
-      <p class="mono reviewed">Public list prices, annual billing where offered, reviewed September 2026. PagerDuty Business is $41 per user; AIOps and Advance are extra. Rootly AI SRE is quoted. incident.io Pro with on-call is $45 per user.</p>
+      <p class="mono reviewed">Public list prices, annual billing where offered, reviewed September 2026. Obstack figures follow the EUR/USD switch; the other vendors are quoted at US list in USD. PagerDuty Business is $41 per user; AIOps and Advance are extra. Rootly AI SRE is quoted. incident.io Pro with on-call is $45 per user.</p>
     </div>
   </section>
 
@@ -182,25 +199,25 @@ const split = [
       <div class="panel grid-2 runs">
         <div class="stack">
           <div class="eyebrow">Self-hosted</div>
-          <h2 class="h2" style="font-size: 32px">{sh} per user / month</h2>
-          <p class="body-2" style="font-size: 15px">On your servers, next to Grafana and Alertmanager. Requires Obstack Stack at {formatPrice(stackPlan.price, 'usd')} per node. The first month ships under a license key; after you sign the PolyForm Internal Use agreement, git access to the source. Air-gapped delivery is quoted as Enterprise.</p>
+          <h2 class="h2" style="font-size: 32px"><Price eur={PAGEROOT.selfHosted} /> per user / month</h2>
+          <p class="body-2" style="font-size: 15px">On your servers, next to Grafana and Alertmanager. Requires Obstack Stack at <Price eur={stackPlan.price} /> per node. The first month ships under a license key; after you sign the PolyForm Internal Use agreement, git access to the source. Air-gapped delivery is quoted as Enterprise.</p>
           <div class="matrix mono">
             <div><span>On-call users</span><span>Priced</span></div>
             <div><span>Incidents, schedules, MCP</span><span>Included</span></div>
             <div><span>Phone / SMS</span><span>Twilio</span></div>
-            <div><span>Ten users, list</span><span>{formatPrice(PAGEROOT.selfHosted * ten, 'usd')} / month</span></div>
+            <div><span>Ten users, list</span><span><Price eur={PAGEROOT.selfHosted * ten} /> / month</span></div>
           </div>
           <a class="btn btn-dark" href={url(`/buy?plan=stack&${seatsQuery}`)}>Buy on Stack <Arrow /></a>
         </div>
         <div class="stack">
           <div class="eyebrow">Obstack Cloud</div>
-          <h2 class="h2" style="font-size: 32px">{prCloud} per user / month</h2>
-          <p class="body-2" style="font-size: 15px">We run PageRoot in the EU or US datacenter you pick, next to the rest of the backend. Requires Obstack Cloud at {formatPrice(cloud.price, 'usd')} per node. 99.9% SLA, P1 in 1 hour.</p>
+          <h2 class="h2" style="font-size: 32px"><Price eur={PAGEROOT.cloud} /> per user / month</h2>
+          <p class="body-2" style="font-size: 15px">We run PageRoot in the EU or US datacenter you pick, next to the rest of the backend. Requires Obstack Cloud at <Price eur={cloud.price} /> per node. 99.9% SLA, P1 in 1 hour.</p>
           <div class="matrix mono">
             <div><span>On-call users</span><span>Priced</span></div>
             <div><span>Incidents, schedules, MCP</span><span>Included</span></div>
             <div><span>Phone / SMS</span><span>Twilio</span></div>
-            <div><span>Ten users, list</span><span>{formatPrice(PAGEROOT.cloud * ten, 'usd')} / month</span></div>
+            <div><span>Ten users, list</span><span><Price eur={PAGEROOT.cloud * ten} /> / month</span></div>
           </div>
           <a class="btn btn-dark" href={url(`/buy?plan=cloud&${seatsQuery}`)}>Buy on Cloud <Arrow /></a>
         </div>
@@ -208,13 +225,13 @@ const split = [
       <PriceTable
         head={['10 on-call users / month', 'PageRoot self-hosted', 'PageRoot cloud', 'PagerDuty Professional', 'Rootly On-Call + IR', 'incident.io Team + on-call']}
         rows={[
-          ['List, annual billing', formatPrice(PAGEROOT.selfHosted * ten, 'usd'), formatPrice(PAGEROOT.cloud * ten, 'usd'), '$210', '$400', '$250'],
-          ['vs PageRoot self-hosted', '—', '2×', '4.2×', '8×', '5×'],
+          ['List, annual billing', dualPrice(PAGEROOT.selfHosted * ten), dualPrice(PAGEROOT.cloud * ten), '$210', '$400', '$250'],
+          ['Multiple of PageRoot self-hosted, at USD list', '—', '2×', '4.2×', '8×', '5×'],
         ]}
         wins={[[0], [0]]}
         minWidth={980}
       />
-      <p class="mono reviewed">USD, 25% above the euro list. Ten-user arithmetic is list × 10, before Obstack volume and term discounts. Custom escalation design and ChatOps wiring are Professional Services, quoted in advance.</p>
+      <p class="mono reviewed">Obstack prices follow the EUR/USD switch in the header; USD is 25% above the euro list. PagerDuty, Rootly and incident.io figures are their US list prices in USD. Ten-user arithmetic is list × 10, before Obstack volume and term discounts. Custom escalation design and ChatOps wiring are Professional Services, quoted in advance.</p>
       <div class="btn-row" style="padding-top: 8px">
         <a class="btn btn-primary" href={url(`/pricing?plan=stack&${seatsQuery}#configure`)}>Configure a quote <Arrow /></a>
         <ObfuscatedEmail class="text-link" subject="PageRoot" label="Ask about PageRoot" />
@@ -262,11 +279,20 @@ const split = [
   }
   @media (max-width: 800px) {
     .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
-    .gossip { grid-template-columns: minmax(0, 1fr); }
+    /* One column: drop the grid hairlines and separate with real rules. */
+    .gossip { grid-template-columns: minmax(0, 1fr); gap: 0; background: transparent; }
     .gossip > div { padding: 20px 0; background: transparent; }
+    .gossip > div + div { border-top: 1px solid var(--on-dark-line); }
     .others ul { grid-template-columns: minmax(0, 1fr); }
     .runs > .stack { padding: 24px; }
     .runs > .stack + .stack { border-left: none; border-top: 1px solid var(--line); }
     .matrix { font-size: 12px; }
+    .others { padding-top: 32px; }
+    .reviewed { margin-top: 24px; }
+  }
+  @media (max-width: 480px) {
+    /* Label and value stop fighting for the same line. */
+    .matrix div { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .matrix span + span { text-align: left; }
   }
 </style>

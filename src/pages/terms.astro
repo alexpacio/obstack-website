@@ -2,13 +2,13 @@
 import Layout from '../layouts/Layout.astro';
 import PriceTable from '../components/PriceTable.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
-import { AURORA, PAGEROOT, STORAGE, TERM_DISCOUNT, findPlan, formatPrice, pct, volumeBands } from '../data/plans';
+import { AURORA, PAGEROOT, STORAGE, TERM_DISCOUNT, dualPrice, findPlan, pct, volumeBands } from '../data/plans';
 import { url } from '../lib/url';
 
 const bee = findPlan('bee');
 const stack = findPlan('stack');
 const cloud = findPlan('cloud');
-const gb = formatPrice(STORAGE.pricePerGb, 'usd');
+const gb = dualPrice(STORAGE.pricePerGb);
 
 interface Section {
   id: string;
@@ -31,9 +31,9 @@ const sections: Section[] = [
     id: 'plans',
     title: 'Plans',
     paras: [
-      `${bee.name}, ${formatPrice(bee.price, 'usd')} per node per month: the application agent. The first month ships under a license key. After that the PolyForm Internal Use License applies; once you sign the agreement, you get the source over git. It exports to a collector you run and stores nothing itself.`,
-      `${stack.name}, ${formatPrice(stack.price, 'usd')} per node per month: Bee plus our support for Beyla, Vector, Kafka, GreptimeDB, Grafana and Prometheus Alertmanager, on your infrastructure. We deploy and configure the infrastructure, with reference Grafana dashboards. Storage is your own, or Obstack storage at ${gb} per GB per month.`,
-      `${cloud.name}, ${formatPrice(cloud.price, 'usd')} per node per month: we deploy and operate the backend in the EU or US datacenter you choose, with the same setup, and you run the agents. Storage is bought by the gigabyte, from ${STORAGE.minGb} GB.`,
+      `${bee.name}, ${dualPrice(bee.price)} per node per month: the application agent. The first month ships under a license key. After that the PolyForm Internal Use License applies; once you sign the agreement, you get the source over git. It exports to a collector you run and stores nothing itself.`,
+      `${stack.name}, ${dualPrice(stack.price)} per node per month: Bee plus our support for Beyla, Vector, Kafka, GreptimeDB, Grafana and Prometheus Alertmanager, on your infrastructure. We deploy and configure the infrastructure, with reference Grafana dashboards. Storage is your own, or Obstack storage at ${gb} per GB per month.`,
+      `${cloud.name}, ${dualPrice(cloud.price)} per node per month: we deploy and operate the backend in the EU or US datacenter you choose, with the same setup, and you run the agents. Storage is bought by the gigabyte, from ${STORAGE.minGb} GB.`,
       `${stack.name} and ${cloud.name} start at ${stack.minNodes} nodes. Enterprise terms are agreed per contract.`,
       'Air-gapped deployments, offline updates and sites with no outbound connectivity are not included in list plans. They are quoted as Enterprise.',
     ],
@@ -43,7 +43,7 @@ const sections: Section[] = [
     title: 'PageRoot module',
     paras: [
       `PageRoot is an optional on-call module on ${stack.name} and ${cloud.name}. It is not available with Bee alone.`,
-      `Self-hosted PageRoot is ${formatPrice(PAGEROOT.selfHosted, 'usd')} per on-call user per month. PageRoot on Obstack Cloud is ${formatPrice(PAGEROOT.cloud, 'usd')} per on-call user per month. An on-call user is a person who can be placed on a schedule or receive a page. People who only watch ChatOps are not billed.`,
+      `Self-hosted PageRoot is ${dualPrice(PAGEROOT.selfHosted)} per on-call user per month. PageRoot on Obstack Cloud is ${dualPrice(PAGEROOT.cloud)} per on-call user per month. An on-call user is a person who can be placed on a schedule or receive a page. People who only watch ChatOps are not billed.`,
       'Volume discounts and the yearly and 3-year billing discounts that apply to node fees also apply to PageRoot seats. Storage is not discounted.',
       'PageRoot can be added to an existing Stack or Cloud subscription at any time, prorated to the renewal date. Reduce seats at renewal.',
     ],
@@ -52,7 +52,7 @@ const sections: Section[] = [
     id: 'aurora',
     title: 'Aurora AI module',
     paras: [
-      `Aurora AI is an optional module on ${stack.name} and ${cloud.name}. It is not available with Bee alone. The list SKU is a bundle: Aurora plus unlimited ${AURORA.model} inference hosted by Obstack, at ${formatPrice(AURORA.price, 'eur')} per month (${formatPrice(AURORA.price, 'usd')} in USD).`,
+      `Aurora AI is an optional module on ${stack.name} and ${cloud.name}. It is not available with Bee alone. The list SKU is a bundle: Aurora plus unlimited ${AURORA.model} inference hosted by Obstack, at ${dualPrice(AURORA.price)} per month.`,
       `Unlimited means Aurora investigations on that subscription are not token-metered. It is not a general-purpose API for other workloads. Prompts go to ${AURORA.model} in the EU or US datacenter you pick; telemetry stays in GreptimeDB.`,
       'Volume discounts and the yearly and 3-year billing discounts do not apply to Aurora. Storage and Aurora are not discounted.',
       'Aurora can be added to an existing Stack or Cloud subscription at any time, prorated to the renewal date. Remove it at renewal. Running Aurora against your own model, or air-gapped with a local model, is quoted as Enterprise.',
@@ -202,7 +202,7 @@ const sections: Section[] = [
         {sections.map((s, i) => (
           <section id={s.id} class="clause">
             <h2 class="h3"><span class="mono">{String(i + 1).padStart(2, '0')}</span>{s.title}</h2>
-            {s.paras.map((p) => <p class="body-2">{p}</p>)}
+            {s.paras.map((p) => <p class="body-2" set:html={p} />)}
             {s.table && <PriceTable head={s.table.head} rows={s.table.rows} minWidth={s.table.head.length > 2 ? 720 : 0} />}
             {s.after?.map((p) => <p class="small">{p}</p>)}
           </section>
@@ -236,7 +236,8 @@ const sections: Section[] = [
     .toc { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
   }
   @media (max-width: 800px) {
-    .terms-hero { padding-top: 64px; padding-bottom: 64px; }
+    .terms-hero { padding-top: 48px; padding-bottom: 56px; }
+    .body { gap: 40px; }
     .toc { grid-template-columns: minmax(0, 1fr); }
     .contact { padding: 24px; }
   }

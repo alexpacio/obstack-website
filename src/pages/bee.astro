@@ -5,6 +5,8 @@ import Comparison from '../components/Comparison.astro';
 import PricingTable from '../components/PricingTable.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
 import { url } from '../lib/url';
+import { breadcrumbSchema, softwareSchema } from '../lib/seo';
+import { findPlan } from '../data/plans';
 
 const trace = [
   { name: 'POST /api/checkout', indent: 0, start: 0, width: 100, ms: '812 ms', color: '#19B8E2' },
@@ -45,9 +47,19 @@ const othersWin = [
 ---
 
 <Layout
-  title="Obstack Bee · distributed tracing and profiling"
-  description="Bee does distributed tracing and profiling inside a microservice and across processes on the host, then continues the same trace across hosts. No SDK, no coordinator."
+  title="Obstack Bee · eBPF distributed tracing and profiling agent"
+  description="Bee does distributed tracing and profiling inside a microservice and across processes on the host, then continues the same trace across hosts. eBPF, no SDK, no coordinator. HTTP, gRPC, TLS, MySQL, Redis and named Node.js awaits."
   active="bee"
+  schema={[
+    softwareSchema({
+      path: '/bee',
+      name: 'Obstack Bee',
+      description:
+        'Bee is an eBPF agent for Linux that produces distributed traces and profiles inside a microservice, between processes on the same host and across hosts over gossip, with no SDK and no coordinator. It parses HTTP/1, HTTP/2, gRPC, TLS, MySQL and Redis, names Node.js awaits, and exports OTLP to any OpenTelemetry collector.',
+      offers: [{ price: findPlan('bee').price, unit: 'per node per month' }],
+    }),
+    breadcrumbSchema('/bee', 'Bee'),
+  ]}
 >
   <section class="hero">
     <div class="wrap hero-grid bee-hero">
@@ -247,11 +259,20 @@ const othersWin = [
     .t-track { grid-column: 1 / -1; grid-row: 2; }
     .t-head, .t-foot { padding-left: 14px; padding-right: 14px; }
     .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
-    .gossip { grid-template-columns: minmax(0, 1fr); }
+    /* One column: drop the grid hairlines and separate with real rules. */
+    .gossip { grid-template-columns: minmax(0, 1fr); gap: 0; background: transparent; }
     .gossip > div { padding: 20px 0; background: transparent; }
+    .gossip > div + div { border-top: 1px solid var(--on-dark-line); }
     .others ul { grid-template-columns: minmax(0, 1fr); }
     .runs > .stack { padding: 24px; }
     .runs > .stack + .stack { border-left: none; border-top: 1px solid var(--line); }
     .matrix { font-size: 12px; }
+    .others { padding-top: 32px; }
+    .reviewed { margin-top: 24px; }
+  }
+  @media (max-width: 480px) {
+    /* Label and value stop fighting for the same line. */
+    .matrix div { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .matrix span + span { text-align: left; }
   }
 </style>
