@@ -8,19 +8,26 @@ interface Props {
   rec?: boolean;
   /** Chapters are below the fold and only fetch once someone presses play. */
   preload?: 'none' | 'metadata';
+  /**
+   * The mono title and footer bars. Off where the copy beside the video
+   * already says what it is, and the frame would only box it in.
+   */
+  chrome?: boolean;
 }
 
-const { clip, rec = false, preload = 'metadata' } = Astro.props;
+const { clip, rec = false, preload = 'metadata', chrome = true } = Astro.props;
 const { id, label, seconds, alt } = clip;
-const hasFoot = Astro.slots.has('default');
+const hasFoot = chrome && Astro.slots.has('default');
 ---
 
 <figure class="player">
-  <figcaption class="chrome">
-    {rec && <span class="badge badge-mint">Rec</span>}
-    <span class="label">{label}</span>
-    <span class="time mono">{runTime(seconds)}</span>
-  </figcaption>
+  {chrome && (
+    <figcaption class="chrome">
+      {rec && <span class="badge badge-mint">Rec</span>}
+      <span class="label">{label}</span>
+      <span class="time mono">{runTime(seconds)}</span>
+    </figcaption>
+  )}
 
   <video controls playsinline preload={preload} poster={url(`/videos/${id}-poster.jpg`)} aria-label={alt}>
     <source src={url(`/videos/obstack-${id}.mp4`)} type="video/mp4" />

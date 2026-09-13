@@ -5,7 +5,7 @@ import VideoPlayer from '../components/VideoPlayer.astro';
 import Arrow from '../components/Arrow.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
 import { url } from '../lib/url';
-import { JOURNEY } from '../data/videos';
+import { CHAPTERS, JOURNEY, runTime } from '../data/videos';
 import { AURORA, DEMO, PAGEROOT, entryPlan, featuredPlan, planNames, plansBuying, plansWith, priceRange } from '../data/plans';
 import Price from '../components/Price.astro';
 
@@ -44,18 +44,28 @@ const pipeline = [
 
   <!-- Demo -->
   <section class="section" aria-labelledby="demo-title">
-    <div class="wrap">
-      <div class="section-head">
-        <div class="stack">
-          <div class="eyebrow">01 / See it running</div>
-          <h2 class="h2" id="demo-title">From a signal to an answer, in one recording.</h2>
+    <div class="wrap demo-grid">
+      <div class="stack demo-copy">
+        <div class="eyebrow">01 / See it running</div>
+        <h2 class="h2" id="demo-title">From a signal to an answer, in one recording.</h2>
+        <p class="body-2">A live Obstack environment, recorded end to end: a Python application emits real telemetry, the signals land in Grafana, a real failure raises the PageRoot alarm, and Aurora pulls the evidence back through MCP. The whole incident lifecycle in two minutes.</p>
+
+        <ol class="demo-steps">
+          {CHAPTERS.map((chapter, i) => (
+            <li>
+              <span class="mono n">{String(i + 1).padStart(2, '0')}</span>
+              <span class="t">{chapter.title}</span>
+              <span class="mono d">{runTime(chapter.seconds)}</span>
+            </li>
+          ))}
+        </ol>
+
+        <div class="btn-row">
+          <a class="btn btn-dark" href={url('/demo')}>Watch the three steps <Arrow /></a>
         </div>
-        <p class="body-2">Real application metrics, logs and traces in Grafana, the alarm in PageRoot, then Aurora pulling the evidence back through MCP. No slides, no sample data.</p>
       </div>
-      <VideoPlayer clip={JOURNEY} rec>
-        <span>Grafana <b>&rarr;</b> PageRoot <b>&rarr;</b> Aurora</span>
-        <a href={url('/demo')}>Watch it chapter by chapter &rarr;</a>
-      </VideoPlayer>
+
+      <div class="demo-video"><VideoPlayer clip={JOURNEY} chrome={false} /></div>
     </div>
   </section>
 
@@ -230,6 +240,18 @@ const pipeline = [
   .home-hero { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 32px; }
   .hero-art { margin-right: calc(var(--gutter) * -0.5); overflow: hidden; max-width: 100%; }
 
+  /* The recording carries its own frame: the copy beside it does the labelling. */
+  .demo-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 56px; align-items: center; }
+  .demo-copy { gap: 20px; }
+  .demo-copy .body-2 { max-width: 520px; }
+  .demo-steps { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; }
+  .demo-steps li { display: flex; align-items: baseline; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .demo-steps li:first-child { border-top: 2px solid var(--ink); }
+  .demo-steps .n { font-size: 12px; letter-spacing: 0.14em; font-weight: 700; color: var(--link); }
+  .demo-steps .t { font-size: 16px; font-weight: 700; }
+  .demo-steps .d { margin-left: auto; font-size: 12px; color: var(--muted); }
+  .demo-video { min-width: 0; }
+
   .products { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
   .products-rest { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 24px; }
   .product { background: var(--white); border: 1px solid var(--line); padding: 36px; display: flex; flex-direction: column; gap: 16px; }
@@ -259,6 +281,8 @@ const pipeline = [
   @media (max-width: 1100px) {
     .home-hero { grid-template-columns: minmax(0, 1fr); }
     .hero-art { margin-right: 0; }
+    .demo-grid { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+    .demo-copy .body-2 { max-width: none; }
     .products, .products-rest { grid-template-columns: minmax(0, 1fr); }
     .principles { gap: 32px; }
   }
