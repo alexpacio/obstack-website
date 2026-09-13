@@ -68,7 +68,7 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
             <button type="button" data-set-currency="eur" aria-label="Show prices in euros">EUR</button>
             <button type="button" data-set-currency="usd" aria-label="Show prices in US dollars">USD</button>
           </div>
-          <a class="btn btn-primary btn-sm" href={url('/pricing#configure')}>Get a quote</a>
+          <a class="btn btn-primary btn-sm" href={url('/pricing#demo')}>{DEMO.days} days evaluation trial</a>
           <details class="mnav">
             <summary aria-label="Menu">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
@@ -85,8 +85,7 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
                 <span class="mgl">Buy</span>
                 <p class="mga">Flat plans, the configurator and a quote you can take to procurement</p>
                 <a href={buy.href}>{buy.label}</a>
-                <a href={url('/pricing#configure')}>Get a quote</a>
-                <a href={url('/pricing#demo')}>{DEMO.days} days free</a>
+                <a href={url('/pricing#demo')}>{DEMO.days} days evaluation trial</a>
               </div>
               <div class="mg">
                 <span class="mgl">Talk to us</span>

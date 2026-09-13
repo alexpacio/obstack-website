@@ -1,5 +1,5 @@
 ---
-import { ADDONS, DEMO, RATE_LIMIT, STORAGE, SUPPORT, TERM_DISCOUNT, dedicatedPlans, dualPrice, featuredPlan, formatTb, infraLine, infraShape, pct, planNames, plansBuying, plansWith, sharedPlans } from '../data/plans';
+import { ADDONS, DEMO, RATE_LIMIT, STORAGE, SUPPORT, TERM_DISCOUNT, dedicatedPlans, dualPrice, formatTb, infraLine, infraShape, pct, planNames, plansBuying, plansWith, sharedPlans } from '../data/plans';
 import { url } from '../lib/url';
 import DeploySwitch from './DeploySwitch.astro';
 import ObfuscatedEmail from './ObfuscatedEmail.astro';
@@ -12,7 +12,6 @@ interface Props {
 }
 
 const { variant = 'all' } = Astro.props;
-const featured = featuredPlan().id;
 /** The shared tier sits apart: it is the one plan without a backend of its own. */
 const [starter] = sharedPlans();
 const tiers = dedicatedPlans();
@@ -30,33 +29,32 @@ const discounts = [
 
 <DeploySwitch />
 
-<article class="entry">
-  <div class="entry-main">
+<div class:list={['plans', `plans-${variant}`]}>
+  <article class="plan featured">
     <div class="top">
-      <span class="kind mono">{infraShape(starter)} · Obstack Cloud only</span>
-      <span class="badge badge-line">Entry</span>
+      <span class="kind mono">{supportKind(starter.id)}</span>
+      <span class="badge badge-mint">Most bought</span>
     </div>
     <h3 class="h3">{starter.name}</h3>
-    <p class="small">{starter.blurb}</p>
-    <p class="mono entry-limit">{RATE_LIMIT.short} Your collector retries on {RATE_LIMIT.statuses}.</p>
-  </div>
-  <ul class="entry-list">{starter.features.map((f) => <li>{f}</li>)}</ul>
-  <div class="entry-buy">
     <div class="price"><span class="amount"><Price eur={starter.price} /></span><span class="per mono">/ month</span></div>
     <p class="addon mono">{formatTb(starter.includedTb)} storage included · no add-ons</p>
     <p class="only mono"><span class="ob-onprem-b">Obstack Cloud only — no on-premise option</span><span class="ob-cloud-b">Obstack Cloud only</span></p>
-    <a class="btn btn-outline" href={variant === 'all' ? url(`/pricing?plan=${starter.id}#configure`) : url(`/pricing?plan=${starter.id}`)}>
+    <p class="small">{starter.blurb}</p>
+    <div class="spec">
+      <span class="mono spec-k">{infraShape(starter)}</span>
+      <span class="spec-v">{infraLine(starter)}</span>
+    </div>
+    <p class="mono limit">{RATE_LIMIT.short} Your collector retries on {RATE_LIMIT.statuses}.</p>
+    <ul>{starter.features.map((f) => <li>{f}</li>)}</ul>
+    <a class="btn btn-dark" href={variant === 'all' ? url(`/pricing?plan=${starter.id}#configure`) : url(`/pricing?plan=${starter.id}`)}>
       {variant === 'all' ? 'Configure Starter' : 'See Starter'}
     </a>
-  </div>
-</article>
+  </article>
 
-<div class:list={['plans', `plans-${variant}`]}>
   {tiers.map((p) => (
-    <article class:list={['plan', { featured: p.id === featured }]}>
+    <article class="plan">
       <div class="top">
         <span class="kind mono">{supportKind(p.id)}</span>
-        {p.id === featured && <span class="badge badge-mint">Most bought</span>}
       </div>
       <h3 class="h3">{p.name}</h3>
       <div class="price"><span class="amount"><PlanPrice plan={p} /></span><span class="per mono">/ month</span></div>
@@ -71,7 +69,7 @@ const discounts = [
       </div>
       <ul>{p.features.map((f) => <li>{f}</li>)}</ul>
       <a
-        class:list={['btn', p.id === featured ? 'btn-dark' : 'btn-outline']}
+        class="btn btn-outline"
         data-deploy-link
         href={variant === 'all' ? url(`/pricing?plan=${p.id}#configure`) : url(`/pricing?plan=${p.id}`)}
       >
@@ -79,27 +77,31 @@ const discounts = [
       </a>
     </article>
   ))}
-
-  <article class="plan">
-    <div class="top"><span class="kind mono">{supportKind('enterprise')}</span></div>
-    <h3 class="h3">Enterprise</h3>
-    <div class="price"><span class="amount">Custom</span></div>
-    <p class="addon mono">Quoted against your estate</p>
-    <p class="small">A tailor-made solution when the list tiers do not describe your environment.</p>
-    <div class="spec">
-      <span class="mono spec-k">Sized with you</span>
-      <span class="spec-v">Cluster shape, regions and retention designed around your estate</span>
-    </div>
-    <ul>
-      <li>Air-gapped delivery and offline updates</li>
-      <li>Multi-region and multi-tenant deployments</li>
-      <li>Your own model, or an on-premise one, for Aurora AI</li>
-      <li>Custom SLA with a named engineer</li>
-      <li>Security review pack, DPA and procurement paperwork</li>
-    </ul>
-    <ObfuscatedEmail class="btn btn-outline" label="Request a quote" subject="Obstack Enterprise" />
-  </article>
 </div>
+
+<article class="entry">
+  <div class="entry-main">
+    <div class="top">
+      <span class="kind mono">Tier 3 · Named engineer · 24/7</span>
+      <span class="badge badge-line">Quoted</span>
+    </div>
+    <h3 class="h3">Enterprise</h3>
+    <p class="small">A tailor-made solution when the list tiers do not describe your environment.</p>
+    <p class="mono entry-limit">Sized with you: cluster shape, regions and retention designed around your estate.</p>
+  </div>
+  <ul class="entry-list">
+    <li>Air-gapped delivery and offline updates</li>
+    <li>Multi-region and multi-tenant deployments</li>
+    <li>Your own model, or an on-premise one, for Aurora AI</li>
+    <li>Custom SLA with a named engineer</li>
+    <li>Security review pack, DPA and procurement paperwork</li>
+  </ul>
+  <div class="entry-buy">
+    <div class="price"><span class="amount amount-word">Custom</span><span class="per mono">price</span></div>
+    <p class="addon mono">Quoted against your estate</p>
+    <ObfuscatedEmail class="btn btn-outline" label="Request a quote" subject="Obstack Enterprise" />
+  </div>
+</article>
 
 {variant === 'all' && (
   <div class="addons">
@@ -166,8 +168,8 @@ const discounts = [
 <p class="storage-note mono" set:html={`Go, Pro and Max include ${STORAGE.includedTb} TB of object storage in the EU or US region you pick, and can buy more at ${dualPrice(STORAGE.pricePerBlock)} per ${STORAGE.blockTb} TB per month, egress and API calls included. Starter includes ${formatTb(starter.includedTb)} and takes no add-ons. On your own hardware you supply the nodes and the bucket, and the hosting comes off the price.`} />
 
 <style>
-  /* Starter has no backend of its own, so it reads as a band rather than a peer card. */
-  .entry { background: var(--white); border: 1px solid var(--line); border-left: 4px solid var(--teal); padding: 28px 32px; margin-bottom: 24px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 260px; gap: 32px; align-items: start; }
+  /* Enterprise is quoted, not listed, so it reads as a band under the four priced tiers. */
+  .entry { background: var(--white); border: 1px solid var(--line); border-left: 4px solid var(--teal); padding: 28px 32px; margin-top: 24px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 260px; gap: 32px; align-items: start; }
   .entry-main { display: flex; flex-direction: column; gap: 10px; }
   .entry-main .h3 { font-size: 26px; }
   .entry-limit { font-size: 12px; line-height: 1.6; color: var(--muted); }
@@ -175,11 +177,16 @@ const discounts = [
   .entry-buy { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
   .entry-buy .price { margin-top: -4px; }
   .entry-buy .amount { font-size: 40px; }
+  /* A word, not a figure: it needs less size than a price to carry the same weight. */
+  .entry-buy .amount-word { font-size: 30px; letter-spacing: -0.01em; }
+  /* The label runs long, so it keeps the badge on its own line rather than pushing it adrift. */
+  .entry .top { flex-wrap: wrap; row-gap: 8px; }
   .entry-buy :global(.btn) { margin-top: 8px; width: 100%; }
 
   .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
   .plan { background: var(--white); border: 1px solid var(--line); padding: 32px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
   .plan.featured { border: 2px solid var(--ink); padding: 31px; box-shadow: 10px 10px 0 var(--mint); }
+  .limit { font-size: 12px; line-height: 1.6; color: var(--muted); }
   .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 22px; }
   .kind { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--link); font-weight: 700; }
   .price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-top: -6px; }
@@ -228,8 +235,11 @@ const discounts = [
   .storage-note { font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.6; }
 
   @media (max-width: 1300px) {
+    /* Two columns, so the list has to be placed explicitly or it pushes the buy column off its row. */
     .entry { grid-template-columns: minmax(0, 1fr) 240px; }
-    .entry-list { grid-column: 1 / -1; border-top: 1px solid var(--line-soft); padding-top: 20px; }
+    .entry-main { grid-area: 1 / 1; }
+    .entry-buy { grid-area: 1 / 2; }
+    .entry-list { grid-area: 2 / 1 / 3 / -1; border-top: 1px solid var(--line-soft); padding-top: 20px; }
     .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .addon-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
@@ -238,6 +248,7 @@ const discounts = [
   }
   @media (max-width: 800px) {
     .entry { grid-template-columns: minmax(0, 1fr); padding: 24px; gap: 20px; }
+    .entry-main, .entry-list, .entry-buy { grid-area: auto; }
     .entry-buy :global(.btn) { width: 100%; }
     .plans { grid-template-columns: minmax(0, 1fr); }
     .addon-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }

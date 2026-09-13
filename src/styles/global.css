@@ -29,7 +29,7 @@
   --on-dark-line: rgba(232, 241, 242, 0.1);
 
   --font-sans: "IBM Plex Sans", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "M PLUS 1 Code", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
   --gutter: 64px;
   --max: 1440px;
