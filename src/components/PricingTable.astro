@@ -1,0 +1,255 @@
+---
+import { ADDONS, DEMO, RATE_LIMIT, STORAGE, SUPPORT, TERM_DISCOUNT, dedicatedPlans, dualPrice, featuredPlan, formatTb, infraLine, infraShape, pct, planNames, plansBuying, plansWith, sharedPlans } from '../data/plans';
+import { url } from '../lib/url';
+import DeploySwitch from './DeploySwitch.astro';
+import ObfuscatedEmail from './ObfuscatedEmail.astro';
+import Price from './Price.astro';
+import PlanPrice from './PlanPrice.astro';
+
+interface Props {
+  /** `all` adds the Enterprise card, the add-on board and the discount strip. */
+  variant?: 'all' | 'lite';
+}
+
+const { variant = 'all' } = Astro.props;
+const featured = featuredPlan().id;
+/** The shared tier sits apart: it is the one plan without a backend of its own. */
+const [starter] = sharedPlans();
+const tiers = dedicatedPlans();
+
+/** What each tier buys in one line, read straight off the support matrix. */
+const supportKind = (id: keyof typeof SUPPORT) => `${SUPPORT[id].tier} · ${SUPPORT[id].hours}`;
+
+const discounts = [
+  { value: 'Flat', label: 'Any fleet size, any traffic' },
+  { value: `${pct(TERM_DISCOUNT[12])} off`, label: 'Yearly billing' },
+  { value: `${pct(TERM_DISCOUNT[36])} off`, label: '3-year term, price locked' },
+  { value: `${DEMO.days} days`, label: 'Free deployment on your cluster' },
+];
+---
+
+<DeploySwitch />
+
+<article class="entry">
+  <div class="entry-main">
+    <div class="top">
+      <span class="kind mono">{infraShape(starter)} · Obstack Cloud only</span>
+      <span class="badge badge-line">Entry</span>
+    </div>
+    <h3 class="h3">{starter.name}</h3>
+    <p class="small">{starter.blurb}</p>
+    <p class="mono entry-limit">{RATE_LIMIT.short} Your collector retries on {RATE_LIMIT.statuses}.</p>
+  </div>
+  <ul class="entry-list">{starter.features.map((f) => <li>{f}</li>)}</ul>
+  <div class="entry-buy">
+    <div class="price"><span class="amount"><Price eur={starter.price} /></span><span class="per mono">/ month</span></div>
+    <p class="addon mono">{formatTb(starter.includedTb)} storage included · no add-ons</p>
+    <p class="only mono"><span class="ob-onprem-b">Obstack Cloud only — no on-premise option</span><span class="ob-cloud-b">Obstack Cloud only</span></p>
+    <a class="btn btn-outline" href={variant === 'all' ? url(`/pricing?plan=${starter.id}#configure`) : url(`/pricing?plan=${starter.id}`)}>
+      {variant === 'all' ? 'Configure Starter' : 'See Starter'}
+    </a>
+  </div>
+</article>
+
+<div class:list={['plans', `plans-${variant}`]}>
+  {tiers.map((p) => (
+    <article class:list={['plan', { featured: p.id === featured }]}>
+      <div class="top">
+        <span class="kind mono">{supportKind(p.id)}</span>
+        {p.id === featured && <span class="badge badge-mint">Most bought</span>}
+      </div>
+      <h3 class="h3">{p.name}</h3>
+      <div class="price"><span class="amount"><PlanPrice plan={p} /></span><span class="per mono">/ month</span></div>
+      <p class="addon mono deploy-tag">
+        <span class="ob-cloud-b">Flat on Obstack Cloud · hardware included</span>
+        <span class="ob-onprem-b">Flat on your own hardware · <Price eur={p.onPrem} /> hosting credit applied</span>
+      </p>
+      <p class="small">{p.blurb}</p>
+      <div class="spec">
+        <span class="mono spec-k">{infraShape(p)}</span>
+        <span class="spec-v">{infraLine(p)}</span>
+      </div>
+      <ul>{p.features.map((f) => <li>{f}</li>)}</ul>
+      <a
+        class:list={['btn', p.id === featured ? 'btn-dark' : 'btn-outline']}
+        data-deploy-link
+        href={variant === 'all' ? url(`/pricing?plan=${p.id}#configure`) : url(`/pricing?plan=${p.id}`)}
+      >
+        {variant === 'all' ? `Configure ${p.short}` : `See ${p.short}`}
+      </a>
+    </article>
+  ))}
+
+  <article class="plan">
+    <div class="top"><span class="kind mono">{supportKind('enterprise')}</span></div>
+    <h3 class="h3">Enterprise</h3>
+    <div class="price"><span class="amount">Custom</span></div>
+    <p class="addon mono">Quoted against your estate</p>
+    <p class="small">A tailor-made solution when the list tiers do not describe your environment.</p>
+    <div class="spec">
+      <span class="mono spec-k">Sized with you</span>
+      <span class="spec-v">Cluster shape, regions and retention designed around your estate</span>
+    </div>
+    <ul>
+      <li>Air-gapped delivery and offline updates</li>
+      <li>Multi-region and multi-tenant deployments</li>
+      <li>Your own model, or an on-premise one, for Aurora AI</li>
+      <li>Custom SLA with a named engineer</li>
+      <li>Security review pack, DPA and procurement paperwork</li>
+    </ul>
+    <ObfuscatedEmail class="btn btn-outline" label="Request a quote" subject="Obstack Enterprise" />
+  </article>
+</div>
+
+{variant === 'all' && (
+  <div class="addons">
+    <div class="addons-head">
+      <span class="mono strip-title">Add-ons, when they apply</span>
+      <span class="mono strip-note">Flat too. Nothing here is metered.</span>
+    </div>
+    <div class="addon-grid">
+      {ADDONS.map((a) => {
+        const included = plansWith(a.id);
+        const buyable = plansBuying(a.id);
+        return (
+          <article class="addon-card">
+            <div class="addon-top">
+              <h4 class="h3">{a.name}</h4>
+              <span class="mono addon-kind">{a.short}</span>
+            </div>
+            <div class="addon-price">
+              <strong><Price eur={a.price} /></strong>
+              <span class="mono">{a.unit}</span>
+            </div>
+            <p class="small">{a.blurb}</p>
+            <p class="mono addon-avail">
+              {included.length > 0
+                ? `Included on ${planNames(included)} · add-on on ${planNames(buyable)}`
+                : `Available on ${planNames(buyable)}`}
+            </p>
+          </article>
+        );
+      })}
+      <article class="addon-card">
+        <div class="addon-top">
+          <h4 class="h3">Professional Services</h4>
+          <span class="mono addon-kind">Custom work</span>
+        </div>
+        <div class="addon-price"><strong>Quoted</strong><span class="mono">before any work starts</span></div>
+        <p class="small">Dashboards built for your services, alert rules and routing, migration from your current tools. Estimated in a written quote you approve, then invoiced for the time actually spent.</p>
+        <p class="mono addon-avail">Available on every plan</p>
+      </article>
+    </div>
+  </div>
+)}
+
+<div class="strip">
+  <div class="strip-head">
+    <span class="strip-title mono">One price, whatever you run</span>
+    <span class="strip-note mono">No node, user, ingest, egress or query meters</span>
+  </div>
+  <div class="strip-body">
+    <div class="discounts">
+      {discounts.map((d) => (
+        <div class="discount">
+          <span class="d-value">{d.value}</span>
+          <span class="d-label mono">{d.label}</span>
+        </div>
+      ))}
+    </div>
+    {variant === 'all'
+      ? <a class="btn btn-primary" href="#configure">Configure a quote</a>
+      : <a class="btn btn-primary" href={url('/pricing')}>See the plans</a>}
+  </div>
+</div>
+
+<p class="storage-note mono" set:html={`Go, Pro and Max include ${STORAGE.includedTb} TB of object storage in the EU or US region you pick, and can buy more at ${dualPrice(STORAGE.pricePerBlock)} per ${STORAGE.blockTb} TB per month, egress and API calls included. Starter includes ${formatTb(starter.includedTb)} and takes no add-ons. On your own hardware you supply the nodes and the bucket, and the hosting comes off the price.`} />
+
+<style>
+  /* Starter has no backend of its own, so it reads as a band rather than a peer card. */
+  .entry { background: var(--white); border: 1px solid var(--line); border-left: 4px solid var(--teal); padding: 28px 32px; margin-bottom: 24px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 260px; gap: 32px; align-items: start; }
+  .entry-main { display: flex; flex-direction: column; gap: 10px; }
+  .entry-main .h3 { font-size: 26px; }
+  .entry-limit { font-size: 12px; line-height: 1.6; color: var(--muted); }
+  .entry-list { padding-top: 0; border-top: 0; }
+  .entry-buy { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+  .entry-buy .price { margin-top: -4px; }
+  .entry-buy .amount { font-size: 40px; }
+  .entry-buy :global(.btn) { margin-top: 8px; width: 100%; }
+
+  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
+  .plan { background: var(--white); border: 1px solid var(--line); padding: 32px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .plan.featured { border: 2px solid var(--ink); padding: 31px; box-shadow: 10px 10px 0 var(--mint); }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 22px; }
+  .kind { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--link); font-weight: 700; }
+  .price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-top: -6px; }
+  .amount { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+  .per { font-size: 13px; color: var(--text-2); }
+  .addon { font-size: 12px; color: var(--text-2); margin-top: -8px; }
+  /* The credit line earns a mint rule so the swapped price is never silent. */
+  .deploy-tag :global(.ob-onprem-b) { color: var(--ink); font-weight: 700; border-left: 3px solid var(--mint); padding-left: 9px; margin-left: -12px; }
+  .only { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; color: var(--link); }
+
+  /* The sizing block is the visible reason one tier costs more than the next. */
+  .spec { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; background: var(--paper); border-left: 3px solid var(--teal); }
+  .spec-k { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--ink); }
+  .spec-v { font-size: 13px; line-height: 1.5; color: var(--text-2); }
+
+  ul { list-style: none; margin: 0; padding: 20px 0 0; border-top: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.5; }
+  li { display: flex; gap: 10px; }
+  li::before { content: ""; width: 8px; height: 8px; background: var(--teal); margin-top: 7px; flex-shrink: 0; }
+  .plan :global(.btn) { margin-top: auto; }
+
+  .addons { margin-top: 24px; background: var(--white); border: 1px solid var(--line); border-top: 4px solid var(--ink); padding: 28px 32px 32px; display: flex; flex-direction: column; gap: 24px; }
+  .addons-head { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .addons-head .strip-title { color: var(--link); font-weight: 700; }
+  .addons-head .strip-note { color: var(--muted); }
+  .addon-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; }
+  .addon-card { display: flex; flex-direction: column; gap: 12px; }
+  .addon-top { display: flex; flex-direction: column; gap: 4px; }
+  .addon-top .h3 { font-size: 20px; }
+  .addon-kind { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--link); font-weight: 700; }
+  .addon-price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .addon-price strong { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+  .addon-price .mono { font-size: 12px; color: var(--text-2); }
+  .addon-avail { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line-soft); font-size: 11px; line-height: 1.5; color: var(--muted); }
+
+  .strip { margin-top: 24px; background: var(--night); color: var(--on-dark); padding: 26px 32px 28px; display: flex; flex-direction: column; gap: 22px; }
+  .strip-head { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding-bottom: 18px; border-bottom: 1px solid rgba(232, 241, 242, 0.16); }
+  .strip .strip-title { color: var(--mint); font-weight: 700; }
+  .strip .strip-note { color: var(--on-dark-2); }
+  .strip-body { display: flex; justify-content: space-between; align-items: center; gap: 32px; flex-wrap: wrap; }
+  .discounts { display: flex; flex-wrap: wrap; }
+  .discount { display: flex; flex-direction: column; gap: 6px; padding: 2px 28px; border-left: 1px solid rgba(232, 241, 242, 0.16); }
+  .discount:first-child { padding-left: 0; border-left: 0; }
+  .d-value { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; line-height: 1; color: var(--on-dark-strong); }
+  .d-label { font-size: 12px; color: var(--on-dark-2); }
+
+  .storage-note { font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.6; }
+
+  @media (max-width: 1300px) {
+    .entry { grid-template-columns: minmax(0, 1fr) 240px; }
+    .entry-list { grid-column: 1 / -1; border-top: 1px solid var(--line-soft); padding-top: 20px; }
+    .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .addon-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 1100px) {
+    .plan.featured { box-shadow: 6px 6px 0 var(--mint); }
+  }
+  @media (max-width: 800px) {
+    .entry { grid-template-columns: minmax(0, 1fr); padding: 24px; gap: 20px; }
+    .entry-buy :global(.btn) { width: 100%; }
+    .plans { grid-template-columns: minmax(0, 1fr); }
+    .addon-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .addons { padding: 24px; }
+    .strip { padding: 24px; }
+    .strip-body { align-items: flex-start; }
+    .discounts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 0; width: 100%; }
+    .discount { padding: 2px 20px; }
+    .discount:nth-child(odd) { padding-left: 0; border-left: 0; }
+    .strip :global(.btn) { width: 100%; }
+    .plan { padding: 24px; }
+    .plan.featured { padding: 23px; }
+    .amount { font-size: 38px; }
+  }
+</style>

@@ -1,0 +1,24 @@
+---
+import { planPrice, type Plan } from '../data/plans';
+import Price from './Price.astro';
+
+interface Props {
+  plan: Plan;
+}
+
+const { plan } = Astro.props;
+const cloud = plan.price;
+const onprem = planPrice(plan, 'self-hosted');
+---
+
+{/*
+  Both prices are in the markup; `html[data-deploy]` decides which one paints.
+  A cloud-only plan has one price, so it shows through either state.
+*/}
+{plan.cloudOnly ? (
+  <Price eur={cloud} />
+) : (
+  <>
+    <span class="ob-cloud"><Price eur={cloud} /></span><span class="ob-onprem"><Price eur={onprem} /></span>
+  </>
+)}

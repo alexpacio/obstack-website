@@ -1,0 +1,13 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:12.750
+Open the Obstack workspace and connect your assistant through MCP.
+
+00:00:12.750 --> 00:01:00.593
+Explore real application metrics, OTLP logs and distributed traces in Grafana.
+
+00:01:00.593 --> 00:01:23.553
+Review the PageRoot alarm raised by Python application failures.
+
+00:01:23.553 --> 00:02:11.219
+Inspect incidents and ask Aurora to retrieve evidence from Grafana and PageRoot.

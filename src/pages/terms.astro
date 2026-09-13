@@ -1,0 +1,276 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PriceTable from '../components/PriceTable.astro';
+import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
+import { AURORA, BUSINESS_HOURS, COMMERCIAL, DEMO, PAGEROOT, PLANS, RATE_LIMIT, STORAGE, SUPPORT, TERM_DISCOUNT, USD_MARKUP, alwaysOnPlans, dedicatedPlans, dualPrice, formatTb, infraLine, infraShape, pct, planNames, planPrice, plansBuying, plansWith, sharedPlans } from '../data/plans';
+import { url } from '../lib/url';
+
+// The clauses below name plans through the catalogue, never by literal id, so
+// a repricing or a new tier cannot leave a stale figure in the contract text.
+const [starter] = sharedPlans();
+const tiers = dedicatedPlans();
+const [go, pro, max] = tiers;
+const block = dualPrice(STORAGE.pricePerBlock);
+const pagerootIn = planNames(plansWith('pageroot'));
+const pagerootBuy = planNames(plansBuying('pageroot'));
+const auroraIn = planNames(plansWith('aurora'));
+const auroraBuy = planNames(plansBuying('aurora'));
+const creditLine = tiers.map((p) => `${dualPrice(p.onPrem)} per month on ${p.name}`).join(', ');
+
+interface Section {
+  id: string;
+  title: string;
+  paras: string[];
+  table?: { head: string[]; rows: string[][] };
+  after?: string[];
+}
+
+const sections: Section[] = [
+  {
+    id: 'scope',
+    title: 'Scope',
+    paras: [
+      'These terms cover Obstack subscriptions bought on obstack.it or through a quote from us. Obstack is sold by Netter srl, P.IVA IT03569900545, Via Indipendenza, 06081 Assisi (PG), Italy. Where a signed order form or master agreement differs, that document prevails.',
+      `List prices are in euros. US dollar prices are ${pct(USD_MARKUP - 1)} above the euro list, rounded to the dollar. Prices exclude VAT. VAT is added where it applies; business customers in other EU countries with a valid VAT number are invoiced under reverse charge. The invoice is issued in the currency chosen at checkout.`,
+    ],
+  },
+  {
+    id: 'plans',
+    title: 'Plans',
+    paras: [
+      'Every plan is a flat monthly fee. Nothing on the invoice is multiplied by a node count, a host count, a user count, or the volume of telemetry you send. Adding servers to your fleet does not change the price.',
+      `What separates the plans is the infrastructure the backend runs on and the support that comes with it. ${starter.name} runs on shared capacity; ${planNames(tiers)} each get a backend of their own.`,
+    ],
+    table: {
+      head: ['Plan', 'Obstack Cloud', 'Your own hardware', 'Backend', 'Support'],
+      rows: [
+        [starter.name, dualPrice(starter.price), 'Not available', `${infraShape(starter)}, rate limited`, `${SUPPORT[starter.id].tier}, email`],
+        ...tiers.map((p) => [
+          p.name,
+          dualPrice(p.price),
+          dualPrice(planPrice(p, 'self-hosted')),
+          infraLine(p),
+          `${SUPPORT[p.id].tier}, ${SUPPORT[p.id].hoursPhrase}`,
+        ]),
+        ['Enterprise', 'Quoted', 'Quoted', 'Designed with you', `${SUPPORT.enterprise.tier}`],
+      ],
+    },
+    after: [
+      'All figures are per month, excluding VAT. Air-gapped deployments, offline updates, sites with no outbound connectivity, multi-region deployments and anything else outside this list are quoted as Enterprise.',
+    ],
+  },
+  {
+    id: 'deployment',
+    title: 'Deployment and the on-premise credit',
+    paras: [
+      `${planNames(tiers)} run either on Obstack Cloud or on hardware you already own. The software, the modules and the support are identical; only who buys the servers changes.`,
+      `On Obstack Cloud we provision and operate the backend described in the plan, in the EU or US datacenter you choose, and the object storage that comes with it. On your own hardware you supply machines matching the plan's sizing, plus S3-compatible storage, and we deploy over a VPN you control. Because we no longer buy that hosting, the list price is reduced by a fixed credit: ${creditLine}.`,
+      `${starter.name} exists only on Obstack Cloud and carries no credit.`,
+      'Moving between deployments is a change of subscription, not a new order. We agree a cutover date and prorate the difference to your renewal.',
+    ],
+  },
+  {
+    id: 'nothing-metered',
+    title: 'What is not counted',
+    paras: [
+      `On ${planNames(tiers)} nothing is metered. Linux hosts, virtual machines, Kubernetes worker nodes, pods and containers are not counted. Ingest, egress and queries are not counted. Grafana users, dashboards, alert rules, incidents, pages and on-call users are not counted. Aurora investigations are not token-metered.`,
+      'There are no true-ups, no overage invoices and no retroactive adjustments. An incident that triples your telemetry does not change the invoice.',
+      'The single limit is the capacity of the backend your plan describes. If a fleet outgrows it, we tell you and agree a move to the next plan; we never add charges automatically.',
+    ],
+  },
+  {
+    id: 'starter-limits',
+    title: `${starter.name} rate limiting`,
+    paras: [
+      `${starter.name} runs on capacity shared with other ${starter.name} tenants. Ingest is rate limited and best effort: when the bucket is empty, the endpoint sheds the batch rather than queueing it.`,
+      `A shed batch is answered with ${RATE_LIMIT.statuses} and a ${RATE_LIMIT.header} header. An OpenTelemetry collector configured with its normal retry and backoff will resend it; the OTLP exporter does this by default. Telemetry that is shed is never billed.`,
+      `The limits themselves are not published. They follow the capacity of the shared tier and change with it, and a collector that honours the status codes does not need to know them. If you need a guaranteed ingest rate, that is what a dedicated backend on ${planNames(tiers)} buys.`,
+      `${starter.name} does not include PageRoot or Aurora AI, and takes no add-ons. There is no on-premise option and no availability commitment.`,
+    ],
+  },
+  {
+    id: 'addons',
+    title: 'Add-ons',
+    paras: [
+      `PageRoot is the on-call module: schedules, escalation chains, ChatOps to Slack and Telegram, phone calls and a built-in MCP server, with unlimited on-call users and unlimited incidents. It is included in ${pagerootIn}, and costs ${dualPrice(PAGEROOT.price)} per month on ${pagerootBuy}. It is not available on ${starter.name}.`,
+      `Aurora AI is the AI SRE, bundled with unlimited ${AURORA.model} inference. On ${auroraBuy} it costs ${dualPrice(AURORA.price)} per month and runs against the shared Obstack endpoint. ${auroraIn} includes Aurora on a private, single-tenant model deployment in the region you pick. Unlimited means Aurora investigations on that subscription are not token-metered; it is not a general-purpose inference API. Running Aurora against your own model, or air-gapped with a local one, is quoted as Enterprise.`,
+      `Extra object storage is sold in blocks of ${STORAGE.blockTb} TB at ${block} per block per month, on top of the allowance the plan includes.`,
+      'Add-ons can be added at any time, prorated to the renewal date, and removed at renewal. The yearly and 3-year billing discounts apply to the plan and to PageRoot and Aurora; storage blocks are not discounted.',
+    ],
+  },
+  {
+    id: 'storage',
+    title: 'Storage',
+    paras: [
+      `${planNames(tiers)} include ${formatTb(STORAGE.includedTb)} of Obstack object storage, in the EU or US datacenter you choose, measured as compressed data at rest. ${starter.name} includes ${formatTb(starter.includedTb)}.`,
+      'Egress, API requests and early deletion are included. There is no minimum storage duration, which matters because retention deletes telemetry every day.',
+      'When your capacity is full, the oldest data expires first. We warn you at 80% and 95%. You are never billed for overage.',
+      `Increase capacity at any time in ${STORAGE.blockTb} TB blocks, prorated to your renewal date; reduce it at renewal. On your own hardware you can point GreptimeDB at any S3-compatible bucket or local disk instead, at no charge from us.`,
+    ],
+  },
+  {
+    id: 'demo',
+    title: 'Free evaluation',
+    paras: [
+      `We give a ${DEMO.days}-day evaluation at no cost, with no card and no commitment. ${DEMO.blurb}`,
+      'You give us VPN access to your nodes and to a Kubernetes cluster of your choice. We deploy the full stack on it, including PageRoot and Aurora AI, and keep it running for the evaluation period. You send real telemetry through it and judge it on your own workload.',
+      `At the end of the ${DEMO.days} days you either place an order or we remove the deployment. Nothing converts automatically and there is no invoice either way. We ask for a named technical contact and a short scope note before we start.`,
+    ],
+  },
+  {
+    id: 'custom-work',
+    title: 'Custom work',
+    paras: [
+      'Work beyond the standard setup is not included in any subscription. This covers, for example, building dashboards for your services, configuring alert rules and notification routing, and migrating dashboards, alerts, workflows and incidents from your current tools.',
+      'Custom work is billed on time and materials. We estimate it in a written quote that you approve before any work starts, and invoice the time actually spent.',
+    ],
+  },
+  {
+    id: 'discounts',
+    title: 'Discounts',
+    paras: [
+      `Yearly billing takes ${pct(TERM_DISCOUNT[12])} off the plan and its add-ons. A 3-year term takes ${pct(TERM_DISCOUNT[36])} off the same fees, is billed yearly, and locks those prices for the whole term. Storage blocks are not discounted. Monthly billing is at list.`,
+      'There are no volume discounts, because there is no volume to discount: the price does not depend on how many nodes, users or gigabytes you put through it.',
+    ],
+  },
+  {
+    id: 'billing',
+    title: 'Billing and payment',
+    paras: [
+      `Subscriptions are billed monthly at list, or yearly in advance. 3-year terms are billed yearly. Pay by bank transfer within ${COMMERCIAL.paymentDays} days of the invoice date. Card payments are not accepted.`,
+      `If an invoice is more than ${COMMERCIAL.paymentDays} days overdue, Cloud access may be suspended after ${COMMERCIAL.suspensionNoticeDays} days’ written notice. Self-hosted license keys, git access and updates are suspended the same way; copies you already have remain usable under the PolyForm Internal Use License for internal business operations.`,
+    ],
+  },
+  {
+    id: 'renewal',
+    title: 'Term, renewal and cancellation',
+    paras: [
+      `Monthly subscriptions renew each month unless cancelled in writing before the next invoice. Yearly and 3-year subscriptions renew for the same length of term unless either side cancels in writing at least ${COMMERCIAL.cancelNoticeDays} days before the renewal date.`,
+      `Yearly renewals can rise by at most ${pct(COMMERCIAL.renewalCap)} over the previous price. 3-year terms are locked for their full length. Monthly list can rise on ${COMMERCIAL.cancelNoticeDays} days’ notice, at most ${pct(COMMERCIAL.renewalCap)} in a calendar year.`,
+      `A first order can be cancelled within ${COMMERCIAL.refundDays} days for a full refund. After that, fees for the current term are not refunded, except as service credits.`,
+    ],
+  },
+  {
+    id: 'sla',
+    title: 'Service level on Obstack Cloud',
+    paras: [
+      `On ${pro.name} and ${max.name}, the OTLP ingest endpoint and the Grafana and query interfaces are available at least ${pct(COMMERCIAL.slaUptime)} of each calendar month. ${max.name} runs a ${max.infra.nodes}-node cluster, so a single node failure is not an outage. Maintenance announced at least 5 days ahead, and outages caused by the customer or by force majeure, do not count.`,
+      `${go.name} runs on a single node and carries no availability commitment: planned maintenance takes the backend down for a window we announce in advance. ${starter.name} is best effort and carries no commitment of any kind.`,
+    ],
+    table: {
+      head: ['Monthly availability', 'Service credit'],
+      rows: COMMERCIAL.slaCredits.map((c) => [
+        `Below ${(c.below * 100).toFixed(1)}%`,
+        `${pct(c.credit)} of that month’s fees`,
+      ]),
+    },
+    after: [`Credits are applied to the next invoice when claimed within ${COMMERCIAL.refundDays} days of the end of the month.`],
+  },
+  {
+    id: 'support',
+    title: 'Support',
+    paras: ['Response targets measure the time to a first reply from an engineer. The tier names the engineers who answer: the first line handles known issues and configuration, the second the stack itself, the third the people who build it.'],
+    table: {
+      head: ['Plan', 'Tier', 'Channel', 'P1 · service down', 'P2 · degraded', 'P3 · question'],
+      rows: [
+        [starter.name, SUPPORT[starter.id].tier, SUPPORT[starter.id].channel, SUPPORT[starter.id].p1, SUPPORT[starter.id].p2, SUPPORT[starter.id].p3],
+        ...tiers.map((p) => [p.name, SUPPORT[p.id].tier, SUPPORT[p.id].channel, SUPPORT[p.id].p1, SUPPORT[p.id].p2, SUPPORT[p.id].p3]),
+        ['Enterprise', SUPPORT.enterprise.tier, SUPPORT.enterprise.channel, SUPPORT.enterprise.p1, SUPPORT.enterprise.p2, SUPPORT.enterprise.p3],
+      ],
+    },
+    after: [`Business hours are ${BUSINESS_HOURS}. ${planNames(alwaysOnPlans())} and Enterprise are answered around the clock, every day of the year.`],
+  },
+  {
+    id: 'licenses',
+    title: 'Self-hosted licenses',
+    paras: [
+      'The first month of a self-hosted subscription, Bee and PageRoot (when PageRoot is on the order) are delivered under a license key: Ubuntu packages you run, without source.',
+      'After that first month the PolyForm Internal Use License 1.0.0 applies to Bee and to PageRoot. We send an agreement to sign. Once it is signed, you are granted git access to the source. You may use and modify that software for the internal business operations of you and your company. You may not distribute it, sublicense it or transfer the license.',
+      'An active paid subscription is how you keep git access and updates. When the subscription ends, git access stops. Copies you already have remain usable under PolyForm Internal Use for internal use.',
+      `Aurora is Apache 2.0 software. When it is on the order, Obstack deploys it and hosts ${AURORA.model} for Aurora investigations on that subscription.`,
+      'The open-source components of the stack (Beyla, Vector, Kafka, GreptimeDB, Grafana and Prometheus Alertmanager) stay under their own licenses. The subscription pays for Bee, PageRoot and Aurora where they are on the order, the hosting where we provide it, our integration work and our support.',
+    ],
+  },
+  {
+    id: 'data',
+    title: 'Your data',
+    paras: [
+      'You own your telemetry. On Obstack Cloud we process it only to run the service, in the EU or US datacenter you chose, under a data processing agreement per Article 28 GDPR, available on request with the list of sub-processors.',
+      `Export at any time with SQL, PromQL or the raw Parquet files. When a Cloud subscription ends you have ${COMMERCIAL.exportDays} days to export; we then delete tenant data within a further ${COMMERCIAL.exportDays} days.`,
+    ],
+  },
+  {
+    id: 'liability',
+    title: 'Liability',
+    paras: [
+      'Each party’s total liability under a subscription is capped at the fees paid in the 12 months before the claim. Neither party is liable for indirect or consequential loss. These limits do not apply where the law does not allow them.',
+    ],
+  },
+  {
+    id: 'law',
+    title: 'Governing law',
+    paras: ['These terms are governed by Italian law. Disputes go to the competent court for Assisi, Italy, where Netter srl has its registered office.'],
+  },
+];
+---
+
+<Layout title="Commercial terms · Obstack" description="Obstack commercial terms: flat plans, deployment and the on-premise credit, storage, rate limiting, discounts, billing, renewal, service levels, support and data.">
+  <section class="hero">
+    <div class="wrap terms-hero">
+      <div class="stack" style="gap: 22px; max-width: 820px">
+        <div class="eyebrow rise">Commercial terms</div>
+        <h1 class="display rise">Plain terms, no fine print.</h1>
+        <p class="lead rise-2">What you pay for, what is included, and what happens at renewal. Last updated 11 September 2026.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap terms">
+      <nav class="toc mono" aria-label="Sections">
+        {sections.map((s, i) => <a href={`#${s.id}`}><span>{String(i + 1).padStart(2, '0')}</span>{s.title}</a>)}
+      </nav>
+      <div class="body">
+        {sections.map((s, i) => (
+          <section id={s.id} class="clause">
+            <h2 class="h3"><span class="mono">{String(i + 1).padStart(2, '0')}</span>{s.title}</h2>
+            {s.paras.map((p) => <p class="body-2" set:html={p} />)}
+            {s.table && <PriceTable head={s.table.head} rows={s.table.rows} minWidth={s.table.head.length > 2 ? 720 : 0} />}
+            {s.after?.map((p) => <p class="small">{p}</p>)}
+          </section>
+        ))}
+        <div class="panel contact">
+          <p class="body-2">Questions about these terms, or need an order form and DPA for procurement?</p>
+          <div class="btn-row">
+            <ObfuscatedEmail class="btn btn-dark" label="Email us" subject="Commercial terms" />
+            <a class="btn btn-outline" href={url('/pricing#configure')}>Configure a quote</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .terms-hero { padding-top: 88px; padding-bottom: 88px; }
+  .terms { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 72px; align-items: start; }
+  .toc { position: sticky; top: 64px; display: flex; flex-direction: column; border-top: 2px solid var(--ink); font-size: 13px; }
+  .toc a { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); color: var(--text-2); text-decoration: none; }
+  .toc a:hover { color: var(--ink); }
+  .toc span { color: var(--link); }
+  .body { display: flex; flex-direction: column; gap: 56px; max-width: 860px; }
+  .clause { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 64px; }
+  .clause h2 { display: flex; gap: 14px; align-items: baseline; padding-bottom: 12px; border-bottom: 2px solid var(--ink); }
+  .clause h2 .mono { font-size: 13px; color: var(--link); }
+  .contact { padding: 32px; display: flex; flex-direction: column; gap: 20px; }
+  @media (max-width: 1100px) {
+    .terms { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+    .toc { position: static; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
+  }
+  @media (max-width: 800px) {
+    .terms-hero { padding-top: 48px; padding-bottom: 56px; }
+    .body { gap: 40px; }
+    .toc { grid-template-columns: minmax(0, 1fr); }
+    .contact { padding: 24px; }
+  }
+</style>

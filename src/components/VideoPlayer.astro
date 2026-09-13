@@ -1,0 +1,82 @@
+---
+import { runTime, type Clip } from '../data/videos';
+import { url } from '../lib/url';
+
+interface Props {
+  clip: Clip;
+  /** The mint REC badge: on for the headline recording, off for the chapters. */
+  rec?: boolean;
+  /** Chapters are below the fold and only fetch once someone presses play. */
+  preload?: 'none' | 'metadata';
+}
+
+const { clip, rec = false, preload = 'metadata' } = Astro.props;
+const { id, label, seconds, alt } = clip;
+const hasFoot = Astro.slots.has('default');
+---
+
+<figure class="player">
+  <figcaption class="chrome">
+    {rec && <span class="badge badge-mint">Rec</span>}
+    <span class="label">{label}</span>
+    <span class="time mono">{runTime(seconds)}</span>
+  </figcaption>
+
+  <video controls playsinline preload={preload} poster={url(`/videos/${id}-poster.jpg`)} aria-label={alt}>
+    <source src={url(`/videos/obstack-${id}.mp4`)} type="video/mp4" />
+    <track kind="captions" src={url(`/videos/${id}-en.vtt`)} srclang="en" label="English" default />
+    <p class="fallback"><a href={url(`/videos/obstack-${id}.mp4`)}>Download the recording</a></p>
+  </video>
+
+  {hasFoot && <div class="foot"><slot /></div>}
+</figure>
+
+<style>
+  /* A dark media block on the paper page: square, like every other surface. */
+  .player {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--ink);
+    color: var(--on-dark);
+  }
+
+  .chrome, .foot {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.4;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--on-dark-2);
+  }
+  .chrome { border-bottom: 1px solid var(--on-dark-line); }
+  .label { min-width: 0; overflow-wrap: anywhere; }
+  .time { margin-left: auto; color: var(--on-dark-3); letter-spacing: 0.08em; }
+
+  video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--night);
+  }
+  .fallback { padding: 16px; }
+  .fallback a { color: var(--mint); }
+
+  .foot {
+    border-top: 1px solid var(--on-dark-line);
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .foot :global(a) { color: var(--mint); text-decoration: none; }
+  .foot :global(a:hover) { color: var(--mint-hover); }
+  .foot :global(b) { color: var(--mint); font-weight: 500; margin: 0 6px; }
+
+  @media (max-width: 800px) {
+    .chrome, .foot { padding: 10px 12px; font-size: 10px; gap: 8px; }
+  }
+</style>

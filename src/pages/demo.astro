@@ -1,0 +1,100 @@
+---
+import Layout from '../layouts/Layout.astro';
+import VideoPlayer from '../components/VideoPlayer.astro';
+import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
+import { url } from '../lib/url';
+import { CHAPTERS, JOURNEY, runTime } from '../data/videos';
+import { DEMO } from '../data/plans';
+import { breadcrumbSchema } from '../lib/seo';
+---
+
+<Layout
+  title="Watch Obstack in action"
+  description="A real UI recording of the journey from Python application telemetry to Grafana, PageRoot alarms and an Aurora AI investigation."
+  schema={[breadcrumbSchema('/demo', 'Watch Obstack in action')]}
+>
+  <section class="hero">
+    <div class="wrap hero-grid demo-hero">
+      <div class="stack" style="gap: 26px">
+        <div class="eyebrow rise">Watch the stack at work</div>
+        <h1 class="display rise">From a signal<br />to an answer.</h1>
+        <p class="lead rise-2">A Python application sends metrics, logs and traces through Vector. Follow the evidence in Grafana, review the alarm in PageRoot, then ask Aurora to investigate — {runTime(JOURNEY.seconds)} of the working stack, uncut in the parts that matter.</p>
+      </div>
+
+      <div class="stack rise-3" style="gap: 16px">
+        <VideoPlayer clip={JOURNEY} rec>
+          <span>Grafana <b>&rarr;</b> PageRoot <b>&rarr;</b> Aurora</span>
+          <a href="#chapters">Chapter by chapter &darr;</a>
+        </VideoPlayer>
+        <p class="small note">Recorded in a working Obstack demo, against a Python application that really fails. Loading screens and model response waits are shortened in the edit; the interactions are not.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chapters -->
+  <section class="section" id="chapters">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">The journey, in three stops</div>
+          <h2 class="h2">Cut where the work changes hands.</h2>
+        </div>
+        <p class="body-2">The same incident as the full recording, split so you can jump to the part you came for. Captions in English on every clip.</p>
+      </div>
+
+      <div class="chapters">
+        {CHAPTERS.map((chapter, i) => (
+          <article class="chapter">
+            <div class="stack">
+              <div class="eyebrow">Chapter {String(i + 1).padStart(2, '0')} / {runTime(chapter.seconds)}</div>
+              <h3 class="h3">{chapter.title}</h3>
+              <p class="body-2">{chapter.text}</p>
+            </div>
+            <VideoPlayer clip={chapter} preload="none" />
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="dark">
+    <div class="wrap cta-band">
+      <div class="stack" style="gap: 18px">
+        <h2 class="h2">See the same screens on your own telemetry.</h2>
+        <p class="body-2" style="font-size: 18px; max-width: 620px">The recording runs on a demo cluster. The {DEMO.days}-day evaluation runs on yours: we deploy the full stack on a Kubernetes cluster of your choice and you judge it on your own data.</p>
+      </div>
+      <div class="btn-row">
+        <ObfuscatedEmail class="btn btn-primary" label={`Request the ${DEMO.days}-day evaluation`} subject={`${DEMO.days}-day evaluation`} />
+        <a class="btn btn-ghost" href={url('/pricing')}>See the plans</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* One column: the recording is the width of the page, not a sidebar. */
+  .demo-hero { grid-template-columns: minmax(0, 1fr); gap: 44px; align-items: start; }
+  .demo-hero .lead { max-width: 720px; }
+  .note { color: var(--on-dark-3); max-width: 780px; }
+
+  /* One row per chapter: the copy on the left, the recording big enough to read. */
+  .chapters { display: grid; gap: 56px; }
+  .chapter {
+    display: grid;
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+    gap: 48px;
+    align-items: start;
+    padding-top: 26px;
+    border-top: 2px solid var(--ink);
+  }
+  .chapter .stack { gap: 12px; }
+
+  @media (max-width: 1100px) {
+    .chapter { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  }
+  @media (max-width: 800px) {
+    .demo-hero { gap: 32px; }
+    .chapters { gap: 40px; }
+    .chapter { padding-top: 20px; gap: 20px; }
+  }
+</style>

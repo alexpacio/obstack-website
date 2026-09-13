@@ -1,0 +1,293 @@
+---
+import Logo from './Logo.astro';
+import ObfuscatedEmail from './ObfuscatedEmail.astro';
+import { url } from '../lib/url';
+import { DEMO } from '../data/plans';
+
+interface Props {
+  active?: 'bee' | 'pageroot' | 'grafana' | 'aurora' | 'stack' | 'pricing' | 'buy';
+  /** Minimal header used on checkout. */
+  checkout?: boolean;
+}
+
+const { active, checkout = false } = Astro.props;
+
+const groups = [
+  {
+    label: 'Products',
+    about: 'Obstack-owned: the Bee agent and PageRoot on-call',
+    items: [
+      { id: 'bee', label: 'Bee', href: url('/bee') },
+      { id: 'pageroot', label: 'PageRoot', href: url('/pageroot') },
+    ],
+  },
+  {
+    label: 'The stack',
+    about: 'Grafana, Aurora AI, and the full Obstack Stack around them',
+    items: [
+      { id: 'grafana', label: 'Grafana', href: url('/grafana') },
+      { id: 'aurora', label: 'Aurora AI', href: url('/aurora') },
+      { id: 'stack', label: 'Stack', href: url('/stack') },
+    ],
+  },
+];
+
+const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
+---
+
+<header class="site-header">
+  <div class="aurora" aria-hidden="true"></div>
+  <div class="wrap bar">
+    <a href={url('/')} class="home" aria-label="Obstack home"><Logo size={28} /></a>
+
+    {checkout ? (
+      <div class="secure">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#63E8B0" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="5" y="11" width="14" height="10"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+        <span>Secure checkout · <ObfuscatedEmail /></span>
+        <div class="ob-cur" role="group" aria-label="Currency">
+          <button type="button" data-set-currency="eur" aria-label="Show prices in euros">EUR</button>
+          <button type="button" data-set-currency="usd" aria-label="Show prices in US dollars">USD</button>
+        </div>
+      </div>
+    ) : (
+      <>
+        <nav class="links" aria-label="Main">
+          {groups.map((g) => (
+            <div class:list={['g', { on: g.items.some((i) => i.id === active) }]} title={g.about}>
+              <span class="gl">{g.label}</span>
+              {g.items.map((l) => (
+                <a href={l.href} class:list={['nl', { on: active === l.id }]} aria-current={active === l.id ? 'page' : undefined}>{l.label}</a>
+              ))}
+            </div>
+          ))}
+          <a href={buy.href} class:list={['nl', { on: active === buy.id }]} aria-current={active === buy.id ? 'page' : undefined}>{buy.label}</a>
+          <ObfuscatedEmail label="Contact" class="nl" />
+        </nav>
+        <div class="right">
+          <div class="ob-cur" role="group" aria-label="Currency">
+            <button type="button" data-set-currency="eur" aria-label="Show prices in euros">EUR</button>
+            <button type="button" data-set-currency="usd" aria-label="Show prices in US dollars">USD</button>
+          </div>
+          <a class="btn btn-primary btn-sm" href={url('/pricing#configure')}>Get a quote</a>
+          <details class="mnav">
+            <summary aria-label="Menu">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+            </summary>
+            <nav aria-label="Mobile">
+              {groups.map((g) => (
+                <div class="mg">
+                  <span class="mgl">{g.label}</span>
+                  <p class="mga">{g.about}</p>
+                  {g.items.map((l) => <a href={l.href}>{l.label}</a>)}
+                </div>
+              ))}
+              <div class="mg">
+                <span class="mgl">Buy</span>
+                <p class="mga">Flat plans, the configurator and a quote you can take to procurement</p>
+                <a href={buy.href}>{buy.label}</a>
+                <a href={url('/pricing#configure')}>Get a quote</a>
+                <a href={url('/pricing#demo')}>{DEMO.days} days free</a>
+              </div>
+              <div class="mg">
+                <span class="mgl">Talk to us</span>
+                <ObfuscatedEmail label="Contact" />
+              </div>
+            </nav>
+          </details>
+        </div>
+      </>
+    )}
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 50;
+    isolation: isolate;
+    overflow: visible;
+    background: #010302;
+    border-bottom: 1px solid rgba(28, 72, 48, 0.45);
+    box-shadow: 0 10px 32px -20px rgba(4, 24, 12, 0.9);
+  }
+  .aurora {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .aurora::before,
+  .aurora::after {
+    content: "";
+    position: absolute;
+    inset: -60% -25%;
+    pointer-events: none;
+  }
+  .aurora::before {
+    background:
+      radial-gradient(ellipse 16% 160% at 12% 85%, rgba(24, 80, 52, 0.4), transparent 72%),
+      radial-gradient(ellipse 12% 180% at 38% 10%, rgba(10, 36, 22, 0.6), transparent 70%),
+      radial-gradient(ellipse 18% 150% at 58% 110%, rgba(32, 96, 60, 0.28), transparent 72%),
+      radial-gradient(ellipse 14% 190% at 82% 25%, rgba(6, 22, 14, 0.75), transparent 68%),
+      radial-gradient(ellipse 20% 140% at 94% 80%, rgba(40, 110, 68, 0.22), transparent 68%),
+      linear-gradient(180deg, #06140c 0%, #010302 100%);
+    animation: aurora-shift 22s ease-in-out infinite alternate;
+  }
+  .aurora::after {
+    background:
+      linear-gradient(105deg, transparent 10%, rgba(16, 56, 36, 0.3) 34%, rgba(28, 88, 54, 0.18) 52%, rgba(6, 20, 12, 0.45) 72%, rgba(36, 100, 64, 0.12) 86%, transparent 97%),
+      radial-gradient(ellipse 24% 220% at 42% 50%, rgba(20, 72, 44, 0.22), transparent 74%),
+      radial-gradient(ellipse 20% 240% at 76% 48%, rgba(12, 48, 30, 0.3), transparent 72%);
+    mix-blend-mode: screen;
+    animation: aurora-shift 28s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes aurora-shift {
+    from { transform: translateX(-6%) rotate(-2deg) scale(1.05); }
+    to { transform: translateX(7%) rotate(2deg) scale(1.12); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aurora::before,
+    .aurora::after { animation: none; }
+  }
+  .bar { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; height: var(--hdr-h); gap: 24px; min-width: 0; }
+  .home { text-decoration: none; min-width: 0; flex: 1 1 auto; }
+  .home :global(.logo) { max-width: 100%; }
+  .links { display: flex; gap: 24px; align-items: center; }
+  .g {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 4px 12px 4px 10px;
+    border: 1px solid rgba(232, 241, 242, 0.22);
+    background: rgba(0, 0, 0, 0.22);
+    white-space: nowrap;
+  }
+  .g.on { border-color: rgba(99, 232, 176, 0.45); }
+  .gl {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mint);
+    font-weight: 700;
+  }
+  .nl, .links :global(.nl) { position: relative; color: #B9CCD3; text-decoration: none; font-size: 14px; font-weight: 500; padding: 4px 0; border-bottom: 2px solid transparent; }
+  .g .nl::before,
+  .g + .g::before,
+  .links > .g + .nl::before,
+  .links > .nl + :global(.nl)::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 12px;
+    background: rgba(232, 241, 242, 0.28);
+    pointer-events: none;
+  }
+  .nl:hover, .links :global(.nl:hover) { color: #fff; }
+  .nl.on { color: #fff; font-weight: 700; border-bottom-color: var(--mint); }
+  .right { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-shrink: 0; }
+  .secure { display: flex; align-items: center; gap: 10px; color: var(--on-dark-2); font-size: 14px; }
+  .secure :global(a) { color: var(--on-dark); }
+
+  .mnav { display: none; position: relative; flex-shrink: 0; }
+  .mnav summary { list-style: none; cursor: pointer; color: #F6FBFB; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(232, 241, 242, 0.55); background: rgba(0,0,0,0.2); }
+  .mnav summary::-webkit-details-marker { display: none; }
+  .mnav nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--hdr-h);
+    width: 100%;
+    max-width: none;
+    height: calc(100dvh - var(--hdr-h));
+    max-height: calc(100dvh - var(--hdr-h));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    background: #0A0F12;
+    border: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 32px;
+    z-index: 80;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.55);
+  }
+  .mnav nav :global(a) {
+    color: var(--on-dark);
+    text-decoration: none;
+    padding: 14px var(--gutter);
+    font-size: 17px;
+    font-family: var(--font-sans);
+  }
+  .mnav nav :global(a:hover) { background: rgba(99, 232, 176, 0.08); }
+  .mnav nav :global(a:active) { background: rgba(99, 232, 176, 0.14); }
+  .mg { display: flex; flex-direction: column; padding: 10px 0 12px; border-bottom: 1px solid var(--on-dark-line); }
+  .mg:last-of-type { border-bottom: none; }
+  .mgl {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mint);
+    font-weight: 700;
+    padding: 10px var(--gutter) 2px;
+  }
+  .mga { margin: 0; padding: 0 var(--gutter) 8px; font-size: 12px; line-height: 1.4; color: var(--on-dark-3); }
+
+  .mnav[open] summary { border-color: var(--mint); color: var(--mint); }
+
+  @media (max-width: 1100px) {
+    .links { display: none; }
+    .mnav { display: block; }
+    .right .btn { display: none; }
+  }
+  @media (max-width: 800px) {
+    .bar { gap: 12px; }
+    .secure { font-size: 13px; }
+    .secure span { display: none; }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var mnav = document.querySelector('details.mnav');
+    if (!mnav) return;
+    var close = function () { mnav.open = false; };
+    // A full-height sheet covers the page, so stop the page scrolling behind it.
+    mnav.addEventListener('toggle', function () {
+      document.body.style.overflow = mnav.open ? 'hidden' : '';
+    });
+    // A full-width sheet has no visible edge to tap, so close on anything outside it.
+    document.addEventListener('click', function (e) {
+      if (mnav.open && !mnav.contains(e.target)) close();
+    });
+    mnav.addEventListener('click', function (e) {
+      if (e.target.closest('a')) close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') close();
+    });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 1100) close();
+    });
+  })();
+
+  document.querySelectorAll('[data-set-currency]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var c = btn.getAttribute('data-set-currency');
+      if (c !== 'eur' && c !== 'usd') return;
+      try { localStorage.setItem('obstack-currency', c); } catch (e) {}
+      document.documentElement.setAttribute('data-currency', c);
+      window.dispatchEvent(new CustomEvent('obstack:currency', { detail: c }));
+    });
+  });
+</script>

@@ -1,0 +1,14 @@
+---
+import { formatPrice } from '../data/plans';
+
+interface Props {
+  eur: number;
+  class?: string;
+}
+
+const { eur, class: className } = Astro.props;
+---
+
+<span class:list={['ob-price', className]}>
+  <span class="ob-usd">{formatPrice(eur, 'usd')}</span><span class="ob-eur">{formatPrice(eur, 'eur')}</span>
+</span>

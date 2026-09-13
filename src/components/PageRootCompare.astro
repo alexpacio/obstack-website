@@ -1,0 +1,205 @@
+---
+import { PAGEROOT, dualPrice, planNames, plansWith } from '../data/plans';
+import CompareTable from './CompareTable.astro';
+
+// Obstack cells follow the EUR/USD switch; the vendor columns are US list in USD.
+const flat = dualPrice(PAGEROOT.price);
+const includedNames = planNames(plansWith('pageroot'));
+
+const columns = ['Obstack PageRoot', 'PagerDuty Professional', 'Rootly On-Call + IR', 'incident.io Team + on-call'];
+
+const rows = [
+  {
+    label: 'How it is priced',
+    win: [0],
+    cells: [
+      `Flat: ${flat} per month for the module, whoever is on the rota. Included in ${includedNames}`,
+      '$21 per user / month',
+      '$20 On-Call + $20 Incident Response = $40 per user / month',
+      '$15 Team + $10 on-call = $25 per user / month',
+    ],
+  },
+  {
+    label: 'Fifty on-call users, per year',
+    win: [0],
+    cells: [
+      `${dualPrice(PAGEROOT.price * 12)}, or nothing on top of ${includedNames}`,
+      '$12,600',
+      '$24,000',
+      '$15,000',
+    ],
+  },
+  {
+    label: 'Adding the fifty-first person to the rota',
+    win: [0],
+    cells: [
+      'Costs nothing. There are no seats to buy',
+      '+$21 / month',
+      '+$40 / month',
+      '+$25 / month',
+    ],
+  },
+  {
+    label: 'What it buys',
+    win: [0],
+    cells: [
+      'On-call, escalations, ChatOps and a built-in MCP server, one SKU, unlimited users and incidents',
+      'On-call, escalations, ChatOps, status page (250 subscribers)',
+      'On-call and Slack-native incident command, as two products',
+      'Incident command in Slack/Teams, plus a paid on-call add-on',
+    ],
+  },
+  {
+    label: 'Self-hosted',
+    win: [0],
+    cells: [
+      'Yes, on your own hardware; or we run it on Obstack Cloud. Air-gapped delivery is Enterprise, quoted',
+      'No, SaaS only',
+      'No, SaaS only',
+      'No, SaaS only',
+    ],
+  },
+  {
+    label: 'Where your incident data lives',
+    win: [0],
+    cells: [
+      'Your servers, or the EU or US datacenter you pick on Obstack Cloud',
+      'Vendor SaaS, region by plan',
+      'Vendor SaaS',
+      'Vendor SaaS',
+    ],
+  },
+  {
+    label: 'Next to your telemetry',
+    win: [0],
+    cells: [
+      'Same stack as Grafana, Alertmanager and GreptimeDB, one vendor and one support contract',
+      'Integrates with your monitoring; separate vendor',
+      'Integrates with your monitoring; separate vendor',
+      'Integrates with your monitoring; separate vendor',
+    ],
+  },
+  {
+    label: 'Source code access',
+    win: [0],
+    cells: [
+      'Git access under the PolyForm Internal Use License while you subscribe',
+      'No',
+      'No',
+      'No',
+    ],
+  },
+  {
+    label: 'On-call schedules',
+    win: [0, 2],
+    cells: [
+      'Web rotations, iCal import, Terraform-managed shifts, shift swaps',
+      'Yes, more schedules than Free',
+      'Yes, plus shadow rotations, PTO calendars and a pay calculator',
+      'Yes, on the on-call add-on',
+    ],
+  },
+  {
+    label: 'Escalation chains',
+    win: [0],
+    cells: [
+      'Wait, notify on-call, round-robin, time windows, alert-count thresholds, outgoing webhooks as steps, repeat the chain',
+      'Yes, more policies than Free',
+      'Yes',
+      'Yes',
+    ],
+  },
+  {
+    label: 'Alert grouping',
+    win: [0, 2],
+    cells: [
+      'Grouping id and routes from the payload, on top of Alertmanager grouping, inhibition and silences in the same stack',
+      'Dedup and basic grouping; ML grouping is AIOps, extra',
+      'Alert grouping and noise reduction included on On-Call',
+      'On the incident product',
+    ],
+  },
+  {
+    label: 'ChatOps',
+    win: [0],
+    cells: [
+      'Slack, Microsoft Teams, Telegram and outgoing webhooks, all on the one plan',
+      'Basic Slack and Teams on Professional',
+      'Slack-first; Teams on Incident Response',
+      'Slack and Teams native',
+    ],
+  },
+  {
+    label: 'Built-in MCP server',
+    win: [0],
+    cells: [
+      'Yes, in-process, on your network',
+      'No',
+      'MCP on AI SRE, a separate product, quoted',
+      'No public MCP for on-call',
+    ],
+  },
+  {
+    label: 'AI / AIOps',
+    win: [0, 3],
+    cells: [
+      'MCP for agents you run, including Aurora AI in the same stack, with no per-event meter',
+      'PagerDuty Advance and AIOps are extra',
+      'AI SRE is a third product, quoted',
+      'AI included on Team and Pro',
+    ],
+  },
+  {
+    label: 'Phone, SMS, push',
+    win: [1, 2],
+    cells: [
+      'SMS and phone calls via Twilio (your account). ChatOps, email and webhooks included',
+      'Unlimited SMS and phone on paid plans, plus push',
+      'SMS, voice, push, bypass DND',
+      'Mobile and ChatOps; phone varies by plan',
+    ],
+  },
+  {
+    label: 'Live call routing',
+    win: [2],
+    cells: [
+      'No',
+      'Add-on',
+      'Included on On-Call, one number on Essentials',
+      'Not a headline feature',
+    ],
+  },
+  {
+    label: 'Public status page',
+    win: [2, 3],
+    cells: [
+      'No',
+      'Up to 250 subscribers on Professional',
+      'Included on Incident Response (1 external)',
+      'Included',
+    ],
+  },
+  {
+    label: 'Slack-native incident command',
+    win: [2, 3],
+    cells: [
+      'Publishes alert groups; not a full incident room product',
+      'Basic chat experience on Professional',
+      'Yes: roles, timelines, @Rootly',
+      'Yes: @incident, roles, timelines',
+    ],
+  },
+  {
+    label: 'Cost during an incident',
+    win: [0],
+    cells: [
+      'Unchanged: seats and nodes, no event meter',
+      'Seats unchanged; AIOps is per accepted event if you buy it',
+      'Seats unchanged',
+      'Seats unchanged',
+    ],
+  },
+];
+---
+
+<CompareTable columns={columns} ours={0} rows={rows} />

@@ -1,0 +1,303 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Arrow from '../components/Arrow.astro';
+import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
+import PageRootCompare from '../components/PageRootCompare.astro';
+import PriceTable from '../components/PriceTable.astro';
+import { url } from '../lib/url';
+import { PAGEROOT, USD_MARKUP, dualPrice, formatPrice, formatUsd, pct, planNames, plansBuying, plansWith } from '../data/plans';
+import Price from '../components/Price.astro';
+import { breadcrumbSchema, softwareSchema } from '../lib/seo';
+
+// Which plans carry PageRoot and which buy it comes off the catalogue.
+const included = plansWith('pageroot');
+const buyable = plansBuying('pageroot');
+const includedNames = planNames(included);
+const [addTo] = buyable;
+const [lead] = included;
+// USD string for the meta description and JSON-LD, which are not interactive.
+const flat = formatPrice(PAGEROOT.price, 'usd');
+/** Rota sizes for the seat-price comparison. Flat wins harder as the rota grows. */
+const ROTAS = [10, 25, 50, 100];
+const SEATS = [
+  { name: 'PagerDuty Professional', seat: 21 },
+  { name: 'Rootly On-Call + IR', seat: 40 },
+  { name: 'incident.io Team + on-call', seat: 25 },
+];
+
+const steps = [
+  ['Ingest', 'Prometheus Alertmanager, Grafana, inbound webhooks and email land on a unique URL per integration. Each source has templates that interpret its payload.'],
+  ['Group and route', 'Related alerts become one alert group. The first matching route picks the escalation chain and the ChatOps channels that see it.'],
+  ['Escalate', 'Chains notify the schedule, wait, round-robin, honour time windows and thresholds, fire outgoing webhooks, and loop until someone acts.'],
+  ['Close', 'Acknowledge, silence or resolve. The source can auto-acknowledge or auto-resolve when the firing condition clears.'],
+];
+
+const qualities = [
+  ['Alert groups, not a firehose', 'Incoming alerts are grouped by a grouping id you control. One noisy rule becomes one incident the on-call works, with a state machine: firing, acknowledged, silenced or resolved.', 'firing · acknowledged · silenced · resolved'],
+  ['Routes from the payload', 'A route is a template that must evaluate true. Severity, service, namespace or any field in the JSON can send the group down a different chain and into a different Slack channel.', 'first matching route wins'],
+  ['Escalation chains', 'Steps include wait, notify a user or the current on-call, notify a whole team, round-robin, time-of-day gates, alert-count thresholds, outgoing webhooks and a repeat of the chain.', 'default and important notification sets'],
+  ['Schedules that match how teams actually work', 'Build rotations in the UI, import an iCal calendar, or manage shifts in Terraform. Shift-swap requests let a teammate take a stretch of on-call without rewriting the rotation.', 'web · iCal · Terraform · shift swaps'],
+  ['Personal notification policies', 'Each responder sets a default path and an important path: ChatOps, webhook, email, SMS or a phone call, with delays between steps. Escalation steps choose which path to use.', 'default · important'],
+  ['ChatOps, Twilio, outgoing webhooks', 'Publish groups to Slack, Microsoft Teams or Telegram. SMS and phone calls go through Twilio: plug in your Twilio account, PageRoot places the call or sends the text. Outgoing webhooks fire on create, acknowledge, resolve, silence or as an escalation step.', 'Slack · Teams · Telegram · Twilio · webhooks'],
+];
+
+const mcp = [
+  ['Who is on call', 'Agents ask PageRoot for the current shift, the next rotation and who to page, instead of scraping a calendar.'],
+  ['Work the alert group', 'List firing groups, read the payload and timeline, then acknowledge, silence or resolve through the same actions a human uses in the UI.'],
+  ['Escalation progress', 'See which step is running, who was notified, and whether the chain is waiting, looping or stopped because someone acted.'],
+  ['On your infrastructure', 'The MCP server is part of PageRoot. It does not phone home. Aurora AI, and any other assistant you allow, talks to it on the network you already trust.'],
+];
+
+const split = [
+  ['Prometheus Alertmanager', 'The alert manager for Prometheus and Grafana. It groups, inhibits, silences and routes firing alerts onto receivers. It does not know your rota, your ChatOps channels or who is awake.'],
+  ['PageRoot', 'The on-call and incident layer. It receives Alertmanager (and other) alerts, pages the people on the schedule, escalates when they do not answer, and exposes that workflow over MCP.'],
+];
+---
+
+<Layout
+  title="Obstack PageRoot · on-call, escalations and MCP"
+  description={`PageRoot is Obstack's on-call module: schedules, escalation chains, ChatOps and a built-in MCP server. ${flat} per month flat for unlimited on-call users, included in the ${includedNames} plans. No per-seat fee, unlike PagerDuty, Rootly or incident.io.`}
+  active="pageroot"
+  schema={[
+    softwareSchema({
+      path: '/pageroot',
+      name: 'Obstack PageRoot',
+      description:
+        'PageRoot is the on-call module in the Obstack Stack: on-call schedules, escalation chains, alert grouping and routing, ChatOps to Slack, Microsoft Teams and Telegram, phone and SMS through Twilio, and a built-in MCP server. Priced flat per month for unlimited on-call users, included in the Pro and Max plans. Self-hosted or run by Obstack.',
+      category: 'BusinessApplication',
+      offers: [{ price: PAGEROOT.price, unit: 'per month, flat, unlimited on-call users' }],
+    }),
+    breadcrumbSchema('/pageroot', 'PageRoot'),
+  ]}
+>
+  <section class="hero">
+    <div class="wrap hero-grid pageroot-hero">
+      <div class="stack" style="gap: 26px">
+        <div class="eyebrow rise">Obstack PageRoot</div>
+        <h1 class="display rise">On-call with no seats to count. Self-hosted or on our cloud.</h1>
+        <p class="lead rise-2">Schedules, escalations, ChatOps and a built-in MCP server, at <Price eur={PAGEROOT.price} /> a month flat — for two people on the rota or two hundred. Included in the {includedNames} plans. Alertmanager stays in the stack either way.</p>
+        <div class="btn-row rise-2" style="padding-top: 8px">
+          <a class="btn btn-primary" href="#pricing">See PageRoot pricing <Arrow /></a>
+          <a class="btn btn-ghost" href={url(`/buy?plan=${lead.id}`)}>Buy {lead.name}</a>
+        </div>
+      </div>
+
+      <figure class="shot rise-3">
+        <img src={url('/images/pageroot.png')} alt="PageRoot home: open incidents, who is on call, alert volume and recent activity" width="1100" height="733" />
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">01 / What PageRoot does</div>
+          <h2 class="h2">From a firing alert to the person on call.</h2>
+        </div>
+      </div>
+      <div class="grid-4 rule-top four">
+        {steps.map(([t, d]) => (
+          <div class="stack">
+            <span class="mono">→ {t}</span>
+            <p class="body-2">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">02 / Under the hood</div>
+          <h2 class="h2">The on-call workflow Grafana OnCall is built around, as Obstack software.</h2>
+        </div>
+        <p class="body-2">PageRoot is based on Grafana OnCall OSS. Obstack owns and develops it as an optional module on Stack and Cloud. It is not a Grafana product.</p>
+      </div>
+      <div class="tile-grid grid-3">
+        {qualities.map(([t, d, m]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+            <div class="tile-meta">{m}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="dark">
+    <div class="wrap section bounded">
+      <div class="stack" style="gap: 20px">
+        <div class="eyebrow">03 / Built-in MCP</div>
+        <h2 class="h2">Agents get the on-call interface, not a scrape of the UI.</h2>
+        <p class="body-2" style="font-size: 17px">Grafana OnCall stops at humans and ChatOps. PageRoot ships an MCP server in-process: the same alert groups, schedules and actions, on the same network as the rest of the stack. That is what Aurora AI uses, and what any assistant you allow can use.</p>
+      </div>
+      <div class="gossip">
+        {mcp.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 18px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">04 / Next to Alertmanager</div>
+          <h2 class="h2">Alertmanager pages receivers. PageRoot pages people.</h2>
+        </div>
+        <p class="body-2">The stack splits paging the way Prometheus already does: Alertmanager for alert routing, PageRoot for on-call.</p>
+      </div>
+      <div class="tile-grid grid-2">
+        {split.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+      <p class="mono reviewed">Feature set derived from Grafana OnCall OSS public documentation, reviewed September 2026. MCP is an Obstack addition.</p>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">05 / Against PagerDuty, Rootly and incident.io</div>
+          <h2 class="h2">The same job as the on-call SaaS tools. A fraction of the seat price, and you can run it yourself.</h2>
+        </div>
+        <p class="body-2">PagerDuty Professional is $21 per user. Rootly sells On-Call and Incident Response as two $20 seats. incident.io's Team plan is $15 plus $10 for on-call. Every one of them charges again for the next person you put on the rota. PageRoot is <Price eur={PAGEROOT.price} /> a month for all of them, with unlimited incidents and MCP included.</p>
+      </div>
+      <PageRootCompare />
+      <div class="others">
+        <div class="stack" style="gap: 12px">
+          <h3 class="h3">Where the others win</h3>
+          <p class="body-2" style="font-size: 15px">We would rather you hear it from us. Pick something else if you need:</p>
+        </div>
+        <ul>
+          <li>Live call routing, or a public status page as part of the same SKU. PageRoot sends SMS and phone calls through your Twilio account, not a bundle we meter.</li>
+          <li>Slack-native incident command with roles, timelines and a meeting bot in the channel.</li>
+          <li>A SaaS AIOps SKU billed as a third product. Aurora AI is the AI SRE in this stack; it runs on your infrastructure, and the model is yours.</li>
+        </ul>
+      </div>
+      <p class="mono reviewed">Public list prices, annual billing where offered, reviewed September 2026. Obstack figures follow the EUR/USD switch; the other vendors are quoted at US list in USD. PagerDuty Business is $41 per user; AIOps and Advance are extra. Rootly AI SRE is quoted. incident.io Pro with on-call is $45 per user.</p>
+    </div>
+  </section>
+
+  <section class="section-tight" id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">06 / Pricing</div>
+          <h2 class="h2">Flat per month. Not per user, not per node, not per incident.</h2>
+        </div>
+        <p class="body-2">PageRoot comes with {includedNames} at no extra cost. On {planNames(buyable)} it is <Price eur={PAGEROOT.price} /> a month for the module, however many people are on the rota. Alertmanager is already in the stack. Yearly and 3-year billing discounts apply to it like the rest of the subscription.</p>
+      </div>
+      <div class="panel grid-2 runs">
+        <div class="stack">
+          <div class="eyebrow">Included</div>
+          <h2 class="h2" style="font-size: 32px">{includedNames}</h2>
+          <p class="body-2" style="font-size: 15px">PageRoot ships with the plan. Nothing to add to the order, no seats to allocate, no invoice line. {included.map((p, i) => (<>{i > 0 ? ' and ' : ''}{p.name} is <Price eur={p.price} /> a month flat</>))}, each including the whole stack, the backend we run for you and the support tier.</p>
+          <div class="matrix mono">
+            <div><span>On-call users</span><span>Unlimited</span></div>
+            <div><span>Incidents, schedules, MCP</span><span>Included</span></div>
+            <div><span>Phone / SMS</span><span>Twilio</span></div>
+            <div><span>Extra cost</span><span>None</span></div>
+          </div>
+          <a class="btn btn-dark" href={url(`/buy?plan=${lead.id}`)}>Buy {lead.name} <Arrow /></a>
+        </div>
+        <div class="stack">
+          <div class="eyebrow">Add-on</div>
+          <h2 class="h2" style="font-size: 32px"><Price eur={PAGEROOT.price} /> / month on {planNames(buyable)}</h2>
+          <p class="body-2" style="font-size: 15px">Add the module to a {addTo.name} subscription at any time, prorated to your renewal date. Runs next to Grafana and Alertmanager, on your own hardware or on Obstack Cloud. The first month ships under a license key; after you sign the PolyForm Internal Use agreement, git access to the source.</p>
+          <div class="matrix mono">
+            <div><span>On-call users</span><span>Unlimited</span></div>
+            <div><span>Incidents, schedules, MCP</span><span>Included</span></div>
+            <div><span>Phone / SMS</span><span>Twilio</span></div>
+            <div><span>Per-user fee</span><span>None</span></div>
+          </div>
+          <a class="btn btn-dark" href={url(`/buy?plan=${addTo.id}&pageroot=1`)}>Add it to {addTo.name} <Arrow /></a>
+        </div>
+      </div>
+      <PriceTable
+        head={['Monthly list', ...ROTAS.map((n) => `${n} on-call users`)]}
+        rows={[
+          ['PageRoot, flat', ...ROTAS.map(() => dualPrice(PAGEROOT.price))],
+          ...SEATS.map((v) => [v.name, ...ROTAS.map((n) => formatUsd(v.seat * n))]),
+        ]}
+        highlight={0}
+        minWidth={900}
+      />
+      <p class="mono reviewed">Obstack prices follow the EUR/USD switch in the header; USD is {pct(USD_MARKUP - 1)} above the euro list. PagerDuty, Rootly and incident.io figures are their US list prices in USD, annual billing where offered, reviewed September 2026. At a very small rota a per-seat tool can still be cheaper than the {addTo.name} add-on — which is one reason PageRoot is simply included in {includedNames}. Custom escalation design and ChatOps wiring are Professional Services, quoted in advance.</p>
+      <div class="btn-row" style="padding-top: 8px">
+        <a class="btn btn-primary" href={url(`/pricing?plan=${lead.id}#configure`)}>Configure a quote <Arrow /></a>
+        <ObfuscatedEmail class="text-link" subject="PageRoot" label="Ask about PageRoot" />
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .pageroot-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  #pricing { scroll-margin-top: 64px; }
+
+  .shot { margin: 0; min-width: 0; border-radius: 14px; overflow: hidden; border: 1px solid rgba(232, 241, 242, 0.14); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); background: #080D10; }
+  .shot img { width: 100%; height: auto; display: block; }
+
+  .four > .stack { gap: 12px; padding: 28px 28px 0; border-left: 1px solid var(--line); }
+  .four > .stack:first-child { padding-left: 0; border-left: none; }
+  .four .mono { font-size: 13px; color: var(--link); font-weight: 700; text-transform: uppercase; }
+
+  .bounded { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 72px; align-items: start; }
+  .gossip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--on-dark-line); align-self: stretch; }
+  .gossip > div { background: var(--night); padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 10px; }
+  .gossip .h3 { color: var(--on-dark-strong); }
+  .gossip .body-2 { color: var(--on-dark-2); }
+
+  .reviewed { font-size: 12px; color: var(--muted); margin-top: 40px; }
+
+  .others { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 56px; padding-top: 48px; }
+  .others ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 40px; }
+  .others li { display: flex; gap: 12px; font-size: 15px; line-height: 1.6; }
+  .others li::before { content: "—"; font-family: var(--font-mono); color: var(--link); }
+
+  .runs > .stack { padding: 48px; gap: 24px; }
+  .runs > .stack + .stack { border-left: 1px solid var(--line); }
+  .matrix { display: flex; flex-direction: column; font-size: 13px; }
+  .matrix div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+  .matrix div:last-child { border-bottom: none; }
+  .matrix span + span { color: var(--text-2); text-align: right; }
+
+  @media (max-width: 1100px) {
+    .pageroot-hero { grid-template-columns: minmax(0, 1fr); }
+    .bounded { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+    .four > .stack:nth-child(3) { padding-left: 0; border-left: none; }
+    .others { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  }
+  @media (max-width: 800px) {
+    .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
+    /* One column: drop the grid hairlines and separate with real rules. */
+    .gossip { grid-template-columns: minmax(0, 1fr); gap: 0; background: transparent; }
+    .gossip > div { padding: 20px 0; background: transparent; }
+    .gossip > div + div { border-top: 1px solid var(--on-dark-line); }
+    .others ul { grid-template-columns: minmax(0, 1fr); }
+    .runs > .stack { padding: 24px; }
+    .runs > .stack + .stack { border-left: none; border-top: 1px solid var(--line); }
+    .matrix { font-size: 12px; }
+    .others { padding-top: 32px; }
+    .reviewed { margin-top: 24px; }
+  }
+  @media (max-width: 480px) {
+    /* Label and value stop fighting for the same line. */
+    .matrix div { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .matrix span + span { text-align: left; }
+  }
+</style>

@@ -1,0 +1,18 @@
+{
+  "origin": "Real browser video, captured by scripts/record_journey.mjs",
+  "sourceSha256": "daa65c09bdc0bb61117859ce30dc1bc3b788ffe3835534133c7f5fda9a3ba682",
+  "model": "nvidia/nemotron-3.5-lightning:free",
+  "completedMcpTools": [
+    "obstack_grafana_list_datasources",
+    "obstack_pageroot_list_alert_groups"
+  ],
+  "durationSeconds": 131.219,
+  "clips": [
+    "obstack-workspace.mp4",
+    "obstack-grafana.mp4",
+    "obstack-pageroot.mp4",
+    "obstack-aurora.mp4"
+  ],
+  "captionsLanguage": "en",
+  "narration": false
+}

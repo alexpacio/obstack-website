@@ -1,0 +1,135 @@
+---
+import { onPremPlans, priceRange } from '../data/plans';
+import Price from './Price.astro';
+
+/**
+ * The deployment choice, given the same weight as the plan choice itself:
+ * on-premise is a quarter off the list price, which is far too large a lever
+ * to leave as a footnote under the price. Writes `html[data-deploy]`, which
+ * every `PlanPrice` on the page reads through CSS alone.
+ */
+const tiers = onPremPlans();
+// Each column spans the plans that deployment actually offers, so the shared
+// Starter tier sets the cloud floor and is absent from the on-premise range.
+const cloud = priceRange('cloud');
+const onprem = priceRange('self-hosted');
+
+const options = [
+  {
+    id: 'cloud',
+    label: 'Obstack Cloud',
+    line: 'We buy and run the hardware',
+    detail: 'The nodes your plan describes, plus the object storage, provisioned and operated by us in the EU or US datacenter you pick.',
+    range: cloud,
+  },
+  {
+    id: 'onprem',
+    label: 'Your own hardware',
+    line: 'You already own the machines',
+    detail: 'You supply nodes matching the plan sizing and an S3-compatible bucket. We deploy over a VPN you control and keep it updated.',
+    range: onprem,
+  },
+];
+---
+
+<div class="deploy" role="radiogroup" aria-label="Deployment">
+  <div class="deploy-head">
+    <span class="mono deploy-title">Where the backend runs</span>
+    <span class="mono deploy-note">Same software, same modules, same support. Only the hardware bill moves.</span>
+  </div>
+  <div class="deploy-body">
+    {options.map((o) => (
+      <button type="button" role="radio" class="deploy-opt" data-set-deploy={o.id} aria-checked={o.id === 'cloud'}>
+        <span class="deploy-mark" aria-hidden="true"><span /></span>
+        <span class="deploy-text">
+          <span class="deploy-label">{o.label}</span>
+          <span class="deploy-line">{o.line}</span>
+          <span class="deploy-detail">{o.detail}</span>
+        </span>
+        <span class="deploy-price">
+          <span class="mono">{o.range.fromPlan.name} from</span>
+          <strong><Price eur={o.range.from} /></strong>
+          <span class="mono">to <Price eur={o.range.to} /> / month on {o.range.toPlan.name}</span>
+        </span>
+      </button>
+    ))}
+  </div>
+  <p class="deploy-credit mono">
+    <span class="ob-cloud-b">Pick <strong>your own hardware</strong> to take the hosting off the price: {tiers.map((p, i) => (<>{i > 0 ? ', ' : ''}<Price eur={p.onPrem} /> off {p.name}</>))}. Starter stays Obstack Cloud only.</span>
+    <span class="ob-onprem-b">Showing <strong>on-premise</strong> prices — the list price less the hosting we no longer buy: {tiers.map((p, i) => (<>{i > 0 ? ', ' : ''}<Price eur={p.onPrem} /> off {p.name}</>))}. Starter is Obstack Cloud only and is unchanged.</span>
+  </p>
+</div>
+
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const apply = (d) => {
+      root.setAttribute('data-deploy', d);
+      try { localStorage.setItem('obstack-deploy', d); } catch (e) { /* private mode */ }
+      for (const b of document.querySelectorAll('[data-set-deploy]')) {
+        b.setAttribute('aria-checked', String(b.dataset.setDeploy === d));
+      }
+      // Carry the choice into the configurator and checkout links on the page.
+      for (const a of document.querySelectorAll('[data-deploy-link]')) {
+        const u = new URL(a.href, location.href);
+        u.searchParams.set('deploy', d === 'onprem' ? 'self-hosted' : 'cloud');
+        a.href = u.pathname + u.search + u.hash;
+      }
+    };
+    for (const b of document.querySelectorAll('[data-set-deploy]')) {
+      b.addEventListener('click', () => apply(b.dataset.setDeploy));
+    }
+    apply(root.getAttribute('data-deploy') === 'onprem' ? 'onprem' : 'cloud');
+  })();
+</script>
+
+<style>
+  .deploy { background: var(--white); border: 1px solid var(--line); border-top: 4px solid var(--ink); padding: 26px 32px 24px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px; }
+  .deploy-head { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+  .deploy-title { color: var(--link); font-weight: 700; }
+  .deploy-note { color: var(--muted); letter-spacing: 0.04em; text-transform: none; font-size: 12px; }
+
+  .deploy-body { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .deploy-opt {
+    font: inherit;
+    text-align: left;
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: start;
+    padding: 20px 22px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 0;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  }
+  .deploy-opt:hover { border-color: var(--text-2); }
+  .deploy-opt[aria-checked='true'] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); background: var(--mint-wash); }
+
+  .deploy-mark { width: 18px; height: 18px; margin-top: 3px; border: 2px solid var(--ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .deploy-mark span { width: 8px; height: 8px; background: transparent; }
+  .deploy-opt[aria-checked='true'] .deploy-mark span { background: var(--ink); }
+
+  .deploy-text { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .deploy-label { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
+  .deploy-line { font-size: 13px; font-weight: 700; color: var(--link); }
+  .deploy-detail { font-size: 13px; line-height: 1.55; color: var(--text-2); }
+
+  .deploy-price { display: flex; flex-direction: column; gap: 3px; text-align: right; flex-shrink: 0; }
+  .deploy-price .mono { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); }
+  .deploy-price strong { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+
+  .deploy-credit { font-size: 12px; line-height: 1.6; color: var(--text-2); }
+  .deploy-credit strong { color: var(--ink); }
+
+  @media (max-width: 1100px) {
+    .deploy-body { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 800px) {
+    .deploy { padding: 22px 20px; }
+    .deploy-opt { grid-template-columns: 20px minmax(0, 1fr); padding: 16px; gap: 12px; }
+    .deploy-price { grid-column: 2; text-align: left; margin-top: 4px; }
+  }
+</style>

@@ -1,0 +1,40 @@
+---
+/**
+ * Contact link whose address is assembled in JS after human verification.
+ * The address never appears in the static HTML.
+ */
+interface Props {
+  prefix?: string;
+  /** Visible CTA; if omitted, the address is written in after verification. */
+  label?: string;
+  subject?: string;
+  body?: string;
+  class?: string;
+  id?: string;
+  ariaLabel?: string;
+}
+
+const { prefix = '', label, subject, body, class: className = '', id, ariaLabel } = Astro.props;
+const placeholder = label || `${prefix}email us`;
+const computedAria = ariaLabel ?? (label
+  ? `${label} — human verification required to open email`
+  : 'Human verification required to show email address');
+const title = label
+  ? 'Anti-spam protection — human verification required before opening email client'
+  : 'Protected address — click to start verification and show email';
+---
+<a
+  id={id}
+  class:list={['obf-email', className]}
+  data-prefix={prefix}
+  data-label={label}
+  data-subject={subject}
+  data-body={body}
+  href="#"
+  rel="nofollow"
+  aria-label={computedAria}
+  title={title}
+  data-obf="true"
+>
+  <slot>{placeholder}</slot>
+</a>

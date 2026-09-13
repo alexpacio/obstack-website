@@ -1,0 +1,31 @@
+---
+import { url } from '../lib/url';
+
+interface Props {
+  /** Height of the logo in px. */
+  size?: number;
+  /** Hide the wordmark and render the mark alone. */
+  markOnly?: boolean;
+  /** Wordmark colour: `light` (white text) for dark backgrounds, `dark` (black text) for light ones. */
+  variant?: 'light' | 'dark';
+}
+
+const { size = 34, markOnly = false, variant = 'light' } = Astro.props;
+
+// Intrinsic viewBox sizes of the traced SVGs in /public.
+const src = markOnly ? '/logo-obstack-mark.svg' : `/logo-obstack-${variant}.svg`;
+const ratio = markOnly ? 338 / 325 : 1381 / 325;
+---
+
+<img
+  class="logo"
+  src={url(src)}
+  alt="obstack"
+  height={size}
+  width={Math.round(size * ratio)}
+  style={`height:${size}px;width:${Math.round(size * ratio)}px;max-width:min(${Math.round(size * ratio)}px,52vw)`}
+/>
+
+<style>
+  .logo { display: block; height: auto; object-fit: contain; object-position: left center; }
+</style>
