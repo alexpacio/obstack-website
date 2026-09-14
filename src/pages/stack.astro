@@ -132,78 +132,86 @@ const components: {
         <h2 class="h2">From the kernel to the person on call.</h2>
       </div>
       <div class="diagram-wrap">
-        <svg class="diagram" viewBox="0 0 1400 400" role="img" aria-label="Bee and Beyla send OTLP to Vector, optionally through Kafka, into GreptimeDB stored on S3; Grafana reads from it and exposes a Grafana MCP server; Prometheus Alertmanager routes alerts to PageRoot; PageRoot pages Slack, phone and Telegram; Grafana MCP and PageRoot MCP serve Aurora AI, the AI SRE">
+        <svg class="diagram" viewBox="0 0 1400 460" role="img" aria-label="On every observed node, Bee — or any other eBPF agent, Beyla or OTEL client — feeds a node-level Vector agent, or Alloy, which sends OTLP into the Kubernetes cluster; there a Vector collector writes to GreptimeDB, stored on S3; Grafana reads from it and exposes a Grafana MCP server; Prometheus Alertmanager routes alerts to PageRoot; PageRoot pages Slack, phone and Telegram outside the cluster; Grafana MCP and PageRoot MCP serve Aurora AI, the AI SRE">
           <g font-family="IBM Plex Mono, monospace" font-size="13">
+            <g fill="#060D11" stroke="rgba(232, 241, 242, 0.16)" stroke-width="1">
+              <rect x="20" y="30" width="410" height="185" rx="10"></rect>
+              <rect x="470" y="30" width="915" height="320" rx="10"></rect>
+            </g>
+            <g fill="#7FA3B3" font-size="11" letter-spacing="1.6">
+              <text x="45" y="58">OBSERVED NODE</text>
+              <text x="495" y="58">KUBERNETES CLUSTER</text>
+            </g>
+
             <g fill="none" stroke="#2ED0C3" stroke-width="1.5">
-              <path d="M190 90 H240"></path>
-              <path d="M190 190 H215 V100 H240"></path>
-              <path d="M400 100 H450"></path>
-              <path d="M610 100 H660"></path>
-              <path d="M820 100 H855 V60 H890"></path>
-              <path d="M820 100 H855 V150 H890"></path>
-              <path d="M740 130 V180"></path>
-              <path d="M1090 60 H1160"></path>
-              <path d="M1260 90 V120"></path>
-              <path d="M990 180 V230"></path>
-              <path d="M1090 260 H1125 V150 H1160"></path>
-              <path d="M990 290 V310 H940 V330"></path>
-              <path d="M990 310 H1054 V330"></path>
-              <path d="M990 310 H1183 V330"></path>
+              <path d="M205 140 H245"></path>
+              <path d="M410 140 H495"></path>
+              <path d="M670 140 H710"></path>
+              <path d="M790 170 V230"></path>
+              <path d="M870 140 H890 V100 H910"></path>
+              <path d="M870 140 H890 V190 H910"></path>
+              <path d="M1110 100 H1160"></path>
+              <path d="M1260 130 V160"></path>
+              <path d="M1010 220 V270"></path>
+              <path d="M1110 300 H1135 V190 H1160"></path>
+              <path d="M1010 330 V370 H960 V390"></path>
+              <path d="M1010 370 H1074 V390"></path>
+              <path d="M1010 370 H1203 V390"></path>
             </g>
             <g fill="#2ED0C3">
-              <path d="M240 90 l-8 -5 v10 z"></path>
-              <path d="M240 100 l-8 -5 v10 z"></path>
-              <path d="M450 100 l-8 -5 v10 z"></path>
-              <path d="M660 100 l-8 -5 v10 z"></path>
-              <path d="M890 60 l-8 -5 v10 z"></path>
-              <path d="M890 150 l-8 -5 v10 z"></path>
-              <path d="M740 180 l-5 -8 h10 z"></path>
-              <path d="M1160 60 l-8 -5 v10 z"></path>
-              <path d="M1260 120 l-5 -8 h10 z"></path>
-              <path d="M990 230 l-5 -8 h10 z"></path>
-              <path d="M1160 150 l-8 -5 v10 z"></path>
-              <path d="M940 330 l-5 -8 h10 z"></path>
-              <path d="M1054 330 l-5 -8 h10 z"></path>
-              <path d="M1183 330 l-5 -8 h10 z"></path>
+              <path d="M245 140 l-8 -5 v10 z"></path>
+              <path d="M495 140 l-8 -5 v10 z"></path>
+              <path d="M710 140 l-8 -5 v10 z"></path>
+              <path d="M790 230 l-5 -8 h10 z"></path>
+              <path d="M910 100 l-8 -5 v10 z"></path>
+              <path d="M910 190 l-8 -5 v10 z"></path>
+              <path d="M1160 100 l-8 -5 v10 z"></path>
+              <path d="M1260 160 l-5 -8 h10 z"></path>
+              <path d="M1010 270 l-5 -8 h10 z"></path>
+              <path d="M1160 190 l-8 -5 v10 z"></path>
+              <path d="M960 390 l-5 -8 h10 z"></path>
+              <path d="M1074 390 l-5 -8 h10 z"></path>
+              <path d="M1203 390 l-5 -8 h10 z"></path>
             </g>
 
-            <rect x="30" y="60" width="160" height="60" fill="#63E8B0"></rect>
-            <text x="48" y="96" fill="#0A1F2E" font-weight="700">Bee</text>
-            <rect x="30" y="160" width="160" height="60" fill="none" stroke="#63E8B0" stroke-width="1.5"></rect>
-            <text x="48" y="196" fill="#E8F1F2">Beyla</text>
+            <rect x="45" y="95" width="160" height="90" fill="#63E8B0"></rect>
+            <text x="63" y="126" fill="#0A1F2E" font-weight="700">Bee</text>
+            <text x="63" y="147" fill="#0A1F2E" font-size="11" opacity="0.75">or any eBPF agent,</text>
+            <text x="63" y="164" fill="#0A1F2E" font-size="11" opacity="0.75">Beyla, OTEL client</text>
 
-            <rect x="240" y="70" width="160" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
-            <text x="258" y="106" fill="#E8F1F2">Vector</text>
+            <rect x="245" y="105" width="165" height="70" fill="none" stroke="#63E8B0" stroke-width="1.5"></rect>
+            <text x="263" y="138" fill="#E8F1F2">Vector on node</text>
+            <text x="263" y="156" fill="#7FA3B3" font-size="11">or Alloy</text>
 
-            <rect x="450" y="70" width="160" height="60" fill="none" stroke="#7FA3B3" stroke-width="1.5" stroke-dasharray="5 5"></rect>
-            <text x="468" y="106" fill="#A9BEC6">Kafka (optional)</text>
+            <rect x="495" y="110" width="175" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
+            <text x="513" y="146" fill="#E8F1F2">Vector collector</text>
 
-            <rect x="660" y="70" width="160" height="60" fill="#174D6B" stroke="#2ED0C3" stroke-width="1.5"></rect>
-            <text x="678" y="106" fill="#E8F1F2">GreptimeDB</text>
-            <rect x="660" y="180" width="160" height="60" fill="none" stroke="#2ED0C3" stroke-width="1.5"></rect>
-            <text x="678" y="208" fill="#E8F1F2">S3 storage</text>
-            <text x="678" y="226" fill="#7FA3B3" font-size="11">object store</text>
+            <rect x="710" y="110" width="160" height="60" fill="#174D6B" stroke="#2ED0C3" stroke-width="1.5"></rect>
+            <text x="728" y="146" fill="#E8F1F2">GreptimeDB</text>
+            <rect x="710" y="230" width="160" height="60" fill="none" stroke="#2ED0C3" stroke-width="1.5"></rect>
+            <text x="728" y="258" fill="#E8F1F2">S3 storage</text>
+            <text x="728" y="276" fill="#7FA3B3" font-size="11">object store</text>
 
-            <rect x="890" y="30" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
-            <text x="908" y="66" fill="#E8F1F2">Grafana</text>
-            <rect x="1160" y="30" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
-            <text x="1178" y="66" fill="#E8F1F2">Grafana MCP</text>
+            <rect x="910" y="70" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
+            <text x="928" y="106" fill="#E8F1F2">Grafana</text>
+            <rect x="1160" y="70" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
+            <text x="1178" y="106" fill="#E8F1F2">Grafana MCP</text>
 
-            <rect x="890" y="120" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
-            <text x="908" y="156" fill="#E8F1F2">Alertmanager</text>
-            <rect x="1160" y="120" width="200" height="60" fill="#63E8B0"></rect>
-            <text x="1178" y="148" fill="#0A1F2E" font-weight="700">Aurora AI</text>
-            <text x="1178" y="166" fill="#0A1F2E" font-size="11">AI SRE</text>
+            <rect x="910" y="160" width="200" height="60" fill="none" stroke="#E8F1F2" stroke-width="1.5"></rect>
+            <text x="928" y="196" fill="#E8F1F2">Alertmanager</text>
+            <rect x="1160" y="160" width="200" height="60" fill="#63E8B0"></rect>
+            <text x="1178" y="188" fill="#0A1F2E" font-weight="700">Aurora AI</text>
+            <text x="1178" y="206" fill="#0A1F2E" font-size="11">AI SRE</text>
 
-            <rect x="890" y="230" width="200" height="60" fill="none" stroke="#63E8B0" stroke-width="1.5" stroke-dasharray="5 5"></rect>
-            <text x="908" y="266" fill="#63E8B0">PageRoot · MCP</text>
+            <rect x="910" y="270" width="200" height="60" fill="none" stroke="#63E8B0" stroke-width="1.5" stroke-dasharray="5 5"></rect>
+            <text x="928" y="306" fill="#63E8B0">PageRoot · MCP</text>
 
-            <rect x="890" y="330" width="100" height="44" fill="none" stroke="#7FA3B3" stroke-width="1.5"></rect>
-            <text x="908" y="358" fill="#A9BEC6">Slack</text>
-            <rect x="1004" y="330" width="100" height="44" fill="none" stroke="#7FA3B3" stroke-width="1.5"></rect>
-            <text x="1022" y="358" fill="#A9BEC6">Phone</text>
-            <rect x="1118" y="330" width="130" height="44" fill="none" stroke="#7FA3B3" stroke-width="1.5"></rect>
-            <text x="1136" y="358" fill="#A9BEC6">Telegram</text>
+            <rect x="910" y="390" width="100" height="44" fill="none" stroke="#7FA3B3" stroke-width="1.5"></rect>
+            <text x="928" y="418" fill="#A9BEC6">Slack</text>
+            <rect x="1024" y="390" width="100" height="44" fill="none" stroke="#7FA3B3" stroke-width="1.5"></rect>
+            <text x="1042" y="418" fill="#A9BEC6">Phone</text>
+            <rect x="1138" y="390" width="130" height="44" fill="none" stroke="#7FA3B3" stroke-width="1.5"></rect>
+            <text x="1156" y="418" fill="#A9BEC6">Telegram</text>
           </g>
         </svg>
       </div>
