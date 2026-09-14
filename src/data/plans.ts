@@ -169,7 +169,7 @@ export const PLANS: Plan[] = [
     blurb: 'A backend of your own, deployed and supported, for teams that page each other in business hours.',
     headline: 'Dedicated node · email support, next business day',
     features: [
-      'The full stack: Bee, Beyla, Vector, Kafka, GreptimeDB, Grafana, Alertmanager',
+      'The full stack: Bee, Beyla, Vector, GreptimeDB, Grafana, Alertmanager',
       'Unlimited nodes, unlimited ingest, unlimited Grafana users',
       'One dedicated backend node: 4 cores, 32 GB RAM, 500 GB NVMe',
       '10 TB of object storage included',

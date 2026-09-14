@@ -19,7 +19,7 @@ const [auroraAddTo] = plansBuying('aurora').slice(-1);
 
 const pipeline = [
   { step: 'Collect', name: 'Bee · Beyla', text: 'eBPF agents on every node: Bee goes deep on the services that matter, Beyla goes broad on the rest.' },
-  { step: 'Ship', name: 'Vector · Kafka', text: 'Vector gathers OTLP, host metrics and logs. Kafka buffers large or bursty fleets when you need it.' },
+  { step: 'Ship', name: 'Vector', text: 'Vector gathers OTLP, host metrics and logs on every node, and routes every signal onward.' },
   { step: 'Store', name: 'GreptimeDB', text: 'Metrics, logs and traces in one database, queried with SQL and PromQL.' },
   { step: 'See', name: 'Grafana · MCP', text: 'Dashboards and exploration on the Grafana your team already knows, plus the Grafana MCP server for agents. Eagle is on its way.' },
   { step: 'Act', name: 'Alertmanager · PageRoot', text: 'Prometheus Alertmanager groups and routes firing alerts. PageRoot is an optional on-call module: schedules, escalations, ChatOps and a built-in MCP server.' },
@@ -96,7 +96,7 @@ const pipeline = [
         <article class="product lead-product">
           <div class="p-head"><span class="p-name">Obstack Stack</span><span class="badge badge-mint">Available</span></div>
           <p class="p-line">The complete stack, built around Bee.</p>
-          <p class="body-2">Bee and Beyla for collection, Vector and Kafka for transport, GreptimeDB for storage, Grafana for dashboards, Prometheus Alertmanager for alert routing, and the Grafana MCP server for agents. PageRoot, the on-call module, comes with {pagerootIn}. Self-hosted, or run by us in the region you choose, at the same flat price. We configure it end to end; custom dashboards, alerts and migration are quoted and billed on time and materials. One support contract.</p>
+          <p class="body-2">Bee and Beyla for collection, Vector for transport, GreptimeDB for storage, Grafana for dashboards, Prometheus Alertmanager for alert routing, and the Grafana MCP server for agents. PageRoot, the on-call module, comes with {pagerootIn}. Self-hosted, or run by us in the region you choose, at the same flat price. We configure it end to end; custom dashboards, alerts and migration are quoted and billed on time and materials. One support contract.</p>
           <div class="p-foot">
             <span class="mono p-price"><Price eur={cloud.from} /> to <Price eur={cloud.to} /> / month · unlimited nodes</span>
             <div class="btn-row">
@@ -174,7 +174,7 @@ const pipeline = [
         <article>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0A1F2E" stroke-width="1.6" stroke-linecap="square" aria-hidden="true"><rect x="9" y="9" width="6" height="6"></rect><path d="M5.5 5.5a9 9 0 0 1 13 0M18.5 18.5a9 9 0 0 1-13 0" stroke="#2ED0C3"></path></svg>
           <h3 class="h3">IoT &amp; edge</h3>
-          <p class="body-2">Gateways and devices send OTLP into the same pipeline, with Kafka absorbing the bursts. Tell us about your fleet: <ObfuscatedEmail subject="IoT" />.</p>
+          <p class="body-2">Gateways and devices send OTLP into the same pipeline. Tell us about your fleet: <ObfuscatedEmail subject="IoT" />.</p>
         </article>
       </div>
     </div>

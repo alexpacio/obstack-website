@@ -17,7 +17,7 @@ const auroraIn = planNames(plansWith('aurora'));
 const auroraBuy = planNames(plansBuying('aurora'));
 
 const services = [
-  ['Infrastructure, configured', 'We deploy and configure every component for your environment: agents on your nodes, Vector pipelines, Kafka where it helps, GreptimeDB with retention on S3-compatible object storage, Grafana and Prometheus Alertmanager. PageRoot if you add the module.'],
+  ['Infrastructure, configured', 'We deploy and configure every component for your environment: agents on your nodes, Vector pipelines, GreptimeDB with retention on S3-compatible object storage, Grafana and Prometheus Alertmanager. PageRoot if you add the module.'],
   ['Reference dashboards', 'Grafana arrives connected to your data, with reference dashboards for hosts and Bee, so the first login shows your fleet, not an empty canvas.'],
   ['Custom work, quoted first', 'Dashboards built for your services, alert rules and routing, migration of your current dashboards, alerts, workflows and incidents: billed on time and materials, from a written quote you approve before we start.'],
   ['Storage in your datacenter', `Telemetry lands in Obstack object storage in the EU or US datacenter you pick. ${formatTb(STORAGE.includedTb)} comes with the plan; more is ${dualPrice(STORAGE.pricePerBlock)} per ${STORAGE.blockTb} TB per month.`],
@@ -34,9 +34,8 @@ const components: {
   href?: string;
 }[] = [
   { layer: 'Collect', name: 'Bee', role: 'Application agent', text: 'Distributed tracing and profiling inside a microservice and on the host: HTTP, gRPC, TLS, MySQL, Redis and named Node.js awaits, no coordinator.', ours: true, href: url('/bee') },
-  { layer: 'Collect', name: 'Grafana Beyla', role: 'Broad eBPF coverage', text: 'Covers the runtimes and protocols Bee does not reach yet, such as PostgreSQL, Kafka and MongoDB, with the same zero-code model.' },
+  { layer: 'Collect', name: 'Grafana Beyla', role: 'Broad eBPF coverage', text: 'Covers the runtimes and protocols Bee does not reach yet, such as PostgreSQL and MongoDB, with the same zero-code model.' },
   { layer: 'Ship', name: 'Vector', role: 'Node-local collector', text: 'Receives OTLP from the agents, collects host metrics and logs, and routes every signal onward.' },
-  { layer: 'Ship', name: 'Kafka', role: 'Buffer, when needed', text: 'Sits between collectors and storage for large or bursty fleets, so storage maintenance never costs you data.', optional: true },
   { layer: 'Store', name: 'GreptimeDB', role: 'Telemetry database', text: 'Metrics, logs and traces in one database, queried with SQL and PromQL. Data at rest lives in S3-compatible object storage, so the database and the files are one store you can see.' },
   { layer: 'See', name: 'Grafana', role: 'Dashboards', text: 'Exploration and dashboards on the tool your team already knows, with reference dashboards for Bee. The Grafana MCP server sits next to it for agents.', href: url('/grafana') },
   { layer: 'See', name: 'Grafana MCP server', role: 'Access for agents', text: 'A separate MCP server that ships with Grafana. Aurora AI, and any assistant you allow, query dashboards and datasources through Grafana RBAC.', href: url('/grafana#mcp') },
@@ -48,14 +47,14 @@ const components: {
 
 <Layout
   title="Obstack Stack · Bee, Beyla, Vector, GreptimeDB, Grafana and Alertmanager"
-  description="The Obstack Stack: Bee and Beyla for collection, Vector and Kafka for transport, GreptimeDB on S3 for storage, Grafana and its MCP server for dashboards and agents, Prometheus Alertmanager for alert routing, optional PageRoot for on-call to Slack, phone and Telegram, and Aurora AI as the AI SRE."
+  description="The Obstack Stack: Bee and Beyla for collection, Vector for transport, GreptimeDB on S3 for storage, Grafana and its MCP server for dashboards and agents, Prometheus Alertmanager for alert routing, optional PageRoot for on-call to Slack, phone and Telegram, and Aurora AI as the AI SRE."
   active="stack"
   schema={[
     softwareSchema({
       path: '/stack',
       name: 'Obstack Stack',
       description:
-        'The Obstack Stack is a complete self-hosted observability platform: the Bee eBPF agent and Grafana Beyla for collection, Vector and optional Kafka for transport, GreptimeDB on S3-compatible object storage, Grafana and its MCP server for dashboards and agents, and Prometheus Alertmanager for alert routing. PageRoot on-call and Aurora AI are optional modules. Deployed and supported by Obstack on your servers or on Obstack Cloud.',
+        'The Obstack Stack is a complete self-hosted observability platform: the Bee eBPF agent and Grafana Beyla for collection, Vector for transport, GreptimeDB on S3-compatible object storage, Grafana and its MCP server for dashboards and agents, and Prometheus Alertmanager for alert routing. PageRoot on-call and Aurora AI are optional modules. Deployed and supported by Obstack on your servers or on Obstack Cloud.',
       offers: PLANS.map((p) => ({ price: p.price, unit: `per month, flat, ${p.name} plan` })),
     }),
     breadcrumbSchema('/stack', 'Obstack Stack'),
