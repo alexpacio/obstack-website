@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { url } from '../lib/url';
+---
+
+<Layout
+  title="Page not found · Obstack"
+  description="The requested Obstack page does not exist."
+  noindex={true}
+>
+  <section class="section">
+    <div class="wrap stack" style="gap: 24px; max-width: 760px">
+      <div class="eyebrow">404</div>
+      <h1 class="h1">This page does not exist.</h1>
+      <p class="lead">The address may have changed. Open the Bee deployment guide or return to Obstack.</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href={url('/guide/bee/')}>Bee deployment guide</a>
+        <a class="btn btn-ghost" href={url('/')}>Obstack home</a>
+      </div>
+    </div>
+  </section>
+</Layout>

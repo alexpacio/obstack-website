@@ -1,0 +1,222 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: obstack
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bee-config
+  namespace: obstack
+data:
+  config.yaml: |
+    operation_mode: external_only
+    discovery:
+      interval: 2s
+      require_container: true
+    export:
+      endpoint: http://127.0.0.1:4318
+    server:
+      listen: 127.0.0.1:9400
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: obstack
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 127.0.0.1:4317
+          http:
+            endpoint: 127.0.0.1:4318
+    exporters:
+      debug:
+        verbosity: detailed
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [debug]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bee
+  namespace: obstack
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: bee
+  namespace: obstack
+spec:
+  selector:
+    matchLabels:
+      app: bee
+  template:
+    metadata:
+      labels:
+        app: bee
+    spec:
+      serviceAccountName: bee
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: bee
+          image: obstackit/bee:0.3.0
+          args: [run, --config, /etc/obstack-bee/config.yaml, --license, /etc/obstack-bee/license.json]
+          securityContext:
+            privileged: true
+            seccompProfile:
+              type: Unconfined
+            capabilities:
+              add: [BPF, NET_ADMIN, SYS_ADMIN, SYS_PTRACE]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 640Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi
+          startupProbe:
+            httpGet:
+              host: 127.0.0.1
+              port: 9400
+              path: /livez
+            periodSeconds: 2
+            failureThreshold: 90
+          readinessProbe:
+            httpGet:
+              host: 127.0.0.1
+              port: 9400
+              path: /livez
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              host: 127.0.0.1
+              port: 9400
+              path: /livez
+            periodSeconds: 10
+            failureThreshold: 3
+          volumeMounts:
+            - name: config
+              mountPath: /etc/obstack-bee/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            - name: license
+              mountPath: /etc/obstack-bee/license.json
+              subPath: license.json
+              readOnly: true
+            - name: cgroup
+              mountPath: /sys/fs/cgroup
+              readOnly: true
+            - name: bpffs
+              mountPath: /sys/fs/bpf
+            - name: btf
+              mountPath: /sys/kernel/btf
+              readOnly: true
+            - name: tracing
+              mountPath: /sys/kernel/tracing
+              readOnly: true
+            - name: machine-id
+              mountPath: /etc/machine-id
+              readOnly: true
+            - name: state
+              mountPath: /var/lib/obstack-bee
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:0.131.0
+          args: [--config=/etc/otelcol/config.yaml]
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          volumeMounts:
+            - name: otel-config
+              mountPath: /etc/otelcol/config.yaml
+              subPath: config.yaml
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: bee-config
+        - name: otel-config
+          configMap:
+            name: otel-collector-config
+        - name: license
+          secret:
+            secretName: bee-license
+        - name: cgroup
+          hostPath:
+            path: /sys/fs/cgroup
+            type: Directory
+        - name: bpffs
+          hostPath:
+            path: /sys/fs/bpf
+            type: DirectoryOrCreate
+        - name: btf
+          hostPath:
+            path: /sys/kernel/btf
+            type: Directory
+        - name: tracing
+          hostPath:
+            path: /sys/kernel/tracing
+            type: Directory
+        - name: machine-id
+          hostPath:
+            path: /etc/machine-id
+            type: File
+        - name: state
+          hostPath:
+            path: /var/lib/obstack-bee
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bee-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bee-demo
+  namespace: bee-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bee-demo
+  template:
+    metadata:
+      labels:
+        app: bee-demo
+    spec:
+      containers:
+        - name: server
+          image: python:3.13-slim
+          command: [python, -m, http.server, "8080"]
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: bee-demo
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bee-demo
+  namespace: bee-demo
+spec:
+  selector:
+    app: bee-demo
+  ports:
+    - port: 80
+      targetPort: 8080

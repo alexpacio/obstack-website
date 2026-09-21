@@ -1,0 +1,39 @@
+:root {
+  --sl-color-accent-low: #123727;
+  --sl-color-accent: #2acb8a;
+  --sl-color-accent-high: #baf7dc;
+  --sl-color-white: #f4fbf8;
+  --sl-color-gray-1: #d7e7e1;
+  --sl-color-gray-2: #a5bab2;
+  --sl-color-gray-3: #6f877e;
+  --sl-color-gray-4: #40564e;
+  --sl-color-gray-5: #263a33;
+  --sl-color-gray-6: #14251f;
+  --sl-color-black: #07100c;
+  --sl-font: Inter, ui-sans-serif, system-ui, sans-serif;
+  --sl-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+[data-theme='light'] {
+  --sl-color-accent-low: #d8f7e9;
+  --sl-color-accent: #087a4d;
+  --sl-color-accent-high: #063f2a;
+  --sl-color-white: #09130f;
+  --sl-color-gray-1: #1c3028;
+  --sl-color-gray-2: #405a50;
+  --sl-color-gray-3: #60796f;
+  --sl-color-gray-4: #9bb0a8;
+  --sl-color-gray-5: #d4dfdb;
+  --sl-color-gray-6: #eaf1ee;
+  --sl-color-gray-7: #f5f8f7;
+  --sl-color-black: #fff;
+}
+
+.site-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero .tagline {
+  max-width: 55rem;
+}

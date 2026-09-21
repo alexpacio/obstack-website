@@ -1,0 +1,12 @@
+# Safe demo preset: observe container workloads without changing their filesystems.
+operation_mode: external_only
+
+discovery:
+  interval: 2s
+  require_container: true
+
+export:
+  endpoint: http://127.0.0.1:4318
+
+server:
+  listen: 127.0.0.1:9400

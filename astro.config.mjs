@@ -2,12 +2,37 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
+import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://obstack.it',
   trailingSlash: 'ignore',
   integrations: [
+    starlight({
+      title: 'Obstack Bee guide',
+      description: 'Run Obstack Bee with Docker or Kubernetes and send its OTLP traces to Vector or the OpenTelemetry Collector.',
+      favicon: '/favicon.svg',
+      disable404Route: true,
+      customCss: ['./src/styles/starlight.css'],
+      sidebar: [
+        { label: 'Bee deployment', items: [
+          { slug: 'guide/bee' },
+          { slug: 'guide/bee/requirements' },
+          { slug: 'guide/bee/docker' },
+          { slug: 'guide/bee/kubernetes' },
+        ] },
+        { label: 'Collectors', items: [
+          { slug: 'guide/bee/opentelemetry-collector' },
+          { slug: 'guide/bee/vector' },
+        ] },
+        { label: 'Operate', items: [
+          { slug: 'guide/bee/configuration' },
+          { slug: 'guide/bee/verify' },
+        ] },
+        { label: 'Obstack website', link: '/' },
+      ],
+    }),
     react(),
     sitemap({
       // /buy is a checkout funnel, not a landing page: keep it out of the index.

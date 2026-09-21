@@ -1,0 +1,75 @@
+services:
+  bee:
+    image: obstackit/bee:0.3.0
+    runtime: runc
+    command: [run, --config, /etc/obstack-bee/config.yaml, --license, /etc/obstack-bee/license.json]
+    restart: unless-stopped
+    stop_grace_period: 10m
+    privileged: true
+    pid: host
+    network_mode: host
+    cgroup: host
+    uts: host
+    security_opt:
+      - apparmor:unconfined
+      - seccomp:unconfined
+    cpus: 1.0
+    mem_limit: 768m
+    mem_reservation: 640m
+    memswap_limit: 768m
+    blkio_config:
+      weight: 10
+    ulimits:
+      nofile:
+        soft: 131072
+        hard: 131072
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: [CMD, curl, --fail, --max-time, "5", http://127.0.0.1:9400/livez]
+      interval: 15s
+      timeout: 6s
+      start_period: 120s
+      retries: 3
+    volumes:
+      - ./bee.yaml:/etc/obstack-bee/config.yaml:ro
+      - ./license.json:/etc/obstack-bee/license.json:ro
+      - /proc:/proc
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /sys/fs/bpf:/sys/fs/bpf
+      - /sys/kernel/tracing:/sys/kernel/tracing:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/obstack-bee:/var/lib/obstack-bee
+
+  vector:
+    profiles: [vector]
+    image: timberio/vector:0.57.0-debian
+    command: [--config-yaml, /etc/vector/vector.yaml]
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./vector.yaml:/etc/vector/vector.yaml:ro
+      - vector-data:/var/lib/vector
+
+  otel-collector:
+    profiles: [otel]
+    image: otel/opentelemetry-collector-contrib:0.131.0
+    command: [--config=/etc/otelcol/config.yaml]
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./otel-collector.yaml:/etc/otelcol/config.yaml:ro
+
+  demo:
+    image: python:3.13-slim
+    command: [python, -m, http.server, "8080"]
+    restart: unless-stopped
+    environment:
+      OTEL_SERVICE_NAME: bee-demo
+    ports:
+      - 127.0.0.1:18080:8080
+
+volumes:
+  vector-data: {}

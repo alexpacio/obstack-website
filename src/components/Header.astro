@@ -33,6 +33,7 @@ const groups = [
 ];
 
 const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
+const guide = { label: 'Guide', href: url('/guide/bee/') };
 ---
 
 <header class="site-header">
@@ -61,6 +62,7 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
             </div>
           ))}
           <a href={buy.href} class:list={['nl', { on: active === buy.id }]} aria-current={active === buy.id ? 'page' : undefined}>{buy.label}</a>
+          <a href={guide.href} class="nl">{guide.label}</a>
           <ObfuscatedEmail label="Contact" class="nl" />
         </nav>
         <div class="right">
@@ -86,6 +88,7 @@ const buy = { id: 'pricing', label: 'Pricing', href: url('/pricing') };
                 <p class="mga">Flat plans, the configurator and a quote you can take to procurement</p>
                 <a href={buy.href}>{buy.label}</a>
                 <a href={url('/pricing#demo')}>{DEMO.days} days evaluation trial</a>
+                <a href={guide.href}>{guide.label}</a>
               </div>
               <div class="mg">
                 <span class="mgl">Talk to us</span>

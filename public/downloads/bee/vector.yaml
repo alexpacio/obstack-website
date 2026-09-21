@@ -1,0 +1,35 @@
+data_dir: /var/lib/vector
+
+sources:
+  bee:
+    type: opentelemetry
+    grpc:
+      address: 127.0.0.1:4317
+    http:
+      address: 127.0.0.1:4318
+      keepalive:
+        max_connection_age_secs: 300
+        max_connection_age_jitter_factor: 0.1
+    acknowledgements: false
+    use_otlp_decoding:
+      logs: false
+      metrics: false
+      traces: true
+
+sinks:
+  console:
+    type: console
+    inputs: [bee.traces]
+    encoding:
+      codec: json
+
+  file:
+    type: file
+    inputs: [bee.traces]
+    path: /var/lib/vector/bee-traces.json
+    encoding:
+      codec: json
+    buffer:
+      type: memory
+      max_events: 1024
+      when_full: drop_newest
