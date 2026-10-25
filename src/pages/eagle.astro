@@ -1,0 +1,287 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Arrow from '../components/Arrow.astro';
+import EagleMark from '../components/EagleMark.astro';
+import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
+import { url } from '../lib/url';
+import { breadcrumbSchema, softwareSchema } from '../lib/seo';
+
+// The rail in Eagle is ordered the way an investigation runs, so the page is too.
+const sequence = [
+  ['What is running', 'Workloads, hosts, Docker Swarm and Kubernetes: every service, and the machine it runs on.'],
+  ['How it connects', 'A service map drawn from traces, and every service broken down by endpoint.'],
+  ['What it emitted', 'Logs, traces and GenAI spans, searched with one syntax. A trace id in a log line resolves to its trace.'],
+  ['How you watch it', 'Monitors, metrics and dashboards over the same labels as everything else.'],
+];
+
+// Real compiler output from Eagle's search, not a mock-up.
+const compiled = [
+  ['Logs', 'LogQL', 'service:checkout level:error "timeout"', '{service_name="checkout"} |= "timeout" | level="error"'],
+  ['Traces', 'TraceQL', 'service:checkout status:error duration:>500ms', '{ resource.service.name = "checkout" && status = error && duration > 500ms }'],
+  ['Metrics', 'PromQL', 'avg:http_server_duration{service:checkout} by {route}', 'avg by (route) (http_server_duration{service_name="checkout"})'],
+];
+
+const companion = [
+  ['It queries, then answers', 'Eagle runs the loop on the server. The model asks for a tool, Eagle runs it as the same read-only query the pages make, under your identity, and returns the numbers it computed.'],
+  ['The tools it has', 'Log and trace search, golden signals, metrics, the service map, workloads, hosts and a single trace by id.'],
+  ['Answers you can check', 'Every step it took is listed and can be opened. When the answer is a query, it comes back as a button that opens it on the right page.'],
+  ['Your model', 'Point it at any OpenAI-compatible Chat Completions endpoint with tool calls. The browser never talks to the model; Eagle does.'],
+];
+
+const inside = [
+  ['Workloads', 'Every running service in one list, with the node it runs on, its CPU and memory, requests per second, errors and p95.', 'req/s · errors · p95'],
+  ['Infrastructure', 'Hosts, Docker Swarm and Kubernetes. A host opens on CPU, memory, filesystems, disk and network, and says "not measured" instead of drawing a zero.', 'hosts · swarm · kubernetes'],
+  ['Service Map', 'Who calls whom, drawn from traces. Every service shows its call rate and error rate; colour the map by errors or by latency.', 'graph · list'],
+  ['APIs', 'Each service by endpoint: latency percentiles, errors by span name and spans by status.', 'per endpoint'],
+  ['Logs', 'Search, presets and saved queries over a volume histogram, with counted facets and a patterns view.', 'LogQL'],
+  ['Traces', 'Spans or whole traces, golden signals over whatever the search matched, and a waterfall for each trace.', 'TraceQL'],
+  ['AI Observability', 'GenAI spans: tokens, cost, tool calls and models, with latency and errors beside them.', 'GenAI spans'],
+  ['Monitors', 'Conditions with a severity. Each shows when it was last evaluated; open issues show when they last changed.', 'conditions · issues'],
+  ['Metrics and dashboards', 'Metrics in PromQL or the search syntax, and dashboards saved per tenant.', 'PromQL'],
+];
+
+const builtIn = [
+  'Tenants, users and API keys, with every query bound to the tenant that made it.',
+  'Every page works from a 320-pixel phone to a wall display, with a mouse or a finger. A test sweeps each route across that range.',
+  'Details open in drawers that live in the URL, so the link you paste opens what you were looking at.',
+  'Light and dark themes. The dark one is the default.',
+];
+
+const split = [
+  ['Grafana', 'In every plan today, with unlimited users and the Grafana MCP server for agents. The dashboards and Explore your team already knows.'],
+  ['Eagle', 'Our own console, designed around the Obstack data model from the first screen. It joins the stack as an option next to Grafana, not a forced replacement.'],
+];
+---
+
+<Layout
+  title="Obstack Eagle · an observability console for the Obstack Stack"
+  description="Obstack Eagle is the observability console for the Obstack Stack: workloads, infrastructure, service map, logs, traces, AI spans and monitors, queried natively in PromQL, LogQL and TraceQL, with an assistant that answers from your telemetry. Coming soon, as an option next to Grafana."
+  active="eagle"
+  image="/og-eagle.png"
+  schema={[
+    softwareSchema({
+      path: '/eagle',
+      name: 'Obstack Eagle',
+      description:
+        'Obstack Eagle is the observability console for the Obstack Stack: workloads, hosts, Docker Swarm and Kubernetes, a service map, APIs, logs, traces, AI observability, monitors, metrics and dashboards. It queries the store natively in PromQL, LogQL and TraceQL, compiles a single search syntax to all three, and includes Ask Eagle, an assistant that answers by querying the tenant\'s telemetry. Coming soon.',
+    }),
+    breadcrumbSchema('/eagle', 'Eagle'),
+  ]}
+>
+  <section class="hero">
+    <div class="wrap hero-grid eagle-hero">
+      <div class="stack" style="gap: 26px">
+        <div class="brand-row rise">
+          <EagleMark size={34} />
+          <span class="eyebrow">Obstack Eagle</span>
+          <span class="badge soon">Coming soon</span>
+        </div>
+        <h1 class="display rise">An observability console that speaks PromQL, LogQL and TraceQL.</h1>
+        <p class="lead rise-2">Eagle is our own console for the Obstack Stack. Workloads, infrastructure, the service map, logs, traces and AI spans, read straight from the store in its own query languages. Type <code>service:checkout status:error</code> and see the exact query it runs.</p>
+        <div class="btn-row rise-2" style="padding-top: 8px">
+          <ObfuscatedEmail class="btn btn-primary" subject="Eagle updates" label="Hear when it ships">Hear when it ships <Arrow /></ObfuscatedEmail>
+          <a class="btn btn-ghost" href="#inside">See what's inside</a>
+        </div>
+      </div>
+
+      <figure class="shot rise-3">
+        <img src={url('/images/eagle_map.webp')} alt="Obstack Eagle's Service Map: services and their dependencies, each with its call rate and error rate, and the payment service flagged at 4.2% errors" width="1600" height="1000" />
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">01 / How it is laid out</div>
+          <h2 class="h2">In the order an investigation runs.</h2>
+        </div>
+        <p class="body-2">Eagle's sections follow the questions you ask during an incident, not the teams that own the data.</p>
+      </div>
+      <div class="grid-4 rule-top four">
+        {sequence.map(([t, d]) => (
+          <div class="stack">
+            <span class="mono">→ {t}</span>
+            <p class="body-2">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">02 / One search, three languages</div>
+          <h2 class="h2">Type the search. Read the query it runs.</h2>
+        </div>
+        <p class="body-2">Eagle compiles one search syntax to LogQL, TraceQL or PromQL and shows you the result. Switch to the native query whenever you want, and back. Structured fields such as <code>level</code> become pipeline filters, not stream selectors, so a search never quietly matches nothing.</p>
+      </div>
+      <div class="search-grid">
+        <div class="compile">
+          {compiled.map(([signal, lang, typed, native]) => (
+            <div class="row">
+              <div class="row-head"><span class="mono sig">{signal}</span><span class="mono lang">runs as {lang}</span></div>
+              <div class="typed mono">{typed}</div>
+              <pre class="code native">{native}</pre>
+            </div>
+          ))}
+        </div>
+        <figure class="shot light-shot">
+          <img src={url('/images/eagle_logs.webp')} alt="Obstack Eagle's Logs page: a search bar showing the LogQL it runs, presets, a volume histogram, level facets with counts, and log rows" width="1600" height="1000" loading="lazy" />
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="dark">
+    <div class="wrap section bounded">
+      <div class="stack" style="gap: 20px">
+        <div class="eyebrow">03 / Ask Eagle</div>
+        <h2 class="h2">An assistant that answers from your telemetry.</h2>
+        <p class="body-2" style="font-size: 17px">Ask Eagle sits in the rail on every page, and <span class="mono">⌘J</span> opens it from anywhere. It knows the section you are on, the query in the bar and the time range, and it works out answers by querying the same data you can see.</p>
+      </div>
+      <div class="gossip">
+        {companion.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 18px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="inside">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">04 / What's inside</div>
+          <h2 class="h2">Nine sections, one set of labels.</h2>
+        </div>
+        <p class="body-2">A service keeps the same name on the map, in its logs and in its traces, so moving between them keeps your place.</p>
+      </div>
+      <div class="tile-grid grid-3">
+        {inside.map(([t, d, m]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+            <div class="tile-meta">{m}</div>
+          </div>
+        ))}
+      </div>
+      <div class="others">
+        <div class="stack" style="gap: 12px">
+          <h3 class="h3">Built in</h3>
+          <p class="body-2" style="font-size: 15px">The things you only notice when they are missing.</p>
+        </div>
+        <ul>
+          {builtIn.map((b) => <li>{b}</li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">05 / Next to Grafana</div>
+          <h2 class="h2">Grafana stays. Eagle is a second way in.</h2>
+        </div>
+        <p class="body-2">Both read the same store, so choosing one costs nothing in the other. Keep the Grafana dashboards you have; open Eagle when you want to follow an incident from service to log line.</p>
+      </div>
+      <div class="tile-grid grid-2">
+        {split.map(([t, d]) => (
+          <div>
+            <h3 class="h3" style="font-size: 20px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="dark">
+    <div class="wrap cta-band">
+      <div class="stack" style="gap: 18px">
+        <div class="brand-row">
+          <EagleMark size={28} />
+          <span class="eyebrow">Coming soon</span>
+        </div>
+        <h2 class="h2">Eagle is on its way to the Obstack Stack.</h2>
+        <p class="body-2" style="font-size: 18px; max-width: 620px">Leave an address and we will write when it ships. Until then, the stack runs on Grafana, with every signal Eagle will read already in place.</p>
+      </div>
+      <div class="btn-row">
+        <ObfuscatedEmail class="btn btn-primary" subject="Eagle updates" label="Hear when it ships" />
+        <a class="btn btn-ghost" href={url('/stack')}>See the stack today</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .eagle-hero { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); }
+
+  .brand-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .soon { border: 1px solid rgba(232, 241, 242, 0.4); color: var(--on-dark); padding: 3px 8px; }
+
+  .lead code, .section-head code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    padding: 1px 6px;
+    white-space: nowrap;
+  }
+  .lead code { background: rgba(232, 241, 242, 0.08); color: var(--on-dark-strong); }
+  .section-head code { background: var(--line-soft); color: var(--text); }
+
+  .shot { margin: 0; min-width: 0; border-radius: 14px; overflow: hidden; border: 1px solid rgba(232, 241, 242, 0.14); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); background: #080D10; }
+  .shot img { width: 100%; height: auto; display: block; }
+  .light-shot { border-color: var(--line); box-shadow: 0 24px 60px -30px rgba(10, 31, 46, 0.45); }
+
+  .four > .stack { gap: 12px; padding: 28px 28px 0; border-left: 1px solid var(--line); }
+  .four > .stack:first-child { padding-left: 0; border-left: none; }
+  .four .mono { font-size: 13px; color: var(--link); font-weight: 700; text-transform: uppercase; }
+
+  .search-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 40px; align-items: start; }
+  .compile { display: flex; flex-direction: column; border-top: 2px solid var(--ink); }
+  .compile .row { display: flex; flex-direction: column; gap: 10px; padding: 22px 0; border-bottom: 1px solid var(--line); min-width: 0; }
+  .row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .sig { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink); }
+  .lang { font-size: 12px; color: var(--link); }
+  /* Queries wrap rather than scroll: the point is that you can read all of it. */
+  .typed { font-size: 14px; line-height: 1.6; color: var(--text); background: var(--white); border: 1px solid var(--line); padding: 10px 14px; overflow-wrap: anywhere; }
+  .native { font-size: 13px; line-height: 1.6; padding: 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  .bounded { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 72px; align-items: start; }
+  .gossip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--on-dark-line); align-self: stretch; }
+  .gossip > div { background: var(--night); padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 10px; }
+  .gossip .h3 { color: var(--on-dark-strong); }
+  .gossip .body-2 { color: var(--on-dark-2); }
+
+  .others { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 56px; padding-top: 48px; }
+  .others ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 40px; }
+  .others li { display: flex; gap: 12px; font-size: 15px; line-height: 1.6; }
+  .others li::before { content: "—"; font-family: var(--font-mono); color: var(--link); }
+
+  @media (max-width: 1100px) {
+    .eagle-hero { grid-template-columns: minmax(0, 1fr); }
+    .search-grid { grid-template-columns: minmax(0, 1fr); }
+    .bounded { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+    .four > .stack:nth-child(3) { padding-left: 0; border-left: none; }
+    .others { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  }
+  @media (max-width: 800px) {
+    .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
+    /* One column: drop the grid hairlines and separate with real rules. */
+    .gossip { grid-template-columns: minmax(0, 1fr); gap: 0; background: transparent; }
+    .gossip > div { padding: 20px 0; background: transparent; }
+    .gossip > div + div { border-top: 1px solid var(--on-dark-line); }
+    .others ul { grid-template-columns: minmax(0, 1fr); }
+    .others { padding-top: 32px; }
+    .lead code { white-space: normal; overflow-wrap: anywhere; }
+    .native { font-size: 12px; }
+  }
+</style>

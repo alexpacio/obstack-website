@@ -5,7 +5,7 @@ import { url } from '../lib/url';
 import { DEMO } from '../data/plans';
 
 interface Props {
-  active?: 'bee' | 'pageroot' | 'grafana' | 'aurora' | 'stack' | 'pricing' | 'buy';
+  active?: 'bee' | 'pageroot' | 'eagle' | 'grafana' | 'aurora' | 'stack' | 'pricing' | 'buy';
   /** Minimal header used on checkout. */
   checkout?: boolean;
 }
@@ -15,10 +15,11 @@ const { active, checkout = false } = Astro.props;
 const groups = [
   {
     label: 'Products',
-    about: 'Obstack-owned: the Bee agent and PageRoot on-call',
+    about: 'Obstack-owned: the Bee agent, PageRoot on-call and the Eagle console',
     items: [
       { id: 'bee', label: 'Bee', href: url('/bee') },
       { id: 'pageroot', label: 'PageRoot', href: url('/pageroot') },
+      { id: 'eagle', label: 'Eagle', href: url('/eagle') },
     ],
   },
   {

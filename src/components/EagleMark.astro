@@ -1,0 +1,42 @@
+---
+/**
+ * The Obstack Eagle mark: a raptor's eye under its brow ridge, in full colour.
+ * The same drawing as `Logo.tsx` in obstack-eagle, inlined so it needs no
+ * request and stays sharp at any size.
+ */
+interface Props {
+  /** Height of the mark in px. Width follows from the aspect ratio. */
+  size?: number;
+  /** As in Logo.astro: `light` for dark backgrounds, `dark` for light ones. */
+  variant?: 'light' | 'dark';
+  /** Accessible name. Omit when the mark sits beside the product name. */
+  label?: string;
+}
+
+const { size = 40, variant = 'light', label } = Astro.props;
+
+// Cropped to the ink: 122 × 64.5 units.
+const width = Math.round((size * 122) / 64.5);
+const ink = variant === 'light' ? '#7FB4FA' : '#085ECE';
+---
+
+<svg
+  class="eagle-mark"
+  viewBox="3 4.5 122 64.5"
+  width={width}
+  height={size}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  focusable="false"
+>
+  <path fill={ink} d="M3 9C30 3 72 3 100 12C112 16 120 23 125 33C104 25 62 19 36 17C22 16 12 13 3 9Z"></path>
+  <path fill={ink} d="M18 28C26 56 56 72 84 68C104 65 118 50 125 33C114 48 100 60 84 62C60 66 34 54 18 28Z"></path>
+  <path fill="#F2A635" d="M61.14 24.82A18.5 18.5 0 1 0 79.45 27.47C73.31 26.47 67.13 25.59 61.14 24.82Z"></path>
+  <path fill="#101828" d="M68 33.4A8.6 8.6 0 1 0 68 50.6A8.6 8.6 0 1 0 68 33.4Z"></path>
+  <path fill="#F9FAFB" d="M64.6 36.2A2.5 2.5 0 1 0 64.6 41.2A2.5 2.5 0 1 0 64.6 36.2Z"></path>
+</svg>
+
+<style>
+  .eagle-mark { display: block; flex-shrink: 0; max-width: none; height: auto; }
+</style>
