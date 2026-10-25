@@ -2,16 +2,46 @@
 import Layout from '../layouts/Layout.astro';
 import Arrow from '../components/Arrow.astro';
 import EagleMark from '../components/EagleMark.astro';
-import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
+import CompareTable from '../components/CompareTable.astro';
 import { url } from '../lib/url';
+import { DEMO } from '../data/plans';
 import { breadcrumbSchema, softwareSchema } from '../lib/seo';
+
+/** Stroke icons, 24-unit grid, one or more paths each. */
+const icons: Record<string, string[]> = {
+  spark: ['M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z'],
+  code: ['M8 7l-5 5 5 5M16 7l5 5-5 5'],
+  bell: ['M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9', 'M10.3 21a1.9 1.9 0 003.4 0'],
+  chart: ['M3 3v18h18', 'M7 15l4-4 3 3 5-6'],
+  terminal: ['M3 5h18v14H3z', 'M7 9l3 3-3 3M13 15h4'],
+  lock: ['M4 10h16v11H4z', 'M8 10V7a4 4 0 018 0v3'],
+  shield: ['M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'],
+  box: ['M21 16V8l-9-5-9 5v8l9 5z', 'M3 8l9 5 9-5M12 13v8'],
+};
+
+const facts = [
+  ['9 sections', 'from workloads to dashboards, in the order an investigation runs'],
+  ['1 search syntax', 'compiled to PromQL, LogQL or TraceQL, and shown to you'],
+  ['10 assistant tools', 'each one a read-only query, run under your identity'],
+  ['320 px and up', 'to a wall display, with a mouse or a finger, checked on every route'],
+];
 
 // The rail in Eagle is ordered the way an investigation runs, so the page is too.
 const sequence = [
-  ['What is running', 'Workloads, hosts, Docker Swarm and Kubernetes: every service, and the machine it runs on.'],
-  ['How it connects', 'A service map drawn from traces, and every service broken down by endpoint.'],
-  ['What it emitted', 'Logs, traces and GenAI spans, searched with one syntax. A trace id in a log line resolves to its trace.'],
-  ['How you watch it', 'Monitors, metrics and dashboards over the same labels as everything else.'],
+  ['What is running', 'Workloads, Hosts, Docker Swarm and Kubernetes: every service and the machine it runs on.'],
+  ['How it connects', 'A Service Map drawn from traces, and APIs: every service broken down by endpoint.'],
+  ['What it emitted', 'Logs, Traces and AI Observability, searched with one syntax. A trace id in a log line opens its trace.'],
+  ['How you watch it', 'Monitors, Metrics and Dashboards over the same labels as everything else.'],
+];
+
+// Screenshots of the running console, against the mock API's fixtures.
+const tour = [
+  { id: 'workloads', label: 'Workloads', img: 'eagle_workloads', alt: 'Workloads: every running service with its node, requests per second, error rate and p95', title: 'Every running service, in one list.', text: 'The node it runs on, its CPU and memory, requests per second, error rate and p95, with bars you can read at a glance.' },
+  { id: 'hosts', label: 'Hosts', img: 'eagle_host', alt: 'A host drawer: CPU and memory by state, load, and filesystems with a fill forecast showing /var/lib/mongo full in about 46 minutes', title: 'A host, measured or marked not measured.', text: 'CPU and memory by state, load, network and disk, and filesystems with a straight-line fill forecast. A metric the collector does not send says so, instead of drawing a zero.' },
+  { id: 'kubernetes', label: 'Kubernetes', img: 'eagle_kubernetes', alt: 'Kubernetes pods with status, namespace, node, restarts, age, CPU and memory', title: 'Pods, nodes and restarts.', text: 'Every pod with its namespace, node, restarts, age, CPU and memory. Docker Swarm services get the same view.' },
+  { id: 'logs', label: 'Logs', img: 'eagle_logs', alt: 'Logs: a volume histogram, presets, level facets with counts and log rows', title: 'Logs with facets that add up.', text: 'A volume histogram, presets and saved queries, facets whose counts add up to the rows, and a patterns view. Every search shows the LogQL it runs.' },
+  { id: 'traces', label: 'Traces', img: 'eagle_trace', alt: 'A trace waterfall opened from the Traces list, with spans across frontend, shipping, mongodb and redis', title: 'Spans, traces and the waterfall.', text: 'Golden signals over whatever the search matched, then a waterfall for each trace in a drawer that lives in the URL. A trace id in a log line opens here.' },
+  { id: 'ai', label: 'AI Observability', img: 'eagle_ai_obs', alt: 'The AI Observability dashboard preset: GenAI spans, error spans, p95 latency, total cost, total tokens and chat spans, with spans by status over time', title: 'Your own LLM traffic, as spans.', text: 'OpenTelemetry GenAI spans: tokens, recorded cost, tool calls and models, next to latency and errors. It installs as a dashboard preset you can then edit.' },
 ];
 
 // Real compiler output from Eagle's search, not a mock-up.
@@ -21,41 +51,187 @@ const compiled = [
   ['Metrics', 'PromQL', 'avg:http_server_duration{service:checkout} by {route}', 'avg by (route) (http_server_duration{service_name="checkout"})'],
 ];
 
-const companion = [
-  ['It queries, then answers', 'Eagle runs the loop on the server. The model asks for a tool, Eagle runs it as the same read-only query the pages make, under your identity, and returns the numbers it computed.'],
-  ['The tools it has', 'Log and trace search, golden signals, metrics, the service map, workloads, hosts and a single trace by id.'],
-  ['Answers you can check', 'Every step it took is listed and can be opened. When the answer is a query, it comes back as a button that opens it on the right page.'],
-  ['Your model', 'Point it at any OpenAI-compatible Chat Completions endpoint with tool calls. The browser never talks to the model; Eagle does.'],
+const tools = ['search_logs', 'search_traces', 'trace_golden_signals', 'query_metrics', 'service_map', 'list_workloads', 'list_hosts', 'host_details', 'get_trace', 'suggest_query'];
+
+const answer = [
+  ['You ask', 'In plain words, or by describing the query you want written.'],
+  ['The model picks a tool', ''],
+  ['Eagle runs it, as you', "The same read-only query the page would make, with your permissions, in one of your tenant's query slots. The model never touches the store."],
+  ['Eagle does the arithmetic', 'Counts, extremes and when a peak happened are computed by Eagle and handed back. Missing data comes back as “not measured”, never as zero.'],
+  ['You get an answer you can check', 'Every query listed and openable on its page; suggested queries come back as buttons. Up to 8 tool rounds a turn, then the tools are withdrawn and it must answer.'],
+];
+
+const aiPlaces = [
+  ['spark', 'Ask Eagle, on every page', 'Root causes, where a piece of data lives, or the query you could not quite write. It docks beside the page on a desktop and opens as a sheet on a phone.'],
+  ['code', 'In the function editor', 'Explain, test or debug a function. It sees your unsaved files and manifest; a proposed change opens as a diff and reaches the editor only when you apply it. Commit and deploy stay yours.'],
+  ['bell', 'In EagleSRE', 'An investigation agent built on LangGraph runs as a Serverless function and checkpoints every step. Ask Eagle can read incident records, but never starts or changes one.'],
+  ['chart', 'AI Observability', 'Watch your own AI features: OpenTelemetry GenAI spans with tokens, recorded cost, tool calls and models, next to their latency and errors.'],
+];
+
+const lifecycle = [
+  ['Commit', 'To a Forgejo repository Eagle creates for you, or to your own Git.'],
+  ['Build', "Type-checked with Deno and bundled to an eszip. Errors land in the editor's gutter."],
+  ['Version', 'Immutable, numbered, deduplicated by source digest.'],
+  ['Staging', 'Notifications and sink writes are captured, so nothing real is touched.'],
+  ['Test', "The version's own tests, with their results kept beside it."],
+  ['Production', 'Promotion gated on tests and approvals. Roll back to any built version without a rebuild.'],
+];
+
+const triggers = [
+  ['Schedule', 'Every five minutes, or a cron line. Fires exactly once across replicas.'],
+  ['Query', 'A query over your telemetry, evaluated against history through Piper.'],
+  ['Ingest', 'A Lua predicate inside Vector, sandboxed and hot-loaded, sees each record as it arrives.'],
+  ['Webhook', 'A bearer token per deployment, shown once and rotated from the console.'],
+  ['Event and listen', 'Topics that other functions and external publishers write to.'],
+  ['By hand', "Run now, with a form generated from the manifest's inputs."],
+];
+
+const presets = ['HTTP check', 'TLS expiry', 'DNS check', 'TCP connect', 'Postgres query check', 'AWS EC2 status'];
+
+const isolation = [
+  ['terminal', 'One worker per run', "Edge Runtime in oneshot mode: non-root, read-only root filesystem, and a run's timers die with it."],
+  ['lock', 'Secrets stay in Vault', "OpenBao or Vault holds the values; Git and Postgres hold only names. Resolved secrets are redacted from every run's output."],
+  ['shield', 'No path inward', "Workers reach Eagle's broker, the artifact store and the public internet. Private ranges, metadata endpoints and your databases are firewalled off."],
+  ['box', 'Builds that work air-gapped', 'A pinned runtime, offline dependency packs and prebuilt preset archives: a build never reaches for a registry.'],
+];
+
+const sreFlow = [
+  ['Alert in', 'Eagle monitors and query triggers, Prometheus Alertmanager, or any webhook with its own token.'],
+  ['Incident', 'Mapped to a service, a severity and an escalation policy. Every action carries the version you saw, so a stale click is refused.'],
+  ['Notify', 'Slack, Teams, email, Pushover or Twilio, along schedules and escalation steps.'],
+  ['Investigate', 'You ask the question; the agent gathers evidence with approved read-only queries and checkpoints each step.'],
+  ['Learn', 'Follow-ups, postmortems, SLO definitions and status updates, alongside the incident.'],
+];
+
+const sreCommands = [
+  '/eaglesre declare S1 Checkout failures',
+  '/eaglesre incidents',
+  '/eaglesre ack <incident>',
+  '/eaglesre investigate <incident> Compare the error spike with recent changes',
+  '/eaglesre catchup <incident>',
+];
+
+const sreNotes = [
+  ['From requirements to monitors.', 'Write down what must stay true. A planner drafts monitors as Serverless functions and tests them, then waits: only a person can approve one, from the web, against the exact revision that passed.'],
+  ['One identity, short-lived credentials.', 'Eagle issues two-minute, audience-bound credentials to EagleSRE, and every change is checked against your current permissions in Eagle.'],
 ];
 
 const inside = [
   ['Workloads', 'Every running service in one list, with the node it runs on, its CPU and memory, requests per second, errors and p95.', 'req/s · errors · p95'],
-  ['Infrastructure', 'Hosts, Docker Swarm and Kubernetes. A host opens on CPU, memory, filesystems, disk and network, and says "not measured" instead of drawing a zero.', 'hosts · swarm · kubernetes'],
-  ['Service Map', 'Who calls whom, drawn from traces. Every service shows its call rate and error rate; colour the map by errors or by latency.', 'graph · list'],
+  ['Infrastructure', 'Hosts, Docker Swarm and Kubernetes. A host opens on CPU, memory, filesystems with a fill forecast, disk and network, and says "not measured" instead of drawing a zero.', 'hosts · swarm · kubernetes'],
+  ['Service Map', 'Who calls whom, drawn from traces. Every service shows its call rate and error rate; colour the map by errors or by latency, or read it as a list.', 'graph · list'],
   ['APIs', 'Each service by endpoint: latency percentiles, errors by span name and spans by status.', 'per endpoint'],
   ['Logs', 'Search, presets and saved queries over a volume histogram, with counted facets and a patterns view.', 'LogQL'],
   ['Traces', 'Spans or whole traces, golden signals over whatever the search matched, and a waterfall for each trace.', 'TraceQL'],
-  ['AI Observability', 'GenAI spans: tokens, cost, tool calls and models, with latency and errors beside them.', 'GenAI spans'],
+  ['AI Observability', 'GenAI spans: tokens, cost, tool calls and models, with latency and errors beside them, as an installable dashboard preset.', 'GenAI spans'],
   ['Monitors', 'Conditions with a severity. Each shows when it was last evaluated; open issues show when they last changed.', 'conditions · issues'],
-  ['Metrics and dashboards', 'Metrics in PromQL or the search syntax, and dashboards saved per tenant.', 'PromQL'],
+  ['Metrics and dashboards', 'Metrics in PromQL or the search syntax. Dashboards per tenant, with panel tabs and presets you can install and then edit.', 'PromQL'],
 ];
 
 const builtIn = [
-  'Tenants, users and API keys, with every query bound to the tenant that made it.',
+  'One identity across several tenants: OIDC or Active Directory / LDAP sign-in, groups, roles and an audit log.',
+  'Every query bound to the tenant that made it, and API keys per tenant.',
   'Every page works from a 320-pixel phone to a wall display, with a mouse or a finger. A test sweeps each route across that range.',
   'Details open in drawers that live in the URL, so the link you paste opens what you were looking at.',
   'Light and dark themes. The dark one is the default.',
+  'One telemetry store behind it, GreptimeDB or ClickHouse, read through Piper.',
+];
+
+// No winners marked: the table says how each console works, not which is best.
+const compareColumns = ['Eagle', 'Grafana', 'Datadog', 'groundcover', 'SigNoz'];
+const compareRows = [
+  {
+    label: 'Where it runs',
+    win: [],
+    cells: [
+      'Your servers or Obstack Cloud. Runs air-gapped, assistant included.',
+      'Self-managed, or Grafana Cloud.',
+      "Datadog's cloud.",
+      'Bring your own cloud: the data plane sits in your cloud account.',
+      'Self-hosted open source, or SigNoz Cloud.',
+    ],
+  },
+  {
+    label: 'What you type',
+    win: [],
+    cells: [
+      'One search syntax, compiled to PromQL, LogQL or TraceQL and shown under the bar. Native queries any time.',
+      "Each data source's own language, with query builders.",
+      "Datadog's own search and query syntax.",
+      'gcQL for logs, traces and events; PromQL for metrics.',
+      'A query builder, ClickHouse SQL, and PromQL for metrics.',
+    ],
+  },
+  {
+    label: 'Where you start',
+    win: [],
+    cells: [
+      'Sections in investigation order, from workloads to dashboards. Details open in drawers that live in the URL.',
+      'Dashboards, and Explore for ad-hoc queries.',
+      'A product area per signal: APM, Logs, Infrastructure and more.',
+      'Kubernetes workloads and the signals around them.',
+      'Services, traces, logs and dashboards.',
+    ],
+  },
+  {
+    label: 'The assistant',
+    win: [],
+    cells: [
+      'Ask Eagle, with every query it ran listed. Any OpenAI-compatible model, including one you host.',
+      'Grafana Assistant. Self-managed installs connect a Grafana Cloud stack; in public preview there.',
+      "Bits AI, in Datadog's cloud.",
+      'Agent Mode, running in your cloud.',
+      'Noz, on SigNoz Cloud.',
+    ],
+  },
 ];
 
 const split = [
-  ['Grafana', 'In every plan today, with unlimited users and the Grafana MCP server for agents. The dashboards and Explore your team already knows.'],
-  ['Eagle', 'Our own console, designed around the Obstack data model from the first screen. It joins the stack as an option next to Grafana, not a forced replacement.'],
+  ['Next to Grafana', 'Grafana stays.', 'In every plan, with unlimited users and the Grafana MCP server for agents. Both read the same store, so choosing one costs nothing in the other.'],
+  ['A second way in', 'Eagle follows the incident.', 'Keep the dashboards you have. Open Eagle when you want to go from a service to its log line, ask a question of the data, or run code against it.'],
 ];
+
+// How the pieces fit. Coordinates in the SVG's own 1200 × 544 units.
+type Node = { x: number; y: number; w: number; h: number; lines: [string, boolean][]; kind?: 'eagle' | 'store' | 'sre' | 'ext' };
+const nodes: Node[] = [
+  { x: 40, y: 72, w: 200, h: 88, lines: [['Browser', true], ['desktop, tablet, phone', false]] },
+  { x: 336, y: 48, w: 232, h: 136, kind: 'eagle', lines: [['Eagle', true], ['console · Ask Eagle', false], ['identity · functions control', false]] },
+  { x: 664, y: 72, w: 200, h: 88, lines: [['Piper', true], ['PromQL · LogQL · TraceQL', false]] },
+  { x: 960, y: 72, w: 200, h: 88, kind: 'store', lines: [['GreptimeDB', true], ['or ClickHouse', true], ['one telemetry store', false]] },
+  { x: 664, y: 232, w: 200, h: 88, kind: 'ext', lines: [['Your LLM endpoint', true], ['OpenAI-compatible', false]] },
+  { x: 960, y: 232, w: 200, h: 88, lines: [['Vector · OpenTelemetry', true], ['ingest and trigger tee', false]] },
+  { x: 40, y: 392, w: 200, h: 88, lines: [['Slack · Teams', true], ['the EagleSRE bot', false]] },
+  { x: 336, y: 368, w: 232, h: 136, kind: 'sre', lines: [['EagleSRE', true], ['preview', false], ['incidents · on-call', false], ['investigation agent', false]] },
+  { x: 664, y: 392, w: 200, h: 88, lines: [['Edge Runtime', true], ['one worker per run', false]] },
+  { x: 960, y: 392, w: 200, h: 88, lines: [['Vault · Git · S3', true], ['secrets, source, artifacts', false]] },
+];
+const edges: { d: string; accent?: boolean }[] = [
+  { d: 'M240 116H335' },
+  { d: 'M568 100H663' },
+  { d: 'M664 132H569', accent: true },
+  { d: 'M864 116H959' },
+  { d: 'M568 172H616V276H663' },
+  { d: 'M452 184V367', accent: true },
+  { d: 'M240 436H335' },
+  { d: 'M568 436H663' },
+  { d: 'M864 436H959' },
+  { d: 'M1060 232V161' },
+];
+const edgeLabels: { x: number; y: number; t: string; accent?: boolean; start?: boolean }[] = [
+  { x: 616, y: 88, t: 'queries' },
+  { x: 616, y: 156, t: 'introspect', accent: true },
+  { x: 568, y: 222, t: 'Ask Eagle' },
+  { x: 408, y: 279, t: 'identity', accent: true },
+  { x: 616, y: 420, t: 'agent runs' },
+  { x: 1072, y: 200, t: 'OTLP in', start: true },
+];
+/** Baseline of line i of n, centred on the box, 20 units a line. */
+const lineY = (n: Node, i: number) => n.y + n.h / 2 + (i - (n.lines.length - 1) / 2) * 20 + 5;
 ---
 
 <Layout
-  title="Obstack Eagle · an observability console for the Obstack Stack"
-  description="Obstack Eagle is the observability console for the Obstack Stack: workloads, infrastructure, service map, logs, traces, AI spans and monitors, queried natively in PromQL, LogQL and TraceQL, with an assistant that answers from your telemetry. Coming soon, as an option next to Grafana."
+  title="Obstack Eagle · the observability console for the Obstack Stack"
+  description="Obstack Eagle is the observability console in the Obstack Stack: workloads, infrastructure, service map, logs, traces and AI spans in PromQL, LogQL and TraceQL, with Ask Eagle, Serverless functions on an edge runtime, and EagleSRE for incidents."
   active="eagle"
   image="/og-eagle.png"
   schema={[
@@ -63,7 +239,7 @@ const split = [
       path: '/eagle',
       name: 'Obstack Eagle',
       description:
-        'Obstack Eagle is the observability console for the Obstack Stack: workloads, hosts, Docker Swarm and Kubernetes, a service map, APIs, logs, traces, AI observability, monitors, metrics and dashboards. It queries the store natively in PromQL, LogQL and TraceQL, compiles a single search syntax to all three, and includes Ask Eagle, an assistant that answers by querying the tenant\'s telemetry. Coming soon.',
+        "Obstack Eagle is the observability console for the Obstack Stack: workloads, hosts, Docker Swarm and Kubernetes, a service map, APIs, logs, traces, AI observability, monitors, metrics and dashboards. It queries the store natively in PromQL, LogQL and TraceQL and compiles a single search syntax to all three. Ask Eagle answers by querying the tenant's telemetry; Serverless functions run TypeScript on an edge runtime; EagleSRE, in preview, adds incident response.",
     }),
     breadcrumbSchema('/eagle', 'Eagle'),
   ]}
@@ -74,39 +250,118 @@ const split = [
         <div class="brand-row rise">
           <EagleMark size={34} />
           <span class="eyebrow">Obstack Eagle</span>
-          <span class="badge soon">Coming soon</span>
+          <span class="badge badge-mint now"><span class="dot" aria-hidden="true"></span>Available now</span>
         </div>
-        <h1 class="display rise">An observability console that speaks PromQL, LogQL and TraceQL.</h1>
-        <p class="lead rise-2">Eagle is our own console for the Obstack Stack. Workloads, infrastructure, the service map, logs, traces and AI spans, read straight from the store in its own query languages. Type <code>service:checkout status:error</code> and see the exact query it runs.</p>
-        <div class="btn-row rise-2" style="padding-top: 8px">
-          <ObfuscatedEmail class="btn btn-primary" subject="Eagle updates" label="Hear when it ships">Hear when it ships <Arrow /></ObfuscatedEmail>
-          <a class="btn btn-ghost" href="#inside">See what's inside</a>
+        <h1 class="display rise">An observability console that speaks PromQL, LogQL and TraceQL — and answers back.</h1>
+        <p class="lead rise-2">Eagle is the Obstack Stack's own console, and it is running today. Workloads, infrastructure, the service map, logs, traces and AI spans, read straight from the store in its own query languages. Ask Eagle answers from that same telemetry, TypeScript functions run beside it on an edge runtime, and EagleSRE brings incidents into the same place.</p>
+        <div class="btn-row rise-2" style="padding-top: 6px">
+          <a class="btn btn-primary" href={url('/pricing#demo')}>Start the {DEMO.days}-day evaluation <Arrow /></a>
+          <a class="btn btn-ghost" href="#tour">Tour the console</a>
+        </div>
+        <div class="hero-meta mono rise-2">
+          <span>Self-hosted or Obstack Cloud</span>
+          <span>Air-gap ready</span>
+          <span>GreptimeDB or ClickHouse</span>
         </div>
       </div>
 
-      <figure class="shot rise-3">
-        <img src={url('/images/eagle_map.webp')} alt="Obstack Eagle's Service Map: services and their dependencies, each with its call rate and error rate, and the payment service flagged at 4.2% errors" width="1600" height="1000" />
-      </figure>
+      <div class="hero-shot rise-3">
+        <figure class="shot">
+          <img src={url('/images/eagle_map.webp')} alt="Eagle's Service Map: services and their dependencies with call and error rates; checkout and payment are flagged for errors" width="2000" height="1250" fetchpriority="high" />
+        </figure>
+        <div class="ask-card" aria-hidden="true">
+          <div class="ask-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7FB4FA" stroke-width="2"><path d={icons.spark[0]}></path></svg>
+            Ask Eagle<span class="kbd mono">⌘J</span>
+          </div>
+          <p>“Why did errors go up in the last hour?”</p>
+          <div class="ask-ran mono">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#63E8B0" stroke-width="2.5"><path d="M5 12l5 5 9-10"></path></svg>
+            Ran 4 queries · map, traces, logs
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="section">
+  <section class="facts-band">
+    <div class="wrap">
+      <div class="grid-4 rule-top facts">
+        {facts.map(([n, d]) => (
+          <div class="stack">
+            <span class="fact-n">{n}</span>
+            <span class="body-2">{d}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="tour">
     <div class="wrap">
       <div class="section-head">
         <div class="stack">
           <div class="eyebrow">01 / How it is laid out</div>
           <h2 class="h2">In the order an investigation runs.</h2>
         </div>
-        <p class="body-2">Eagle's sections follow the questions you ask during an incident, not the teams that own the data.</p>
+        <p class="body-2">Eagle's sections follow the questions you ask during an incident, not the teams that own the data. A service keeps the same name on the map, in its logs and in its traces, so moving between them keeps your place.</p>
       </div>
-      <div class="grid-4 rule-top four">
-        {sequence.map(([t, d]) => (
-          <div class="stack">
-            <span class="mono">→ {t}</span>
-            <p class="body-2">{d}</p>
+
+      <ol class="steps" aria-label="Investigation order">
+        {sequence.map(([t, d], i) => (
+          <li>
+            <span class="num mono" aria-hidden="true">{i + 1}</span>
+            <span class="mono step-t">{t}</span>
+            <span class="body-2">{d}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div class="tour" data-tour>
+        <div class="tabs" role="tablist" aria-label="Eagle sections">
+          {tour.map((t, i) => (
+            <button type="button" role="tab" class="tab" id={`tab-${t.id}`} aria-controls={`panel-${t.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{t.label}</button>
+          ))}
+        </div>
+        {tour.map((t, i) => (
+          <div class="tour-panel" role="tabpanel" id={`panel-${t.id}`} aria-labelledby={`tab-${t.id}`} tabindex="0">
+            <figure class="shot light-shot">
+              <img src={url(`/images/${t.img}.webp`)} alt={t.alt} width="2000" height="1250" loading={i === 0 ? 'eager' : 'lazy'} />
+            </figure>
+            <div class="tour-cap">
+              <h3 class="h3">{t.title}</h3>
+              <p class="body-2">{t.text}</p>
+            </div>
           </div>
         ))}
       </div>
+      <script is:inline>
+        (() => {
+          const root = document.querySelector('[data-tour]');
+          if (!root) return;
+          const tabs = [...root.querySelectorAll('[role="tab"]')];
+          const show = (tab, focus) => {
+            for (const t of tabs) {
+              const on = t === tab;
+              t.setAttribute('aria-selected', String(on));
+              t.tabIndex = on ? 0 : -1;
+              document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+            }
+            if (focus) tab.focus();
+          };
+          tabs.forEach((t, i) => {
+            t.addEventListener('click', () => show(t, false));
+            t.addEventListener('keydown', (e) => {
+              const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+              if (to === undefined) return;
+              e.preventDefault();
+              show(tabs[(to + tabs.length) % tabs.length], true);
+            });
+          });
+          // Without script every panel stays visible, one under the other.
+          show(tabs[0], false);
+        })();
+      </script>
     </div>
   </section>
 
@@ -117,7 +372,7 @@ const split = [
           <div class="eyebrow">02 / One search, three languages</div>
           <h2 class="h2">Type the search. Read the query it runs.</h2>
         </div>
-        <p class="body-2">Eagle compiles one search syntax to LogQL, TraceQL or PromQL and shows you the result. Switch to the native query whenever you want, and back. Structured fields such as <code>level</code> become pipeline filters, not stream selectors, so a search never quietly matches nothing.</p>
+        <p class="body-2">Eagle compiles one search syntax to LogQL, TraceQL or PromQL and prints the result under the bar. Switch to the native query whenever you want, and back. Structured fields such as <code>level</code> become pipeline filters, not stream selectors, so a search never quietly matches nothing.</p>
       </div>
       <div class="search-grid">
         <div class="compile">
@@ -129,28 +384,206 @@ const split = [
             </div>
           ))}
         </div>
-        <figure class="shot light-shot">
-          <img src={url('/images/eagle_logs.webp')} alt="Obstack Eagle's Logs page: a search bar showing the LogQL it runs, presets, a volume histogram, level facets with counts, and log rows" width="1600" height="1000" loading="lazy" />
+        <figure class="shot light-shot cap-shot">
+          <img src={url('/images/eagle_search.webp')} alt="Eagle's Logs page filtered by status:error: the search bar, the LogQL it runs, presets, a volume histogram and the error facet" width="2000" height="1250" loading="lazy" />
+          <figcaption class="mono">“Runs as LogQL” sits under the bar on every search, with a copy button.</figcaption>
         </figure>
       </div>
     </div>
   </section>
 
   <section class="dark">
-    <div class="wrap section bounded">
-      <div class="stack" style="gap: 20px">
-        <div class="eyebrow">03 / Ask Eagle</div>
-        <h2 class="h2">An assistant that answers from your telemetry.</h2>
-        <p class="body-2" style="font-size: 17px">Ask Eagle sits in the rail on every page, and <span class="mono">⌘J</span> opens it from anywhere. It knows the section you are on, the query in the bar and the time range, and it works out answers by querying the same data you can see.</p>
+    <div class="wrap section">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">03 / AI, built in</div>
+          <h2 class="h2">An assistant that answers from your telemetry, with its working shown.</h2>
+        </div>
+        <p class="body-2">Ask Eagle sits in the rail on every page, and <span class="mono" style="color: var(--on-dark)">⌘J</span> opens it anywhere. It knows the section you are on, the query in the bar and the time range, and it answers by running the queries the pages run.</p>
       </div>
-      <div class="gossip">
-        {companion.map(([t, d]) => (
+
+      <div class="ai-grid">
+        <figure class="shot cap-shot">
+          <img src={url('/images/eagle_companion.webp')} alt="Ask Eagle docked beside the Logs page: it ran four queries, explains that order-service errors point at its database calls, and offers the queries as Run in Logs and Run in Traces buttons" width="2000" height="1250" loading="lazy" />
+          <figcaption class="mono">The queries it ran come first, each with what came back and an Open link. A refused query is shown as refused.</figcaption>
+        </figure>
+        <ol class="vsteps" aria-label="How Ask Eagle answers">
+          {answer.map(([t, d], i) => (
+            <li>
+              <span class="num mono" aria-hidden="true">{i + 1}</span>
+              <span class="vs-t">{t}</span>
+              {d && <span class="body-2">{d}</span>}
+              {i === 1 && (
+                <span class="tools">{tools.map((t) => <span class="mono">{t}</span>)}</span>
+              )}
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div class="gossip four-up">
+        {aiPlaces.map(([icon, t, d]) => (
           <div>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7FB4FA" stroke-width="1.8" aria-hidden="true">{icons[icon].map((p) => <path d={p}></path>)}</svg>
             <h3 class="h3" style="font-size: 18px">{t}</h3>
             <p class="body-2" style="font-size: 15px">{d}</p>
           </div>
         ))}
       </div>
+
+      <div class="model">
+        <div class="stack" style="gap: 12px">
+          <h3 class="h3">Your model, on your network.</h3>
+          <p class="body-2">Point Eagle at any OpenAI-compatible Chat Completions endpoint with tool calls: Netter's router, a hosted provider, or a model you run yourself. The browser never talks to the model; Eagle does, from the server, and renders its answers as text, never as HTML.</p>
+        </div>
+        <pre class="code model-env"><span class="p"># eagle.env</span>
+COMPANION_URL=https://llm.internal.example
+COMPANION_API_KEY=…
+COMPANION_MODEL=switchyard
+COMPANION_MAX_ROUNDS=8</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">04 / Edge Serverless engine</div>
+          <h2 class="h2">Functions that run next to your telemetry.</h2>
+        </div>
+        <p class="body-2">Write TypeScript, commit it to git, and Eagle builds it into an immutable artifact. Every run gets its own isolated worker on Edge Runtime and is gone when it finishes. Functions read signals, write metrics, raise and resolve alerts, and react to telemetry as it arrives.</p>
+      </div>
+
+      <figure class="shot light-shot cap-shot">
+        <img src={url('/images/eagle_fn_editor.webp')} alt="The function workspace in Eagle: the AWS EC2 status function's main.ts in a code editor, with the Run panel for drafts beside it" width="2000" height="1250" loading="lazy" />
+        <figcaption class="mono">The workspace: code, manifest, run panel, bindings, triggers, deployments and history, with Ask Eagle one button away.</figcaption>
+      </figure>
+
+      <h3 class="h3 sub-head">From commit to production, every step recorded.</h3>
+      <ol class="steps six" aria-label="Function lifecycle">
+        {lifecycle.map(([t, d], i) => (
+          <li class:list={{ last: i === lifecycle.length - 1 }}>
+            <span class="num mono" aria-hidden="true">{i + 1}</span>
+            <span class="mono step-t">{t}</span>
+            <span class="body-2">{d}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div class="fn-grid">
+        <div class="stack fn-code">
+          <div class="fn-code-head"><h3 class="h3">A whole function.</h3><span class="mono">presets/http-check · main.ts</span></div>
+          <pre class="code"><span class="k">import</span> {'{'} defineScript {'}'} <span class="k">from</span> <span class="s">"@eagle/sdk"</span>;
+
+<span class="k">export default</span> defineScript&lt;{'{'} url: string; expected_status: number; timeout_ms: number {'}'}&gt;(
+  <span class="k">async</span> (ctx, input) =&gt; {'{'}
+    <span class="k">const</span> started = performance.now();
+    <span class="k">const</span> url = <span class="k">new</span> URL(input.url);
+    <span class="k">const</span> response = <span class="k">await</span> fetch(url, {'{'} redirect: <span class="s">"manual"</span>, signal: AbortSignal.timeout(input.timeout_ms) {'}'});
+    <span class="k">await</span> response.body?.cancel();
+    <span class="k">const</span> ok = response.status === input.expected_status;
+    ctx.metrics.gauge(<span class="s">"http_check_latency_ms"</span>, performance.now() - started, {'{'} target: url.origin {'}'});
+    ctx.metrics.gauge(<span class="s">"http_check_success"</span>, Number(ok), {'{'} target: url.origin {'}'});
+    <span class="k">if</span> (ok) <span class="k">await</span> ctx.resolve(url.origin);
+    <span class="k">else await</span> ctx.alert({'{'} key: url.origin, severity: <span class="s">"S2"</span>, title: <span class="s">`HTTP check answered ${'{'}response.status{'}'}`</span> {'}'});
+    <span class="k">return</span> {'{'} ok, status: response.status {'}'};
+  {'}'});</pre>
+          <pre class="code toml"><span class="p"># script.toml</span>
+name = "HTTP check"
+[run]
+timeout = "30s"
+[[triggers]]
+every = "5m"</pre>
+        </div>
+
+        <div class="stack fn-side">
+          <h3 class="h3">Six ways to start a run.</h3>
+          <div class="tile-grid triggers">
+            {triggers.map(([t, d]) => (
+              <div>
+                <span class="mono trig-t">{t}</span>
+                <p class="small">{d}</p>
+              </div>
+            ))}
+          </div>
+          <div class="stack" style="gap: 10px; padding-top: 10px">
+            <span class="mono presets-t">Presets, ready to install</span>
+            <div class="chips">{presets.map((p) => <span>{p}</span>)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tile-grid grid-4 guard">
+        {isolation.map(([icon, t, d]) => (
+          <div>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--link)" stroke-width="1.8" aria-hidden="true">{icons[icon].map((p) => <path d={p}></path>)}</svg>
+            <h3 class="h3" style="font-size: 18px">{t}</h3>
+            <p class="body-2" style="font-size: 15px">{d}</p>
+          </div>
+        ))}
+      </div>
+
+      <div class="pair">
+        <figure class="shot light-shot cap-shot">
+          <img src={url('/images/eagle_fn_runs.webp')} alt="The Runs tab: each run with its status, function, trigger, environment, version and duration" width="2000" height="1250" loading="lazy" />
+          <figcaption><b>Every run, kept.</b> Trigger, environment, version, duration, logs, output and what it emitted.</figcaption>
+        </figure>
+        <figure class="shot light-shot cap-shot">
+          <img src={url('/images/eagle_fn_ingest.webp')} alt="An ingest rule drawer: a Lua predicate in a sandboxed editor, tested against a flattened sample log record" width="2000" height="1250" loading="lazy" />
+          <figcaption><b>Ingest rules, tested first.</b> A Lua predicate is checked against recent samples before it goes live.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="dark sre-band">
+    <div class="wrap section">
+      <div class="section-head">
+        <div class="stack">
+          <div class="brand-row">
+            <span class="eyebrow">05 / New: EagleSRE</span>
+            <span class="badge preview">Preview</span>
+          </div>
+          <h2 class="h2">Incident response, where the evidence already is.</h2>
+        </div>
+        <p class="body-2">EagleSRE is an optional service beside Eagle. Alerts become incidents with severity, escalation and on-call; responders work them from Eagle, Slack or Microsoft Teams. Eagle stays the identity provider: no second user database, no second login.</p>
+      </div>
+
+      <ol class="steps on-dark" aria-label="EagleSRE incident flow">
+        {sreFlow.map(([t, d], i) => (
+          <li class:list={{ last: i === sreFlow.length - 1 }}>
+            <span class="num mono" aria-hidden="true">{i + 1}</span>
+            <span class="mono step-t">{t}</span>
+            <span class="body-2">{d}</span>
+          </li>
+        ))}
+      </ol>
+
+      <div class="sre-grid">
+        <figure class="shot cap-shot">
+          <img src={url('/images/eaglesre_incident.webp')} alt="EagleSRE inside Eagle: the incidents list with an S1 incident open in a drawer, showing acknowledge, escalate and resolve, an investigation question and the timeline" width="2000" height="1250" loading="lazy" />
+          <figcaption class="mono">Incidents, investigations, services, on-call, escalation policies, requirements, monitoring review, SLOs, postmortems and status pages: one section of Eagle.</figcaption>
+        </figure>
+        <div class="stack" style="gap: 16px">
+          <div class="bot">
+            <div class="bot-head">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7FB4FA" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path></svg>
+              The EagleSRE bot, in Slack or Teams
+            </div>
+            <pre class="mono">{sreCommands.join('\n')}</pre>
+            <p class="body-2">A change typed in chat comes back with a confirm button bound to the incident's revision. Answers that contain queried data are sent to you privately.</p>
+          </div>
+          {sreNotes.map(([t, d]) => (
+            <div class="sre-note">
+              <h3 class="h3" style="font-size: 18px">{t}</h3>
+              <p class="body-2" style="font-size: 15px">{d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p class="preview-note"><b>Preview.</b> Incidents, escalation workers, the Slack and Teams adapters and the investigation agent are built; delivery through each provider is in acceptance testing. It is not yet a replacement for a production pager. Today, that is <a href={url('/pageroot')}>PageRoot</a>.</p>
     </div>
   </section>
 
@@ -158,10 +591,10 @@ const split = [
     <div class="wrap">
       <div class="section-head">
         <div class="stack">
-          <div class="eyebrow">04 / What's inside</div>
+          <div class="eyebrow">06 / What's inside</div>
           <h2 class="h2">Nine sections, one set of labels.</h2>
         </div>
-        <p class="body-2">A service keeps the same name on the map, in its logs and in its traces, so moving between them keeps your place.</p>
+        <p class="body-2">Everything below is in the console today, reading the same store as Grafana.</p>
       </div>
       <div class="tile-grid grid-3">
         {inside.map(([t, d, m]) => (
@@ -188,14 +621,20 @@ const split = [
     <div class="wrap">
       <div class="section-head">
         <div class="stack">
-          <div class="eyebrow">05 / Next to Grafana</div>
-          <h2 class="h2">Grafana stays. Eagle is a second way in.</h2>
+          <div class="eyebrow">07 / Compared</div>
+          <h2 class="h2">Where Eagle differs from the consoles teams weigh it against.</h2>
         </div>
-        <p class="body-2">Both read the same store, so choosing one costs nothing in the other. Keep the Grafana dashboards you have; open Eagle when you want to follow an incident from service to log line.</p>
+        <p class="body-2">Four questions that decide how a console feels in use: where it runs, what you type, where you start, and who answers when you ask.</p>
       </div>
-      <div class="tile-grid grid-2">
-        {split.map(([t, d]) => (
+      <CompareTable
+        columns={compareColumns}
+        rows={compareRows}
+        caption="No winners marked: each row says how the console works. Others' details from their public documentation and announcements, reviewed October 2026."
+      />
+      <div class="tile-grid grid-2 split">
+        {split.map(([k, t, d]) => (
           <div>
+            <span class="mono split-k">{k}</span>
             <h3 class="h3" style="font-size: 20px">{t}</h3>
             <p class="body-2" style="font-size: 15px">{d}</p>
           </div>
@@ -204,19 +643,50 @@ const split = [
     </div>
   </section>
 
+  <section class="section-tight">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="stack">
+          <div class="eyebrow">08 / How it fits</div>
+          <h2 class="h2">Eagle is Piper's client, and its identity service.</h2>
+        </div>
+        <p class="body-2">Piper serves one store as PromQL, LogQL and TraceQL and holds no user records. On every query it asks Eagle what the credential is, which decides the tenant, the database and the signals that may be read. Eagle starts first and needs no Piper to become healthy.</p>
+      </div>
+      <div class="diagram-wrap panel arch-wrap" tabindex="0" role="region" aria-label="Architecture diagram">
+        <svg class="arch" viewBox="0 0 1200 544" role="img" aria-label="The browser talks to Eagle. Eagle queries Piper, which reads GreptimeDB or ClickHouse and asks Eagle to introspect each credential. Eagle calls your LLM endpoint for Ask Eagle and is the identity for EagleSRE. Slack and Teams reach EagleSRE, whose agent runs on Edge Runtime, which uses Vault, Git and S3. Vector and OpenTelemetry feed the store.">
+          <defs>
+            <marker id="arch-head" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0L8 4L0 8z" fill="#475862"></path></marker>
+            <marker id="arch-head-accent" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0L8 4L0 8z" fill="#0B6A88"></path></marker>
+          </defs>
+          {edges.map((e) => <path class:list={['edge', { accent: e.accent }]} d={e.d} marker-end={e.accent ? 'url(#arch-head-accent)' : 'url(#arch-head)'}></path>)}
+          {nodes.map((n) => (
+            <g class:list={['node', n.kind]}>
+              <rect x={n.x} y={n.y} width={n.w} height={n.h} rx="10"></rect>
+              {n.lines.map(([t, b], i) => (
+                <text x={n.x + n.w / 2} y={lineY(n, i)} text-anchor="middle" class:list={{ b, big: b && i === 0 && (n.kind === 'eagle' || n.kind === 'sre') }}>{t}</text>
+              ))}
+            </g>
+          ))}
+          {edgeLabels.map((l) => <text class:list={['elabel', { accent: l.accent }]} x={l.x} y={l.y} text-anchor={l.start ? 'start' : 'middle'}>{l.t}</text>)}
+        </svg>
+      </div>
+      <p class="scroll-hint">Swipe the diagram sideways to see all of it.</p>
+    </div>
+  </section>
+
   <section class="dark">
     <div class="wrap cta-band">
       <div class="stack" style="gap: 18px">
         <div class="brand-row">
           <EagleMark size={28} />
-          <span class="eyebrow">Coming soon</span>
+          <span class="eyebrow">Available now</span>
         </div>
-        <h2 class="h2">Eagle is on its way to the Obstack Stack.</h2>
-        <p class="body-2" style="font-size: 18px; max-width: 620px">Leave an address and we will write when it ships. Until then, the stack runs on Grafana, with every signal Eagle will read already in place.</p>
+        <h2 class="h2">Eagle is in the Obstack Stack today.</h2>
+        <p class="body-2" style="font-size: 18px; max-width: 620px">Give us a Kubernetes cluster of your choice and we deploy the full stack on it, Eagle and Grafana side by side. Run your own telemetry through it for {DEMO.days} days, then decide.</p>
       </div>
       <div class="btn-row">
-        <ObfuscatedEmail class="btn btn-primary" subject="Eagle updates" label="Hear when it ships" />
-        <a class="btn btn-ghost" href={url('/stack')}>See the stack today</a>
+        <a class="btn btn-primary" href={url('/pricing#demo')}>Start the {DEMO.days}-day evaluation <Arrow /></a>
+        <a class="btn btn-ghost" href={url('/stack')}>See the full stack</a>
       </div>
     </div>
   </section>
@@ -226,24 +696,94 @@ const split = [
   .eagle-hero { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); }
 
   .brand-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-  .soon { border: 1px solid rgba(232, 241, 242, 0.4); color: var(--on-dark); padding: 3px 8px; }
+  .now { gap: 7px; font-weight: 700; }
+  .now .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink); }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 12px; color: var(--on-dark-3); }
 
-  .lead code, .section-head code {
+  .section-head code {
     font-family: var(--font-mono);
     font-size: 0.88em;
     padding: 1px 6px;
     white-space: nowrap;
+    background: var(--line-soft);
+    color: var(--text);
   }
-  .lead code { background: rgba(232, 241, 242, 0.08); color: var(--on-dark-strong); }
-  .section-head code { background: var(--line-soft); color: var(--text); }
 
   .shot { margin: 0; min-width: 0; border-radius: 14px; overflow: hidden; border: 1px solid rgba(232, 241, 242, 0.14); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); background: #080D10; }
   .shot img { width: 100%; height: auto; display: block; }
   .light-shot { border-color: var(--line); box-shadow: 0 24px 60px -30px rgba(10, 31, 46, 0.45); }
+  /* A captioned shot: the frame wraps the image only, the caption sits under it. */
+  .cap-shot { overflow: visible; border: none; box-shadow: none; background: none; border-radius: 0; display: flex; flex-direction: column; gap: 12px; }
+  .cap-shot img { border-radius: 14px; border: 1px solid rgba(232, 241, 242, 0.14); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.6); background: #080D10; }
+  .light-shot.cap-shot img { border-color: var(--line); box-shadow: 0 24px 60px -30px rgba(10, 31, 46, 0.45); }
+  .cap-shot figcaption { font-size: 15px; line-height: 1.6; color: var(--text-2); }
+  .cap-shot figcaption.mono { font-size: 12px; }
+  .cap-shot figcaption b { color: var(--ink); }
+  .dark .cap-shot figcaption { color: var(--on-dark-2); }
 
-  .four > .stack { gap: 12px; padding: 28px 28px 0; border-left: 1px solid var(--line); }
-  .four > .stack:first-child { padding-left: 0; border-left: none; }
-  .four .mono { font-size: 13px; color: var(--link); font-weight: 700; text-transform: uppercase; }
+  .hero-shot { position: relative; min-width: 0; }
+  .ask-card {
+    position: absolute;
+    left: -28px;
+    bottom: -36px;
+    width: 300px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: #0B1418;
+    border: 1px solid rgba(127, 180, 250, 0.35);
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ask-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--on-dark-strong); }
+  .kbd { margin-left: auto; font-size: 11px; color: var(--on-dark-2); border: 1px solid rgba(232, 241, 242, 0.2); padding: 1px 6px; border-radius: 4px; }
+  .ask-card p { font-size: 14px; line-height: 1.45; color: var(--on-dark); }
+  .ask-ran { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--on-dark-2); }
+
+  .facts-band { padding-top: 24px; }
+  .facts > .stack { gap: 6px; padding: 28px 28px 0; border-left: 1px solid var(--line); }
+  .facts > .stack:first-child { padding-left: 0; border-left: none; }
+  .fact-n { font-size: 34px; line-height: 1.2; font-weight: 500; letter-spacing: -0.03em; color: var(--ink); }
+  .facts .body-2 { font-size: 15px; }
+
+  /* Numbered steps on a rail: the order is the point. */
+  .steps { list-style: none; margin: 0 0 56px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 24px; }
+  .steps.six { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 28px 20px; margin-bottom: 0; }
+  .steps.on-dark { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px 20px; margin-bottom: 64px; }
+  .steps li { position: relative; display: flex; flex-direction: column; gap: 8px; padding-top: 30px; border-top: 2px solid var(--ink); }
+  .steps .num { position: absolute; top: -14px; left: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--mint); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .steps .last { border-top-color: var(--mint); }
+  .steps .last .num { background: var(--mint); color: var(--ink); }
+  .step-t { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--link); }
+  .steps .body-2 { font-size: 15px; }
+  .on-dark li { border-top-color: rgba(232, 241, 242, 0.3); }
+  .on-dark .num { background: var(--ink); border: 1px solid #F2A635; color: #F2A635; }
+  .on-dark .last { border-top-color: #F2A635; }
+  .on-dark .last .num { background: #F2A635; color: var(--ink); border: none; }
+  .on-dark .step-t { color: var(--on-dark-strong); }
+
+  .tabs { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 20px; scrollbar-width: thin; }
+  .tab {
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--text);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+  .tab:hover { border-color: var(--text-2); }
+  .tab[aria-selected='true'] { background: var(--ink); border-color: var(--ink); color: var(--on-dark-strong); }
+  .tour-panel + .tour-panel { margin-top: 40px; }
+  .tour-panel[hidden] { display: none; }
+  .tour-cap { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 12px 48px; padding-top: 22px; }
 
   .search-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 40px; align-items: start; }
   .compile { display: flex; flex-direction: column; border-top: 2px solid var(--ink); }
@@ -255,33 +795,113 @@ const split = [
   .typed { font-size: 14px; line-height: 1.6; color: var(--text); background: var(--white); border: 1px solid var(--line); padding: 10px 14px; overflow-wrap: anywhere; }
   .native { font-size: 13px; line-height: 1.6; padding: 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
 
-  .bounded { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 72px; align-items: start; }
-  .gossip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--on-dark-line); align-self: stretch; }
-  .gossip > div { background: var(--night); padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 10px; }
+  .ai-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 56px; align-items: start; }
+  .vsteps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .vsteps li { position: relative; display: flex; flex-direction: column; gap: 6px; margin-left: 13px; padding: 0 0 26px 31px; border-left: 2px solid rgba(232, 241, 242, 0.16); }
+  .vsteps li:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .vsteps .num { position: absolute; left: -14px; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); border: 1px solid var(--mint); color: var(--mint); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .vsteps li:last-child .num { background: var(--mint); color: var(--ink); }
+  .vs-t { font-size: 17px; font-weight: 700; color: var(--on-dark-strong); }
+  .vsteps .body-2 { font-size: 15px; }
+  .tools { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 2px; }
+  .tools span { font-size: 12px; padding: 3px 8px; border: 1px solid rgba(232, 241, 242, 0.18); color: var(--on-dark); }
+
+  .gossip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--on-dark-line); border: 1px solid var(--on-dark-line); margin-top: 72px; }
+  .gossip > div { background: var(--night); padding: 28px; display: flex; flex-direction: column; gap: 12px; }
   .gossip .h3 { color: var(--on-dark-strong); }
-  .gossip .body-2 { color: var(--on-dark-2); }
+
+  .model { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 56px; align-items: center; margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--on-dark-line); }
+  .model .h3 { color: var(--on-dark-strong); }
+  .model-env { border: 1px solid var(--on-dark-line); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  .sub-head { margin: 72px 0 32px; }
+
+  .fn-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 40px; align-items: start; margin-top: 72px; }
+  .fn-code, .fn-side { gap: 14px; min-width: 0; }
+  .fn-code-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .fn-code-head .mono { font-size: 12px; color: var(--link); }
+  .fn-code .code { font-size: 12.5px; line-height: 1.75; }
+  .code .k { color: #7FB4FA; }
+  .code .s { color: var(--mint); }
+  .toml { background: var(--white); color: var(--text); border: 1px solid var(--line); padding: 16px 22px; }
+  .toml .p { color: var(--text-2); }
+  .triggers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .triggers > div { padding: 20px 22px; gap: 6px; }
+  .trig-t { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .presets-t { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips span { font-size: 14px; padding: 6px 12px; border-radius: 999px; background: var(--white); border: 1px solid var(--line); }
+
+  .guard { margin-top: 72px; }
+  .guard > div { padding: 28px; gap: 10px; }
+  .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; margin-top: 56px; }
+
+  .sre-band { background: var(--ink); }
+  .preview { border: 1px solid #F2A635; color: #F2A635; padding: 3px 8px; }
+  .sre-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 40px; align-items: start; }
+  .bot { border-radius: 12px; border: 1px solid rgba(232, 241, 242, 0.16); background: #071822; overflow: hidden; }
+  .bot-head { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid var(--on-dark-line); font-size: 14px; font-weight: 600; color: var(--on-dark-strong); }
+  .bot pre { margin: 0; font-size: 13px; line-height: 2; color: #CFE0E5; padding: 16px 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .bot .body-2 { padding: 0 18px 16px; font-size: 14px; }
+  .sre-note { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; border: 1px solid rgba(232, 241, 242, 0.16); border-radius: 12px; }
+  .sre-note .h3 { color: var(--on-dark-strong); }
+  .preview-note { margin-top: 40px; padding: 16px 20px; border: 1px dashed rgba(242, 166, 53, 0.6); font-size: 14px; line-height: 1.6; color: var(--on-dark); }
+  .preview-note b { color: #F2A635; }
+  .preview-note a { color: var(--mint); }
 
   .others { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 56px; padding-top: 48px; }
   .others ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 40px; }
   .others li { display: flex; gap: 12px; font-size: 15px; line-height: 1.6; }
   .others li::before { content: "—"; font-family: var(--font-mono); color: var(--link); }
 
+  .split { margin-top: 56px; }
+  .split > div { background: var(--paper); }
+  .split-k { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--link); }
+
+  .arch-wrap { padding: 8px 0; }
+  .arch { width: 100%; max-width: 1200px; min-width: 960px; margin: 0 auto; font-family: var(--font-sans); }
+  .arch .edge { fill: none; stroke: #475862; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .arch .edge.accent { stroke: var(--link); stroke-dasharray: 6 6; }
+  .arch .node rect { fill: var(--white); stroke: var(--line); stroke-width: 1; }
+  .arch .node text { font-size: 13px; fill: var(--text-2); }
+  .arch .node text.b { font-size: 15px; font-weight: 700; fill: var(--ink); }
+  .arch .node text.big { font-size: 18px; }
+  .arch .eagle rect { fill: var(--ink); stroke: #7FB4FA; stroke-width: 2; }
+  .arch .eagle text, .arch .eagle text.b { fill: var(--on-dark-strong); }
+  .arch .store rect { fill: var(--mint-wash); stroke: var(--mint); }
+  .arch .sre rect { stroke: #F2A635; stroke-width: 2; stroke-dasharray: 6 5; }
+  .arch .ext rect { stroke: #475862; stroke-dasharray: 5 4; }
+  .arch .elabel { font-size: 13px; fill: var(--text-2); }
+  .arch .elabel.accent { fill: var(--link); }
+
   @media (max-width: 1100px) {
     .eagle-hero { grid-template-columns: minmax(0, 1fr); }
-    .search-grid { grid-template-columns: minmax(0, 1fr); }
-    .bounded { grid-template-columns: minmax(0, 1fr); gap: 40px; }
-    .four > .stack:nth-child(3) { padding-left: 0; border-left: none; }
+    .facts > .stack:nth-child(3) { padding-left: 0; border-left: none; }
+    .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .steps.six { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .steps.on-dark { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .search-grid, .ai-grid, .fn-grid, .sre-grid, .model { grid-template-columns: minmax(0, 1fr); }
+    .gossip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .guard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .others { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   }
   @media (max-width: 800px) {
-    .four > .stack, .four > .stack:first-child { padding: 20px 0 0; border-left: none; }
+    .ask-card { display: none; }
+    .facts > .stack, .facts > .stack:first-child { padding: 20px 0 0; border-left: none; }
+    .fact-n { font-size: 28px; }
+    .steps, .steps.six, .steps.on-dark { grid-template-columns: minmax(0, 1fr); margin-bottom: 40px; }
+    .steps.six { margin-bottom: 0; }
+    .tour-cap { grid-template-columns: minmax(0, 1fr); }
+    .tour-panel + .tour-panel { margin-top: 32px; }
     /* One column: drop the grid hairlines and separate with real rules. */
-    .gossip { grid-template-columns: minmax(0, 1fr); gap: 0; background: transparent; }
+    .gossip { grid-template-columns: minmax(0, 1fr); gap: 0; background: transparent; border: none; margin-top: 48px; }
     .gossip > div { padding: 20px 0; background: transparent; }
     .gossip > div + div { border-top: 1px solid var(--on-dark-line); }
+    .triggers, .guard, .pair { grid-template-columns: minmax(0, 1fr); }
+    .sub-head, .fn-grid, .guard { margin-top: 48px; }
     .others ul { grid-template-columns: minmax(0, 1fr); }
     .others { padding-top: 32px; }
-    .lead code { white-space: normal; overflow-wrap: anywhere; }
     .native { font-size: 12px; }
+    .fn-code .code { font-size: 12px; }
   }
 </style>

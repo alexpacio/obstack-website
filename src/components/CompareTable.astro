@@ -9,14 +9,21 @@ interface Props {
     /** Column indices that win this row. Empty or all columns: no badge. */
     win: number[];
   }[];
+  /** Replaces the default legend, for a table that marks no winners. */
+  caption?: string;
 }
 
-const { columns, ours = 0, rows } = Astro.props;
+const {
+  columns,
+  ours = 0,
+  rows,
+  caption = 'Mint and a Wins badge mark the winner of the row. Tie means more than one product wins that capability.',
+} = Astro.props;
 ---
 
 <div class="cmp-wrap panel">
   <table class="cmp">
-    <caption>Mint and a Wins badge mark the winner of the row. Tie means more than one product wins that capability.</caption>
+    <caption>{caption}</caption>
     <thead>
       <tr>
         <th class="k"><span class="sr">Capability</span></th>
