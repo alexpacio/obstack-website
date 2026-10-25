@@ -1,6 +1,6 @@
 export type Deployment = 'self-hosted' | 'cloud';
 export type PlanId = 'starter' | 'go' | 'pro' | 'max';
-/** 1 = billed monthly at list; 12 = billed yearly, 10% off; 36 = 3-year, 20% off, billed yearly. */
+/** 1 = billed monthly at list; 12 = billed yearly, 10% off; 36 = 3-year, 15% off, billed yearly. */
 export type Term = 1 | 12 | 36;
 
 export interface SupportLevel {
@@ -73,7 +73,7 @@ export const SUPPORT: Record<PlanId | 'enterprise', SupportLevel> = {
   },
 };
 
-export type AddonId = 'pageroot' | 'aurora' | 'storage';
+export type AddonId = 'storage';
 
 export interface Addon {
   id: AddonId;
@@ -144,7 +144,7 @@ export const PLANS: Plan[] = [
       'Rate-limited, best-effort ingest: excess telemetry is shed, not billed',
       '1 TB of object storage included',
       'Email support, best effort, no response-time commitment',
-      'No PageRoot, no Aurora AI, no add-ons',
+      'Bee, Eagle, Grafana and EagleMCP included; no paid add-ons',
     ],
     includes: [],
     infra: {
@@ -165,7 +165,7 @@ export const PLANS: Plan[] = [
     id: 'go',
     name: 'Go',
     short: 'Go',
-    price: 529,
+    price: 499,
     blurb: 'A backend of your own, deployed and supported, for teams that page each other in business hours.',
     headline: 'Dedicated node · email support, next business day',
     features: [
@@ -175,7 +175,8 @@ export const PLANS: Plan[] = [
       '10 TB of object storage included',
       'Setup, updates, rollout and monitoring of the infrastructure',
       'Email support, next business day response',
-      'PageRoot and Aurora AI available as add-ons',
+      'EagleSRE production add-on at launch; preview by request',
+      'Bee, Eagle, Grafana and EagleMCP included',
     ],
     includes: [],
     infra: {
@@ -187,7 +188,7 @@ export const PLANS: Plan[] = [
       disk: '500 GB NVMe',
       note: 'A single backend node, sized for a team that can tolerate a maintenance window.',
     },
-    onPrem: 129,
+    onPrem: 100,
     cloudOnly: false,
     includedTb: 10,
     bestEffort: false,
@@ -196,19 +197,19 @@ export const PLANS: Plan[] = [
     id: 'pro',
     name: 'Pro',
     short: 'Pro',
-    price: 1599,
-    blurb: 'Everything in Go on a much larger node, plus the on-call module and engineers who answer the same working day.',
-    headline: 'Tier 2 support in working hours · PageRoot included',
+    price: 1499,
+    blurb: 'Everything in Go on a much larger node, plus engineers who answer the same working day.',
+    headline: 'Tier 2 support in working hours · Eagle included',
     features: [
       'Everything in Go, same unlimited nodes and ingest',
       'A larger dedicated node: 16 cores, 64 GB RAM, 8 TB NVMe',
-      'PageRoot on-call module included: schedules, escalations, ChatOps, MCP',
+      'Eagle console included: workloads, logs, traces and Ask Eagle',
       'Tier 2 support during working hours, P1 answered in 2 business hours',
       'Quarterly stack review and upgrade planning',
       '10 TB of object storage included',
-      'Aurora AI available as an add-on',
+      'EagleSRE production entitlement included at launch; preview by request',
     ],
-    includes: ['pageroot'],
+    includes: [],
     infra: {
       nodes: 1,
       ha: false,
@@ -218,7 +219,7 @@ export const PLANS: Plan[] = [
       disk: '8 TB NVMe',
       note: 'A single backend node with room for a busy fleet and months of hot data on local NVMe.',
     },
-    onPrem: 399,
+    onPrem: 300,
     cloudOnly: false,
     includedTb: 10,
     bestEffort: false,
@@ -228,19 +229,19 @@ export const PLANS: Plan[] = [
     id: 'max',
     name: 'Max',
     short: 'Max',
-    price: 5099,
-    blurb: 'Everything in Pro on a high-availability cluster, with round-the-clock Tier 3 engineers and Aurora AI on a private model.',
-    headline: 'Three-node HA · Tier 3 support 24/7 · private LLM',
+    price: 4499,
+    blurb: 'Everything in Pro on a high-availability cluster, with round-the-clock Tier 3 engineers and EagleSRE production entitlement at launch.',
+    headline: 'Three-node HA · Tier 3 support 24/7',
     features: [
-      'Everything in Pro, PageRoot included',
+      'Everything in Pro, Eagle included',
       'Three-node HA cluster: 16 cores, 64 GB RAM, 8 TB NVMe each',
-      'Aurora AI included, on a private LLM deployment in the region you pick',
+      'EagleSRE production entitlement included at launch; preview by request',
       'Tier 3 support 24/7, P1 answered in 30 minutes, any day of the year',
       'Phone escalation and a 99.9% availability commitment on Obstack Cloud',
       '10 TB of object storage included',
       'Priority on roadmap requests',
     ],
-    includes: ['pageroot', 'aurora'],
+    includes: [],
     infra: {
       nodes: 3,
       ha: true,
@@ -250,7 +251,7 @@ export const PLANS: Plan[] = [
       disk: '8 TB NVMe',
       note: 'Three backend nodes in a high-availability cluster: lose one and the stack keeps ingesting.',
     },
-    onPrem: 1099,
+    onPrem: 900,
     cloudOnly: false,
     includedTb: 10,
     bestEffort: false,
@@ -259,33 +260,13 @@ export const PLANS: Plan[] = [
 
 export const ADDONS: Addon[] = [
   {
-    id: 'pageroot',
-    name: 'PageRoot',
-    price: 299,
-    unit: '/ month',
-    short: 'On-call module',
-    blurb:
-      'Schedules, escalation chains, ChatOps to Slack and Telegram, phone calls and a built-in MCP server. Unlimited on-call users, unlimited incidents. Included on Pro and Max.',
-    availableOn: ['go'],
-  },
-  {
-    id: 'aurora',
-    name: 'Aurora AI',
-    price: 449,
-    unit: '/ month',
-    short: 'AI SRE',
-    blurb:
-      'The AI SRE that works incidents through Grafana MCP and PageRoot MCP, with unlimited DeepSeek 4 Flash on the shared Obstack endpoint. Max upgrades this to a private, single-tenant model deployment.',
-    availableOn: ['go', 'pro'],
-  },
-  {
     id: 'storage',
     name: 'Extra storage',
-    price: 139,
+    price: 149,
     unit: '/ 10 TB / month',
     short: 'Beyond the included 10 TB',
     blurb:
-      'Object storage in 10 TB blocks, on top of the 10 TB every plan includes. Egress, API requests and early deletion are included, so retention never produces a surprise line.',
+      'Object storage in 10 TB blocks, on top of the 10 TB each dedicated plan includes. Egress, API requests and early deletion are included, so retention never produces a surprise line.',
     availableOn: ['go', 'pro', 'max'],
   },
 ];
@@ -304,8 +285,6 @@ export function findAddon(id: AddonId): Addon {
   return ADDONS.find((a) => a.id === id)!;
 }
 
-export const PAGEROOT = findAddon('pageroot');
-export const AURORA = { ...findAddon('aurora'), model: 'DeepSeek 4 Flash' } as const;
 
 /** Object storage: what every plan includes, and what more costs. */
 export const STORAGE = {
@@ -359,12 +338,15 @@ export const COMMERCIAL = {
   ],
 } as const;
 
-/** Free evaluation: we deploy the real thing on the customer's cluster. */
+/** Downloadable self-hosted Max evaluation, delivered as a Helm chart. */
 export const DEMO = {
   days: 30,
   price: 0,
+  planId: 'max',
+  deployment: 'self-hosted',
+  delivery: 'helm',
   blurb:
-    'You give us VPN access to your nodes and a Kubernetes cluster of your choice. We deploy the full stack on it, you run your own telemetry through it for 30 days, then you decide.',
+    'Install the Max edition on your Kubernetes cluster using the Obstack Helm chart and a 30-day evaluation license. Keep the installation and data when you activate a paid self-hosted Go, Pro or Max plan; its entitlements and required resources follow the selected plan.',
 } as const;
 
 export const DEPLOYMENTS: { id: Deployment; label: string; note: string }[] = [
@@ -372,7 +354,7 @@ export const DEPLOYMENTS: { id: Deployment; label: string; note: string }[] = [
     id: 'self-hosted',
     label: 'Your infrastructure',
     note:
-      'We deploy the stack on your nodes and the Kubernetes cluster you choose, over a VPN you control, then keep it updated and monitored. Telemetry never leaves your network, and you supply the hardware and the bucket, so the hosting we would have bought comes off the price. Bee and PageRoot ship under a license key for the first month; after you sign the PolyForm Internal Use agreement, git access to the source. Air-gapped delivery is quoted as Enterprise.',
+      'Install the self-hosted version using our Helm chart, or ask us to deploy it over a VPN you control. Updates and support follow your selected plan. Telemetry never leaves your network, and you supply the hardware and the bucket, so the hosting we would have bought comes off the price. Bee ships under a license key for the first month; after you sign the PolyForm Internal Use agreement, git access to the source. Air-gapped delivery is quoted as Enterprise.',
   },
   {
     id: 'cloud',
@@ -388,7 +370,7 @@ export const UNMETERED = [
   'Ingest, egress and queries',
   'Grafana users, dashboards and alert rules',
   'Incidents, pages and on-call users',
-  'Aurora investigations and tokens',
+  'Eagle queries; model-provider charges are separate',
   'Traces, spans, metrics and log lines',
 ];
 
@@ -403,7 +385,7 @@ export function regionList(): string {
 }
 
 /** Billing discount on the plan and its add-ons. Extra storage blocks are not discounted. */
-export const TERM_DISCOUNT: Record<Term, number> = { 1: 0, 12: 0.1, 36: 0.2 };
+export const TERM_DISCOUNT: Record<Term, number> = { 1: 0, 12: 0.1, 36: 0.15 };
 
 export function parseTerm(n: number): Term {
   if (n === 1 || n === 12 || n === 36) return n;
@@ -426,11 +408,10 @@ export function termSavingLabel(term: Term): string {
 
 /**
  * Per-host list prices of the platforms that licence by node, in USD, used to
- * show what the same fleet costs on each as it grows. Reviewed September 2026.
+ * show what the same fleet costs on each as it grows. Reviewed 26 October 2026.
  */
 export const PER_NODE_VENDORS = [
-  { name: 'Datadog', perHost: 46, platform: 0, detail: 'Infrastructure Pro + APM Pro list, billed annually, before logs and indexed spans' },
-  { name: 'Dynatrace', perHost: 58, platform: 0, detail: 'Full-Stack on an 8 GiB host, before ingest and retention' },
+  { name: 'Datadog', perHost: 46, platform: 0, detail: 'Infrastructure Pro + APM list, billed annually, before logs and indexed spans' },
   { name: 'Grafana Cloud', perHost: 18, platform: 19, detail: '$0.025 per host-hour plus the $19 platform fee, before GB written' },
 ];
 
@@ -465,18 +446,18 @@ export function vendorMonthly(vendor: { perHost: number; platform: number }, nod
   return vendor.platform + vendor.perHost * nodes;
 }
 
-/** Public list price used for the side-by-side estimate, reviewed September 2026. USD. */
+/** Public list price used for the side-by-side estimate, reviewed 26 October 2026. USD. */
 export const BASELINE = {
   vendor: 'Datadog',
   perHost: 46,
-  detail: 'Infrastructure Pro + APM Pro list price, billed annually, before logs, indexed spans and custom metrics',
+  detail: 'Infrastructure Pro + APM list price, billed annually, before logs, indexed spans and custom metrics',
 };
 
 export const MAX_COMPARE_NODES = 5000;
 export const DEFAULT_COMPARE_NODES = 100;
 
 /** List amounts in this file are euros. USD is always this factor above EUR. */
-export const USD_MARKUP = 1.25;
+export const USD_MARKUP = 1.2;
 
 export const CURRENCY = {
   usd: { code: 'USD', locale: 'en-US' },
@@ -611,12 +592,10 @@ export interface Config {
   dc: Datacenter;
   term: Term;
   currency: Currency;
-  /** PageRoot as a paid add-on. Ignored on plans that include it. */
-  pageroot: boolean;
-  /** Aurora AI as a paid add-on. Ignored on plans that include it. */
-  aurora: boolean;
-  /** Paid 10 TB blocks on top of the 10 TB every plan includes. */
+  /** Paid 10 TB blocks on top of the 10 TB each dedicated plan includes. */
   storageBlocks: number;
+  /** Convert an existing Max evaluation to a paid self-hosted plan. */
+  fromTrial: boolean;
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -625,9 +604,8 @@ export const DEFAULT_CONFIG: Config = {
   dc: 'eu',
   term: 12,
   currency: 'usd',
-  pageroot: false,
-  aurora: false,
   storageBlocks: 0,
+  fromTrial: false,
 };
 
 export interface Quote extends Config {
@@ -638,10 +616,6 @@ export interface Quote extends Config {
   onPremCredit: number;
   /** Plan fee per month after the billing discount. */
   planMonthly: number;
-  /** PageRoot fee per month. Zero when included or not on the order. */
-  pagerootMonthly: number;
-  /** Aurora fee per month. Zero when included or not on the order. */
-  auroraMonthly: number;
   /** Extra storage blocks per month. Never discounted. */
   storageMonthly: number;
   /** What the billing term took off the plan and its add-ons. */
@@ -654,9 +628,6 @@ export interface Quote extends Config {
   totalTb: number;
   /** Terabytes the plan itself carries. */
   includedTb: number;
-  /** True when the plan already carries PageRoot or Aurora. */
-  hasPageroot: boolean;
-  hasAurora: boolean;
 }
 
 /** Plan ids used by links published before the flat tiers replaced per-node plans. */
@@ -789,9 +760,8 @@ export function normalize(config: Config): Config {
     dc: config.dc === 'us' ? 'us' : 'eu',
     term: parseTerm(config.term),
     currency: config.currency || 'usd',
-    pageroot: addonBuyable(plan.id, 'pageroot') ? Boolean(config.pageroot) : false,
-    aurora: addonBuyable(plan.id, 'aurora') ? Boolean(config.aurora) : false,
     storageBlocks: addonBuyable(plan.id, 'storage') ? clampInt(config.storageBlocks, 0, STORAGE.maxBlocks) : 0,
+    fromTrial: Boolean(config.fromTrial) && !plan.cloudOnly && config.deployment === 'self-hosted',
   };
 }
 
@@ -801,41 +771,37 @@ export function quote(config: Config): Quote {
   const discount = TERM_DISCOUNT[c.term];
   const onPremCredit = c.deployment === 'self-hosted' ? plan.onPrem : 0;
   const listPlan = plan.price - onPremCredit;
-  const listPageroot = c.pageroot ? PAGEROOT.price : 0;
-  const listAurora = c.aurora ? AURORA.price : 0;
-  const planMonthly = round2(listPlan * (1 - discount));
-  const pagerootMonthly = round2(listPageroot * (1 - discount));
-  const auroraMonthly = round2(listAurora * (1 - discount));
-  const storageMonthly = round2(c.storageBlocks * STORAGE.pricePerBlock);
-  const monthly = round2(planMonthly + pagerootMonthly + auroraMonthly + storageMonthly);
+  // Round the monthly USD charge before annualising it, so the invoice is
+  // exactly twelve displayed monthly charges. Each storage block has one price.
+  const monthlyCharge = (amount: number, units = 1, saving = 0) => c.currency === 'usd'
+    ? round2(Math.round(toDisplayAmount(amount, 'usd') * (1 - saving)) * units / USD_MARKUP)
+    : round2(amount * (1 - saving) * units);
+  const planMonthly = monthlyCharge(listPlan, 1, discount);
+  const storageMonthly = monthlyCharge(STORAGE.pricePerBlock, c.storageBlocks);
+  const monthly = round2(planMonthly + storageMonthly);
   return {
     ...c,
     plan,
     listPlan,
     onPremCredit,
     planMonthly,
-    pagerootMonthly,
-    auroraMonthly,
     storageMonthly,
-    termSaving: round2(listPlan + listPageroot + listAurora - planMonthly - pagerootMonthly - auroraMonthly),
+    termSaving: round2(listPlan - planMonthly),
     monthly,
     annual: round2(monthly * 12),
     invoice: round2(c.term === 1 ? monthly : monthly * 12),
     totalTb: plan.includedTb + c.storageBlocks * STORAGE.blockTb,
     includedTb: plan.includedTb,
-    hasPageroot: planIncludes(plan.id, 'pageroot') || c.pageroot,
-    hasAurora: planIncludes(plan.id, 'aurora') || c.aurora,
   };
 }
 
-/** Reads `?plan=&deploy=&dc=&term=&currency=&pageroot=&aurora=&tb=`, as written by `configQuery`. */
+/** Reads `?plan=&deploy=&dc=&term=&currency=&tb=&trial=max`, as written by `configQuery`. */
 export function configFromSearch(search: string): Config {
   const params = new URLSearchParams(search);
   const num = (key: string, fallback: number) => {
     const n = Number.parseInt(params.get(key) ?? '', 10);
     return Number.isFinite(n) ? n : fallback;
   };
-  const flag = (key: string) => params.get(key) === '1' || params.get(key) === 'on';
   const currencyParam = params.get('currency');
   const currency = currencyParam === 'eur' || currencyParam === 'usd' ? currencyParam : preferredCurrency();
   if (currencyParam === 'eur' || currencyParam === 'usd') persistCurrency(currencyParam);
@@ -845,7 +811,7 @@ export function configFromSearch(search: string): Config {
   const deployment: Deployment =
     deployParam === 'self-hosted' || deployParam === 'cloud'
       ? deployParam
-      : legacyPlan === 'stack' || legacyPlan === 'bee'
+      : params.get('trial') === 'max' || legacyPlan === 'stack' || legacyPlan === 'bee'
         ? 'self-hosted'
         : DEFAULT_CONFIG.deployment;
   const plan = findPlan(legacyPlan);
@@ -857,9 +823,8 @@ export function configFromSearch(search: string): Config {
     dc: params.get('dc') === 'us' ? 'us' : 'eu',
     term: parseTerm(num('term', DEFAULT_CONFIG.term)),
     currency,
-    // `seats=` was the old PageRoot user count; any positive number means "on".
-    pageroot: flag('pageroot') || num('seats', 0) > 0,
-    aurora: flag('aurora'),
+    fromTrial: params.get('trial') === 'max',
+    // Retired product flags (`pageroot`, `aurora`, `seats`) are intentionally ignored.
     storageBlocks: params.has('blocks') ? num('blocks', 0) : Math.ceil(extraTb / STORAGE.blockTb),
   });
 }
@@ -872,9 +837,8 @@ export function configQuery(config: Config): string {
     dc: c.dc,
     term: String(c.term),
     currency: c.currency,
-    pageroot: c.pageroot ? '1' : '0',
-    aurora: c.aurora ? '1' : '0',
     blocks: String(c.storageBlocks),
+    ...(c.fromTrial ? { trial: 'max' } : {}),
   }).toString();
 }
 
@@ -934,7 +898,7 @@ export function infraLine(plan: Plan): string {
 
 /** "Single node, no HA" or "Three-node HA cluster". */
 export function infraShape(plan: Plan): string {
-  const { nodes, ha, shared } = plan.infra;
+  const { nodes, shared } = plan.infra;
   if (shared) return 'Shared infrastructure';
   if (nodes === 1) return 'Dedicated node, no HA';
   return `${nodes === 3 ? 'Three' : nodes}-node HA cluster`;

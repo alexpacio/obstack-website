@@ -74,7 +74,7 @@ const KY = -320, KD = 116, KW = 90, KH = 54;
 const sinks = [
   { name: 'GreptimeDB', x: -150 },
   { name: 'Grafana', x: -45 },
-  { name: 'PageRoot', x: 60 },
+  { name: 'Eagle', x: 60 },
 ].map((k) => ({
   ...k,
   cx: k.x + KW / 2,
@@ -158,7 +158,7 @@ for (let k = -10; k <= 12; k++) {
   class="iso"
   viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
   role="img"
-  aria-label="Applications, infrastructure and IoT feed the Obstack core, which stores traces, metrics and logs in GreptimeDB for Grafana and PageRoot, with Aurora AI, the AI SRE, reading the same core"
+  aria-label="Applications, infrastructure and IoT feed the Obstack core, which stores traces, metrics and logs in GreptimeDB for Grafana and Eagle, with EagleSRE reading the same core"
 >
   <defs>
     <radialGradient id="iso-fade" gradientUnits="userSpaceOnUse" cx="0" cy={-FLOOR / 2} r={r1(vb.w * 0.55)}>
@@ -186,7 +186,7 @@ for (let k = -10; k <= 12; k++) {
     <polygon class="inset" points={ai.inset}></polygon>
     <g class="vent">{ai.vents.map((v) => <path d={v}></path>)}</g>
     {ai.leds.map(([x, y], i) => <circle class:list={['led', { on: i === 0 }]} cx={r1(x)} cy={r1(y)} r="2.2"></circle>)}
-    <text class="lbl sm" transform={ai.labelAt} text-anchor="middle">Aurora AI</text>
+    <text class="lbl sm" transform={ai.labelAt} text-anchor="middle">EagleSRE</text>
     <text class="lbl xs" transform={ai.subAt} text-anchor="middle">AI SRE</text>
   </g>
 

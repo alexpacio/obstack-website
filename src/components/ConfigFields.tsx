@@ -1,9 +1,7 @@
 import { type ReactNode } from 'react';
 import {
   ADDONS,
-  AURORA,
   DEPLOYMENTS,
-  PAGEROOT,
   PLANS,
   RATE_LIMIT,
   STORAGE,
@@ -28,7 +26,6 @@ import {
   type Config,
   type Currency,
   type Datacenter,
-  type PlanId,
   type Quote,
   type Term,
 } from '../data/plans';
@@ -39,7 +36,6 @@ export function configSteps(config: Config): number {
   // Plan, datacenter, currency and billing are always asked.
   let n = 4;
   if (!plan.cloudOnly) n += 1;
-  if (addonBuyable(plan.id, 'pageroot') || addonBuyable(plan.id, 'aurora')) n += 1;
   if (addonBuyable(plan.id, 'storage')) n += 1;
   return n;
 }
@@ -53,8 +49,6 @@ interface Props {
 export default function ConfigFields({ config, onChange }: Props) {
   const plan = findPlan(config.planId);
   const deployment = DEPLOYMENTS.find((d) => d.id === config.deployment)!;
-  const canPageroot = addonBuyable(plan.id, 'pageroot');
-  const canAurora = addonBuyable(plan.id, 'aurora');
   const canStorage = addonBuyable(plan.id, 'storage');
 
   const update = (patch: Partial<Config>) => {
@@ -154,38 +148,6 @@ export default function ConfigFields({ config, onChange }: Props) {
         </fieldset>
       )}
 
-      {(canPageroot || canAurora) && (
-        <fieldset className="co-block">
-          {legend('Add-ons')}
-          {canPageroot && (
-            <Toggle
-              name="PageRoot"
-              price={formatPrice(PAGEROOT.price, config.currency)}
-              on={config.pageroot}
-              onChange={(v) => update({ pageroot: v })}
-              note={
-                config.pageroot
-                  ? 'On-call schedules, escalation chains, ChatOps to Slack and Telegram, phone calls and a built-in MCP server. Unlimited on-call users and unlimited incidents: the module is flat, like the plan.'
-                  : 'Alertmanager still routes Prometheus alerts. Add PageRoot for on-call schedules, escalation chains, ChatOps and a built-in MCP server. Pro and Max include it.'
-              }
-            />
-          )}
-          {canAurora && (
-            <Toggle
-              name="Aurora AI"
-              price={formatPrice(AURORA.price, config.currency)}
-              on={config.aurora}
-              onChange={(v) => update({ aurora: v })}
-              note={
-                config.aurora
-                  ? `The AI SRE, with unlimited ${AURORA.model} on the shared Obstack endpoint. No per-token meter. Aurora reads Grafana MCP and works incidents through PageRoot MCP. Max runs the same thing on a private, single-tenant model deployment.`
-                  : `Add an AI SRE that works incidents through Grafana MCP and PageRoot MCP, with unlimited ${AURORA.model} hosted by Obstack. Max includes it on a private model deployment.`
-              }
-            />
-          )}
-        </fieldset>
-      )}
-
       {canStorage && (
         <fieldset className="co-block">
           {legend('Storage')}
@@ -229,8 +191,8 @@ export default function ConfigFields({ config, onChange }: Props) {
         />
         <p className="small">
           {config.deployment === 'self-hosted'
-            ? `Telemetry stays on your network. The region applies to the managed bucket and, if Aurora is on the order, to the ${AURORA.model} endpoint.`
-            : `Your backend and its storage stay in the datacenter you pick. EU data stays in the EU.${config.aurora || planIncludes(plan.id, 'aurora') ? ` ${AURORA.model} for Aurora runs there too.` : ''}`}
+            ? `Telemetry stays on your network. The region applies to the managed bucket.`
+            : `Your backend and its storage stay in the datacenter you pick. EU data stays in the EU.`}
         </p>
       </fieldset>
 
@@ -262,8 +224,8 @@ export default function ConfigFields({ config, onChange }: Props) {
           onChange={(v) => update({ term: Number(v) as Term })}
         />
         <p className="small">
-          Monthly is billed each month at list. Yearly is billed in advance, {pct(TERM_DISCOUNT[12])} off the plan
-          {canPageroot || canAurora ? ' and its add-ons' : ''}. A 3-year term is billed yearly, locks those prices, and takes {pct(TERM_DISCOUNT[36])} off.
+          Monthly is billed each month at list. Yearly is billed in advance, {pct(TERM_DISCOUNT[12])} off the plan.
+          A 3-year term is billed yearly, locks those prices, and takes {pct(TERM_DISCOUNT[36])} off.
           {canStorage ? ' Extra storage blocks are not discounted.' : ''}
         </p>
       </fieldset>
@@ -279,30 +241,6 @@ function Segmented<T extends string>({ label, value, options, onChange, classNam
           {o.label}
         </button>
       ))}
-    </div>
-  );
-}
-
-/** One flat add-on: on or off, with the price on the switch itself. */
-function Toggle({ name, price, on, onChange, note }: { name: string; price: string; on: boolean; onChange: (on: boolean) => void; note: string }) {
-  return (
-    <div className="co-toggle">
-      <div className="co-toggle-head">
-        <div className="co-toggle-id">
-          <strong>{name}</strong>
-          <span className="mono">{price} / month</span>
-        </div>
-        <Segmented
-          label={name}
-          value={on ? 'on' : 'off'}
-          options={[
-            { value: 'off', label: 'Off' },
-            { value: 'on', label: 'Add' },
-          ]}
-          onChange={(v) => onChange(v === 'on')}
-        />
-      </div>
-      <p className="small">{note}</p>
     </div>
   );
 }
@@ -335,12 +273,12 @@ export function quoteText(q: Quote): string[] {
     `Plan: ${q.plan.name}, ${formatPrice(q.plan.price, q.currency)} per month flat`,
     `Deployment: ${q.deployment === 'cloud' ? `Obstack Cloud, ${q.dc.toUpperCase()} datacenter` : 'your own infrastructure'}`,
     `Infrastructure: ${infraLine(q.plan)}`,
+    q.fromTrial ? `Activation: convert the existing Max evaluation to the paid self-hosted ${q.plan.name} plan; retain installation and data, apply the selected entitlements and adjust resources as needed` : null,
     q.onPremCredit > 0 ? `On-premise credit (hardware is yours): -${formatPrice(q.onPremCredit, q.currency)} per month` : null,
     q.plan.bestEffort ? `Ingest: rate limited, best effort. Excess batches are shed with ${RATE_LIMIT.statuses}; collectors retry.` : 'Ingest: unmetered, no rate limit',
-    q.hasPageroot ? `PageRoot: ${planIncludes(q.planId, 'pageroot') ? 'included in the plan' : `${formatPrice(PAGEROOT.price, q.currency)} per month`}` : 'PageRoot: not included',
-    q.hasAurora
-      ? `Aurora AI: ${planIncludes(q.planId, 'aurora') ? `included in the plan, private ${AURORA.model} deployment` : `${formatPrice(AURORA.price, q.currency)} per month, shared ${AURORA.model} endpoint`}`
-      : 'Aurora AI: not included',
+    'Bee, Eagle, Grafana and EagleMCP: included in the stack',
+    'EagleSRE: preview by request; production entitlement in Pro and Max at launch, not active on this order',
+    'Model-provider usage, inference hosting, SMS and calls: separate provider charges',
     `Object storage: ${formatTb(q.totalTb)}${q.storageBlocks > 0 ? ` (${formatTb(q.includedTb)} included plus ${q.storageBlocks} × ${formatTb(STORAGE.blockTb)} at ${formatPrice(STORAGE.pricePerBlock, q.currency)} per block)` : ' included'}`,
     `Datacenter: ${q.dc.toUpperCase()}`,
     q.termSaving > 0 ? `${termSavingLabel(q.term)} discount: -${formatPrice(q.termSaving, q.currency)} per month` : null,
@@ -365,8 +303,6 @@ export function QuoteSummary({ q, eyebrow, children }: { q: Quote; eyebrow: stri
         {q.onPremCredit > 0 && (
           <div className="save"><dt>Your own hardware</dt><dd>−{formatPrice(q.onPremCredit, q.currency)} / mo</dd></div>
         )}
-        {q.pagerootMonthly > 0 && <div><dt>PageRoot</dt><dd>{formatPrice(PAGEROOT.price, q.currency)} / mo</dd></div>}
-        {q.auroraMonthly > 0 && <div><dt>Aurora AI</dt><dd>{formatPrice(AURORA.price, q.currency)} / mo</dd></div>}
         {included.map((a) => (
           <div key={a.id}><dt>{a.name}</dt><dd>included</dd></div>
         ))}

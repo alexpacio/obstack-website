@@ -1,0 +1,26 @@
+---
+import ObfuscatedEmail from './ObfuscatedEmail.astro';
+import { DEMO } from '../data/plans';
+
+interface Props { dark?: boolean; }
+const { dark = false } = Astro.props;
+const configuredUrl = import.meta.env.PUBLIC_MAX_DEMO_CHART_URL?.trim();
+const chartUrl = configuredUrl ? new URL(configuredUrl) : null;
+if (chartUrl && (chartUrl.protocol !== 'https:' || chartUrl.username || chartUrl.password)) {
+  throw new Error('PUBLIC_MAX_DEMO_CHART_URL must be a public HTTPS Helm chart download URL without credentials.');
+}
+const body = `Please send me the self-hosted Obstack Max Helm chart and a ${DEMO.days}-day evaluation license.\n\nCompany:\nLicense contact email:\nKubernetes environment:\n\nAfter evaluation I would like to activate this installation on the appropriate Go, Pro or Max plan.`;
+---
+<div class="stack" style="gap: 14px">
+  <div class="btn-row">
+    {chartUrl ? (
+      <>
+        <a class:list={['btn', dark ? 'btn-primary' : 'btn-dark']} href={chartUrl.href}>Download Max Helm chart</a>
+        <ObfuscatedEmail class={dark ? 'btn btn-ghost' : 'btn btn-outline'} subject="Max demo: 30-day evaluation license" body={body} label={`Request the ${DEMO.days}-day license`} />
+      </>
+    ) : (
+      <ObfuscatedEmail class={dark ? 'btn btn-primary' : 'btn btn-dark'} subject="Max demo: Helm chart and 30-day license" body={body} label={`Request Helm chart + ${DEMO.days}-day license`} />
+    )}
+  </div>
+  <p class="small">{chartUrl ? `Install on your Kubernetes cluster with the separately issued ${DEMO.days}-day license.` : `The public Helm chart download is coming soon. Request the chart and your ${DEMO.days}-day license by email.`} No card or automatic subscription.</p>
+</div>

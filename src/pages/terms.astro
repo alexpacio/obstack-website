@@ -2,7 +2,8 @@
 import Layout from '../layouts/Layout.astro';
 import PriceTable from '../components/PriceTable.astro';
 import ObfuscatedEmail from '../components/ObfuscatedEmail.astro';
-import { AURORA, BUSINESS_HOURS, COMMERCIAL, DEMO, PAGEROOT, PLANS, RATE_LIMIT, STORAGE, SUPPORT, TERM_DISCOUNT, USD_MARKUP, alwaysOnPlans, dedicatedPlans, dualPrice, formatTb, infraLine, infraShape, pct, planNames, planPrice, plansBuying, plansWith, sharedPlans } from '../data/plans';
+import { BUSINESS_HOURS, COMMERCIAL, DEMO, RATE_LIMIT, STORAGE, SUPPORT, TERM_DISCOUNT, USD_MARKUP, alwaysOnPlans, dedicatedPlans, dualPrice, formatTb, infraLine, infraShape, pct, planNames, planPrice, sharedPlans } from '../data/plans';
+import { AI_BILLING, EAGLESRE } from '../data/product-pricing';
 import { url } from '../lib/url';
 
 // The clauses below name plans through the catalogue, never by literal id, so
@@ -11,10 +12,6 @@ const [starter] = sharedPlans();
 const tiers = dedicatedPlans();
 const [go, pro, max] = tiers;
 const block = dualPrice(STORAGE.pricePerBlock);
-const pagerootIn = planNames(plansWith('pageroot'));
-const pagerootBuy = planNames(plansBuying('pageroot'));
-const auroraIn = planNames(plansWith('aurora'));
-const auroraBuy = planNames(plansBuying('aurora'));
 const creditLine = tiers.map((p) => `${dualPrice(p.onPrem)} per month on ${p.name}`).join(', ');
 
 interface Section {
@@ -64,7 +61,7 @@ const sections: Section[] = [
     title: 'Deployment and the on-premise credit',
     paras: [
       `${planNames(tiers)} run either on Obstack Cloud or on hardware you already own. The software, the modules and the support are identical; only who buys the servers changes.`,
-      `On Obstack Cloud we provision and operate the backend described in the plan, in the EU or US datacenter you choose, and the object storage that comes with it. On your own hardware you supply machines matching the plan's sizing, plus S3-compatible storage, and we deploy over a VPN you control. Because we no longer buy that hosting, the list price is reduced by a fixed credit: ${creditLine}.`,
+      `On Obstack Cloud we provision and operate the backend described in the plan, in the EU or US datacenter you choose, and the object storage that comes with it. On your own hardware you supply machines matching the plan's sizing, plus S3-compatible storage, and install using the Helm chart or ask for deployment assistance over your VPN. Because we no longer buy that hosting, the list price is reduced by a fixed credit: ${creditLine}.`,
       `${starter.name} exists only on Obstack Cloud and carries no credit.`,
       'Moving between deployments is a change of subscription, not a new order. We agree a cutover date and prorate the difference to your renewal.',
     ],
@@ -73,7 +70,7 @@ const sections: Section[] = [
     id: 'nothing-metered',
     title: 'What is not counted',
     paras: [
-      `On ${planNames(tiers)} nothing is metered. Linux hosts, virtual machines, Kubernetes worker nodes, pods and containers are not counted. Ingest, egress and queries are not counted. Grafana users, dashboards, alert rules, incidents, pages and on-call users are not counted. Aurora investigations are not token-metered.`,
+      `On ${planNames(tiers)} nothing is metered. Linux hosts, virtual machines, Kubernetes worker nodes, pods and containers are not counted. Ingest, egress and queries are not counted. Grafana users, dashboards, alert rules, incidents, pages and on-call users are not counted. Obstack does not meter Eagle queries. Model-provider tokens and inference hosting are charged separately by your provider.`,
       'There are no true-ups, no overage invoices and no retroactive adjustments. An incident that triples your telemetry does not change the invoice.',
       'The single limit is the capacity of the backend your plan describes. If a fleet outgrows it, we tell you and agree a move to the next plan; we never add charges automatically.',
     ],
@@ -85,17 +82,17 @@ const sections: Section[] = [
       `${starter.name} runs on capacity shared with other ${starter.name} tenants. Ingest is rate limited and best effort: when the bucket is empty, the endpoint sheds the batch rather than queueing it.`,
       `A shed batch is answered with ${RATE_LIMIT.statuses} and a ${RATE_LIMIT.header} header. An OpenTelemetry collector configured with its normal retry and backoff will resend it; the OTLP exporter does this by default. Telemetry that is shed is never billed.`,
       `The limits themselves are not published. They follow the capacity of the shared tier and change with it, and a collector that honours the status codes does not need to know them. If you need a guaranteed ingest rate, that is what a dedicated backend on ${planNames(tiers)} buys.`,
-      `${starter.name} does not include PageRoot or Aurora AI, and takes no add-ons. There is no on-premise option and no availability commitment.`,
+      `${starter.name} takes no add-ons. EagleMCP is included. EagleSRE is not available on Starter. There is no on-premise option and no availability commitment.`,
     ],
   },
   {
     id: 'addons',
     title: 'Add-ons',
     paras: [
-      `PageRoot is the on-call module: schedules, escalation chains, ChatOps to Slack and Telegram, phone calls and a built-in MCP server, with unlimited on-call users and unlimited incidents. It is included in ${pagerootIn}, and costs ${dualPrice(PAGEROOT.price)} per month on ${pagerootBuy}. It is not available on ${starter.name}.`,
-      `Aurora AI is the AI SRE, bundled with unlimited ${AURORA.model} inference. On ${auroraBuy} it costs ${dualPrice(AURORA.price)} per month and runs against the shared Obstack endpoint. ${auroraIn} includes Aurora on a private, single-tenant model deployment in the region you pick. Unlimited means Aurora investigations on that subscription are not token-metered; it is not a general-purpose inference API. Running Aurora against your own model, or air-gapped with a local one, is quoted as Enterprise.`,
+      `Bee, Eagle, Grafana and EagleMCP are included in every stack tier. EagleMCP has no separate connector or per-tool-call charge. EagleSRE is in preview, by request; its proposed production price is ${dualPrice(EAGLESRE.launchPrice)} per month flat on Go and it is included in Pro and Max at launch. It is not offered on Starter. Production billing or entitlement starts only after general availability and an agreed activation.`,
+      AI_BILLING,
       `Extra object storage is sold in blocks of ${STORAGE.blockTb} TB at ${block} per block per month, on top of the allowance the plan includes.`,
-      'Add-ons can be added at any time, prorated to the renewal date, and removed at renewal. The yearly and 3-year billing discounts apply to the plan and to PageRoot and Aurora; storage blocks are not discounted.',
+      'Add-ons can be added at any time, prorated to the renewal date, and removed at renewal. The yearly and 3-year billing discounts apply to the plan; storage blocks are not discounted.',
     ],
   },
   {
@@ -110,11 +107,13 @@ const sections: Section[] = [
   },
   {
     id: 'demo',
-    title: 'Free evaluation',
+    title: 'Max evaluation and paid activation',
     paras: [
       `We give a ${DEMO.days}-day evaluation at no cost, with no card and no commitment. ${DEMO.blurb}`,
-      'You give us VPN access to your nodes and to a Kubernetes cluster of your choice. We deploy the full stack on it, including PageRoot and Aurora AI, and keep it running for the evaluation period. You send real telemetry through it and judge it on your own workload.',
-      `At the end of the ${DEMO.days} days you either place an order or we remove the deployment. Nothing converts automatically and there is no invoice either way. We ask for a named technical contact and a short scope note before we start.`,
+      'The self-hosted Max evaluation is delivered as a Helm chart with a time-limited license. You provide Kubernetes and storage, install the chart with the supplied configuration and evaluate it using your own telemetry. Deployment assistance is available. The public chart link is published when the release is ready; until then, request the chart and license by email.',
+      `The ${DEMO.days}-day period starts when the evaluation license is issued. At expiry the evaluation license ceases to authorize use; there is no automatic paid order or charge. Complete paid activation before expiry to continue under the appropriate license.`,
+      'To convert, choose a paid self-hosted Go, Pro or Max plan and provide your evaluation license or customer ID. Following payment we supply the paid license and activation instructions for the existing Helm installation. Retain the installation and data; licensed features, support and required resources follow the selected plan, and resource changes may be necessary. Starter is Cloud only.',
+      'Evaluation access does not include a production SLA or the paid Max support response commitment. EagleSRE remains in preview. External model and notification-provider charges are separate.',
     ],
   },
   {
@@ -184,11 +183,11 @@ const sections: Section[] = [
     id: 'licenses',
     title: 'Self-hosted licenses',
     paras: [
-      'The first month of a self-hosted subscription, Bee and PageRoot (when PageRoot is on the order) are delivered under a license key: Ubuntu packages you run, without source.',
-      'After that first month the PolyForm Internal Use License 1.0.0 applies to Bee and to PageRoot. We send an agreement to sign. Once it is signed, you are granted git access to the source. You may use and modify that software for the internal business operations of you and your company. You may not distribute it, sublicense it or transfer the license.',
+      'The first month of a self-hosted subscription, Bee is delivered under a license key: Ubuntu packages you run, without source.',
+      'After that first month the PolyForm Internal Use License 1.0.0 applies to Bee. We send an agreement to sign. Once it is signed, you are granted git access to the source. You may use and modify that software for the internal business operations of you and your company. You may not distribute it, sublicense it or transfer the license.',
       'An active paid subscription is how you keep git access and updates. When the subscription ends, git access stops. Copies you already have remain usable under PolyForm Internal Use for internal use.',
-      `Aurora is Apache 2.0 software. When it is on the order, Obstack deploys it and hosts ${AURORA.model} for Aurora investigations on that subscription.`,
-      'The open-source components of the stack (Beyla, Vector, GreptimeDB, Grafana and Prometheus Alertmanager) stay under their own licenses. The subscription pays for Bee, PageRoot and Aurora where they are on the order, the hosting where we provide it, our integration work and our support.',
+      'EagleSRE preview scope and any separately managed model hosting are specified in the evaluation agreement or order form.',
+      'The open-source components of the stack (Beyla, Vector, GreptimeDB, Grafana and Prometheus Alertmanager) stay under their own licenses. The subscription pays for Bee and Eagle, the additional products agreed in your order, the hosting where we provide it, our integration work and our support.',
     ],
   },
   {

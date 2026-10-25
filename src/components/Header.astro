@@ -1,11 +1,12 @@
 ---
+import { ACTIVE_PRODUCTS } from '../data/products';
 import Logo from './Logo.astro';
 import ObfuscatedEmail from './ObfuscatedEmail.astro';
 import { url } from '../lib/url';
 import { DEMO } from '../data/plans';
 
 interface Props {
-  active?: 'bee' | 'pageroot' | 'eagle' | 'grafana' | 'aurora' | 'stack' | 'pricing' | 'buy';
+  active?: 'bee' | 'eagle' | 'eaglesre' | 'eaglemcp' | 'grafana' | 'stack' | 'self-hosted' | 'download' | 'pricing' | 'buy';
   /** Minimal header used on checkout. */
   checkout?: boolean;
 }
@@ -15,20 +16,16 @@ const { active, checkout = false } = Astro.props;
 const groups = [
   {
     label: 'Products',
-    about: 'Obstack-owned: the Bee agent, PageRoot on-call and the Eagle console',
-    items: [
-      { id: 'bee', label: 'Bee', href: url('/bee') },
-      { id: 'pageroot', label: 'PageRoot', href: url('/pageroot') },
-      { id: 'eagle', label: 'Eagle', href: url('/eagle') },
-    ],
+    about: 'Bee collection, Eagle observability, EagleSRE incidents and EagleMCP access',
+    items: ACTIVE_PRODUCTS.map((product) => ({ id: product.id, label: product.name, href: url(product.path) })),
   },
   {
     label: 'The stack',
-    about: 'Grafana, Aurora AI, and the full Obstack Stack around them',
+    about: 'Grafana and the full Obstack Stack',
     items: [
       { id: 'grafana', label: 'Grafana', href: url('/grafana') },
-      { id: 'aurora', label: 'Aurora AI', href: url('/aurora') },
       { id: 'stack', label: 'Stack', href: url('/stack') },
+      { id: 'self-hosted', label: 'Self-hosted', href: url('/self-hosted') },
     ],
   },
 ];
@@ -71,7 +68,7 @@ const guide = { label: 'Guide', href: url('/guide/bee/') };
             <button type="button" data-set-currency="eur" aria-label="Show prices in euros">EUR</button>
             <button type="button" data-set-currency="usd" aria-label="Show prices in US dollars">USD</button>
           </div>
-          <a class="btn btn-primary btn-sm" href={url('/pricing#demo')}>{DEMO.days} days evaluation trial</a>
+          <a class="btn btn-primary btn-sm" href={url('/download')}>Try Max · {DEMO.days} days</a>
           <details class="mnav">
             <summary aria-label="Menu">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
@@ -88,7 +85,7 @@ const guide = { label: 'Guide', href: url('/guide/bee/') };
                 <span class="mgl">Buy</span>
                 <p class="mga">Flat plans, the configurator and a quote you can take to procurement</p>
                 <a href={buy.href}>{buy.label}</a>
-                <a href={url('/pricing#demo')}>{DEMO.days} days evaluation trial</a>
+                <a href={url('/download')}>Try Max · {DEMO.days} days</a>
                 <a href={guide.href}>{guide.label}</a>
               </div>
               <div class="mg">
@@ -248,7 +245,7 @@ const guide = { label: 'Guide', href: url('/guide/bee/') };
 
   .mnav[open] summary { border-color: var(--mint); color: var(--mint); }
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1280px) {
     .links { display: none; }
     .mnav { display: block; }
     .right .btn { display: none; }

@@ -9,7 +9,7 @@ import { EURO_COUNTRIES } from '../data/plans';
 interface Props {
   title?: string;
   description?: string;
-  active?: 'bee' | 'pageroot' | 'eagle' | 'grafana' | 'aurora' | 'stack' | 'pricing' | 'buy';
+  active?: 'bee' | 'eagle' | 'eaglesre' | 'eaglemcp' | 'grafana' | 'stack' | 'self-hosted' | 'download' | 'pricing' | 'buy';
   checkout?: boolean;
   /** Social card image, site-relative. Defaults to the site-wide card. */
   image?: string;
@@ -21,7 +21,7 @@ interface Props {
 
 const {
   title = 'Obstack · Observability for applications, infrastructure and IoT',
-  description = 'Obstack is a self-hosted observability stack for applications, infrastructure and IoT: the Bee eBPF agent, Beyla, Vector, GreptimeDB, Grafana and Prometheus Alertmanager, on servers you own. PageRoot is the optional on-call module.',
+  description = 'Obstack is a self-hosted observability stack for applications, infrastructure and IoT: the Bee eBPF agent, Beyla, Vector, GreptimeDB, Grafana and Prometheus Alertmanager, on servers you own. Eagle is the observability console, EagleSRE handles incidents, and EagleMCP connects assistants.',
   active,
   checkout = false,
   image = '/og-obstack.png',

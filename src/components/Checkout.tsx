@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { AURORA, COMMERCIAL, CURRENCY_EVENT, DEFAULT_CONFIG, RATE_LIMIT, configFromSearch, formatPrice, formatTb, infraLine, infraPhrase, planIncludes, quote, type Config, type Currency } from '../data/plans';
+import { COMMERCIAL, CURRENCY_EVENT, DEFAULT_CONFIG, RATE_LIMIT, configFromSearch, formatPrice, formatTb, infraLine, infraPhrase, quote, type Config, type Currency } from '../data/plans';
 import { openMailto, url } from '../lib/url';
 import ConfigFields, { QuoteSummary, configSteps, quoteText } from './ConfigFields';
 import './checkout.css';
@@ -26,9 +26,8 @@ function Check() {
 }
 
 export default function Checkout() {
-  const [config, setConfig] = useState<Config>(() =>
-    typeof window === 'undefined' ? DEFAULT_CONFIG : configFromSearch(window.location.search),
-  );
+  // Match the static server render; read the selected plan and currency after hydration.
+  const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
   const [details, setDetails] = useState<Details>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof Details, string>>>({});
   const [sent, setSent] = useState<null | { orderMail: string; email: string }>(null);
@@ -37,7 +36,7 @@ export default function Checkout() {
   const cloud = q.deployment === 'cloud';
   const step = configSteps(config);
   const contactLabel = cloud ? 'Technical contact email' : 'License contact email';
-  const idLabel = cloud ? 'Tenant name' : 'Customer ID on the license';
+  const idLabel = cloud ? 'Tenant name' : q.fromTrial ? 'Evaluation license / customer ID' : 'Customer ID on the license';
 
   useEffect(() => {
     setConfig(configFromSearch(window.location.search));
@@ -69,6 +68,7 @@ export default function Checkout() {
 
   function validate(): boolean {
     const next: Partial<Record<keyof Details, string>> = {};
+    if (q.fromTrial && !details.customerId.trim()) next.customerId = 'Enter the ID from your evaluation license so we can activate the existing installation.';
     if (!details.company.trim()) next.company = 'Enter the company name.';
     if (!EMAIL.test(details.billingEmail)) next.billingEmail = 'Enter a valid email.';
     if (!EMAIL.test(details.licenseEmail)) next.licenseEmail = 'Enter a valid email.';
@@ -80,7 +80,9 @@ export default function Checkout() {
     e.preventDefault();
     if (!validate()) return;
 
-    const subject = `Order: ${q.plan.name}, ${cloud ? 'Obstack Cloud' : 'self-hosted'}${q.pageroot ? ', PageRoot' : ''}${q.aurora ? ', Aurora AI' : ''}`;
+    const subject = q.fromTrial
+      ? `Activate Max evaluation: ${q.plan.name}, self-hosted`
+      : `Order: ${q.plan.name}, ${cloud ? 'Obstack Cloud' : 'self-hosted'}`;
     openMailto(subject, orderText, (orderMail, email) => {
       setSent({ orderMail, email });
     });
@@ -96,9 +98,11 @@ export default function Checkout() {
           <h1 className="h2">One last step: send the order email.</h1>
           <p className="body-2">
             Your email app opened with the order addressed to {sent.email || 'us'}. Send it and we reply with a pro-forma invoice with our bank details. Once the transfer arrives,{' '}
-            {cloud
+            {q.fromTrial
+              ? `we send the paid ${q.plan.name} license and activation instructions to ${details.licenseEmail}. Keep the existing Helm installation and data; we confirm any resource changes needed for the selected plan.`
+              : cloud
               ? `we provision ${infraPhrase(q.plan)} in the ${q.dc.toUpperCase()} datacenter and send the OTLP endpoint and Grafana login to ${details.licenseEmail}.`
-              : `a license key and Ubuntu packages go to ${details.licenseEmail} and we deploy the stack on your cluster over the VPN you set up. After the first month we send the PolyForm Internal Use agreement; once it is signed, git access to the source.`}
+              : `the paid license, Helm chart and installation instructions go to ${details.licenseEmail}. You can install on your cluster or ask us for deployment assistance over your VPN. After the first month we send the PolyForm Internal Use agreement; once it is signed, git access to the source.`}
           </p>
           <pre className="co-order mono">{orderText}</pre>
           <div className="btn-row">
@@ -107,7 +111,7 @@ export default function Checkout() {
           </div>
           {!cloud && (
             <p className="small">
-              The first month Bee{q.hasPageroot ? ' and PageRoot' : ''} run under a license key. After you sign the PolyForm Internal Use agreement, we grant git access to the source.
+              For the first month, Bee runs under a license key. After you sign the PolyForm Internal Use agreement, we grant git access to the source.
             </p>
           )}
         </div>
@@ -120,7 +124,8 @@ export default function Checkout() {
       <div className="co-main">
         <div className="stack" style={{ gap: 12 }}>
           <div className="eyebrow">Checkout</div>
-          <h1 className="h2">Configure your plan and check out.</h1>
+          <h1 className="h2">{q.fromTrial ? `Activate your demo with ${q.plan.name}.` : 'Configure your plan and check out.'}</h1>
+          {q.fromTrial && <p className="body-2">Convert your 30-day Max evaluation to a paid self-hosted plan. Keep your Helm installation and data; the paid license applies the selected entitlements, with resource changes where needed.</p>}
         </div>
 
         <ConfigFields config={config} onChange={setConfig} />
@@ -138,12 +143,14 @@ export default function Checkout() {
                 {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
               </select>
             </label>
-            <Field label={idLabel} value={details.customerId} onChange={set('customerId')} placeholder="acme-corp" optional />
+            <Field label={idLabel} value={details.customerId} onChange={set('customerId')} error={errors.customerId} placeholder="acme-corp" required={q.fromTrial} optional={!q.fromTrial} />
           </div>
           <p className="small">
-            {cloud
+            {q.fromTrial
+              ? 'Use the evaluation license or customer ID from your Max demo. We use it to issue the paid license for that installation.'
+              : cloud
               ? 'Tenant credentials go to the technical contact. The tenant name becomes part of your endpoint address.'
-              : 'The license key, Ubuntu packages and, after you sign, git access go to the license contact. The customer ID is how we label the subscription.'}
+              : 'The paid license, Helm chart and, after you sign, git access go to the license contact. The customer ID is how we label the subscription.'}
           </p>
         </fieldset>
 
@@ -170,7 +177,7 @@ export default function Checkout() {
             </>
           ) : (
             <>
-              <li><Check /><span>Deployed on your cluster over your VPN, hosting off the price</span></li>
+              <li><Check /><span>{q.fromTrial ? 'Activate the existing Helm installation and retain your data' : 'Self-hosted with Helm; deployment assistance available over your VPN'}</span></li>
               <li><Check /><span>After you sign: PolyForm Internal Use, and git access to the source</span></li>
             </>
           )}
@@ -178,9 +185,6 @@ export default function Checkout() {
             <li><Check /><span>{RATE_LIMIT.short}</span></li>
           ) : (
             <li><Check /><span>No meters on nodes, ingest, egress, queries or users</span></li>
-          )}
-          {q.hasAurora && (
-            <li><Check /><span>Unlimited {AURORA.model} for Aurora investigations{planIncludes(q.planId, 'aurora') ? ', on a private deployment' : ''}</span></li>
           )}
           <li><Check /><span>Move up a plan, or add storage and modules, any time, prorated at your rate</span></li>
           <li><Check /><span>Full refund within {COMMERCIAL.refundDays} days of your first order</span></li>

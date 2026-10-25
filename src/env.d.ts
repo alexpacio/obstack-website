@@ -13,5 +13,6 @@ interface Window {
 }
 
 interface ImportMetaEnv {
+  readonly PUBLIC_MAX_DEMO_CHART_URL?: string;
   readonly PUBLIC_TURNSTILE_SITEKEY?: string;
 }

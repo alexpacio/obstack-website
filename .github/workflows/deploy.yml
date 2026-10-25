@@ -35,6 +35,7 @@ jobs:
       - name: Build site
         run: npm run build
         env:
+          PUBLIC_MAX_DEMO_CHART_URL: ${{ vars.PUBLIC_MAX_DEMO_CHART_URL }}
           PUBLIC_PAYMENT_LINK_BEE: ${{ vars.PUBLIC_PAYMENT_LINK_BEE }}
           PUBLIC_PAYMENT_LINK_STACK: ${{ vars.PUBLIC_PAYMENT_LINK_STACK }}
 

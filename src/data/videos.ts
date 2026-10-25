@@ -1,6 +1,6 @@
 /**
- * The demo recording, as a catalogue. One full journey plus the chapters it is
- * cut from, so the home page and /demo quote the same titles and run times.
+ * The demo recording, as a catalogue. The Grafana signals clip and its chapter, so the home page and /demo quote the same titles and run times.
+ * The retired incident recordings and original catalogue are retained in the archive.
  *
  * Every clip ships as `/videos/obstack-<id>.mp4`, `/videos/<id>-en.vtt` and
  * `/videos/<id>-poster.jpg`; `VideoPlayer` derives those three paths from `id`.
@@ -23,42 +23,17 @@ export interface Chapter extends Clip {
 }
 
 export const JOURNEY: Clip = {
-  id: 'journey',
-  label: 'Obstack / a real incident journey',
-  seconds: 131,
-  alt:
-    'Obstack demo: explore metrics, logs and traces in Grafana, review a PageRoot alarm, then investigate with Aurora.',
+  id: 'grafana',
+  label: 'Grafana / signals',
+  seconds: 48,
+  alt: 'Application metrics, OTLP logs and a distributed trace in Grafana.',
 };
 
-export const CHAPTERS: readonly Chapter[] = [
-  {
-    id: 'grafana',
-    label: 'Grafana / signals',
-    seconds: 48,
-    title: 'Explore your signals',
-    text:
-      'Open Grafana, inspect application metrics, search OTLP logs and follow a request through its trace.',
-    alt: 'Application metrics, OTLP logs and a distributed trace in Grafana.',
-  },
-  {
-    id: 'pageroot',
-    label: 'PageRoot / the alarm',
-    seconds: 23,
-    title: 'Review the alarm',
-    text:
-      'Open a PageRoot alert group and inspect the alarm raised by real Python application failures.',
-    alt: 'A PageRoot alert group raised by Python application failures.',
-  },
-  {
-    id: 'aurora',
-    label: 'Aurora / the investigation',
-    seconds: 48,
-    title: 'Investigate with context',
-    text:
-      'Review Aurora incidents and ask the model to retrieve the evidence through the Grafana and PageRoot MCP servers.',
-    alt: 'Aurora answering an incident question with evidence pulled through MCP.',
-  },
-];
+export const CHAPTERS: readonly Chapter[] = [{
+  ...JOURNEY,
+  title: 'Explore your signals',
+  text: 'Open Grafana, inspect application metrics, search OTLP logs and follow a request through its trace.',
+}];
 
 /** `131` → `2:11`, the run time as a player shows it. */
 export function runTime(seconds: number): string {

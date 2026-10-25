@@ -13,14 +13,14 @@ const featured = featuredPlan();
 const jobs = [
   ['Dashboards', 'A page of live graphs you keep. Error rate, latency, CPU, a trace next to its logs. You open it the way you open a status board, not a query editor.'],
   ['Explore', 'A scratch pad. Ask “what did this service do in the last hour?”, look, and leave. Nothing has to be saved. Useful when you do not yet know which dashboard to build.'],
-  ['Alert rules', 'A line on a graph that should not be crossed. Grafana watches it. When it is crossed, an alert fires — into Alertmanager in this stack, then to people if you add PageRoot.'],
+  ['Alert rules', 'A line on a graph that should not be crossed. Grafana watches it. When it is crossed, an alert fires — into Alertmanager in this stack, then to people if you add EagleSRE.'],
   ['Users and folders', 'Who can see which dashboards. Grafana is a shared wall, not a personal notebook, so teams put service boards in folders and give people logins.'],
 ];
 
 const notJobs = [
   ['Not the database', 'Grafana does not store your telemetry. In Obstack that is GreptimeDB. Grafana only reads it, the way a spreadsheet reads a file.'],
   ['Not the agent', 'It does not sit on your servers collecting packets. Bee and Beyla do that, and send OTLP into the stack.'],
-  ['Not on-call', 'It will not page a human or know who is on the rota. That is Alertmanager for routing and PageRoot, optional, for people.'],
+  ['Not on-call', 'It will not page a human or know who is on the rota. That is Alertmanager for routing and EagleSRE, optional, for people.'],
   ['Not Grafana Cloud', 'The Grafana in Obstack is the open-source app we run for you, on your servers or in the region you pick. There is no Grafana Cloud host-hour or GB-written bill.'],
 ];
 
@@ -33,7 +33,7 @@ const mcp = [
 
 const split = [
   ['Grafana MCP', 'Read graphs, logs, traces and alert rules — what is on the screen. Included with Grafana in the stack.'],
-  ['PageRoot MCP', 'Who is on call, and acknowledge, silence or resolve an alert group — the incident. Only if you add PageRoot.'],
+  ['EagleMCP', 'MCP access for assistants working with the Obstack Stack. Included in every stack plan; model-provider fees are separate.'],
 ];
 ---
 
@@ -140,8 +140,8 @@ const split = [
         </div>
         <div>
           <h3 class="h3" style="font-size: 20px">Alerting stops at a hand-raise</h3>
-          <p class="body-2" style="font-size: 15px">A Grafana alert rule says “this graph went bad.” Prometheus Alertmanager decides how that notice is grouped and routed. PageRoot, if you add it, pages the person on call. Grafana does not have to know the rota.</p>
-          <div class="tile-meta">Grafana · Alertmanager · PageRoot</div>
+          <p class="body-2" style="font-size: 15px">A Grafana alert rule says “this graph went bad.” Prometheus Alertmanager decides how that notice is grouped and routed. EagleSRE, if you add it, pages the person on call. Grafana does not have to know the rota.</p>
+          <div class="tile-meta">Grafana · Alertmanager · EagleSRE</div>
         </div>
       </div>
     </div>
@@ -169,10 +169,10 @@ const split = [
     <div class="wrap">
       <div class="section-head">
         <div class="stack">
-          <div class="eyebrow">06 / Two MCP servers</div>
-          <h2 class="h2">Grafana for what you see. PageRoot for who you page.</h2>
+          <div class="eyebrow">06 / Assistant access</div>
+          <h2 class="h2">Grafana, EagleSRE and EagleMCP.</h2>
         </div>
-        <p class="body-2">If you later add <a class="text-link" href={url('/aurora')}>Aurora AI</a>, the AI SRE, it can use Grafana MCP to read graphs and PageRoot MCP to work an incident. Grafana MCP is in the stack. PageRoot MCP comes only with the optional on-call module.</p>
+        <p class="body-2"><a class="text-link" href={url('/eaglesre')}>EagleSRE</a> brings incidents, on-call and investigations alongside Eagle. <a class="text-link" href={url('/eaglemcp')}>EagleMCP</a> connects assistants to the stack. EagleMCP is included in every stack plan; EagleSRE is in preview. Grafana MCP remains included with Grafana.</p>
       </div>
       <div class="tile-grid grid-2">
         {split.map(([t, d]) => (
@@ -197,7 +197,7 @@ const split = [
             <div><span>Included with</span><span>Obstack Stack and Obstack Cloud</span></div>
             <div><span>Sold separately</span><span>No</span></div>
             <div><span>MCP server</span><span>Grafana MCP, in the deployment</span></div>
-            <div><span>On-call MCP</span><span>PageRoot, optional</span></div>
+            <div><span>Assistant access</span><span>EagleMCP, included</span></div>
           </div>
         </div>
         <div class="stack">

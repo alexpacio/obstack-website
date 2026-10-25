@@ -1,0 +1,71 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Arrow from '../components/Arrow.astro';
+import MaxDemoDownload from '../components/MaxDemoDownload.astro';
+import Price from '../components/Price.astro';
+import { DEMO, plansFor, planPrice } from '../data/plans';
+import { AI_BILLING } from '../data/product-pricing';
+import { breadcrumbSchema } from '../lib/seo';
+import { url } from '../lib/url';
+const plans = plansFor('self-hosted');
+---
+
+<Layout title="Obstack Max demo · self-hosted Helm chart and 30-day license" description="Evaluate Obstack Max on your Kubernetes cluster with a Helm chart and a 30-day license. Activate the installation on a paid self-hosted Go, Pro or Max plan." active="download" schema={[breadcrumbSchema('/download', 'Max demo download')]}>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="stack" style="gap: 26px">
+        <div class="eyebrow rise">Self-hosted Max demo</div>
+        <h1 class="display rise">Try Max for {DEMO.days} days.<br />Keep the installation when you choose your plan.</h1>
+        <p class="lead rise-2">Deploy the Max edition on your own Kubernetes cluster using the Obstack Helm chart and a {DEMO.days}-day evaluation license. Use your own telemetry, then activate Go, Pro or Max to match the deployment you need.</p>
+        <MaxDemoDownload dark />
+        <a class="text-link activation-link" href="#activate">Already evaluating? Choose a paid plan <Arrow size={16} /></a>
+      </div>
+      <div class="panel trial-card stack" style="gap: 20px">
+        <span class="eyebrow">The evaluation</span>
+        <h2 class="h2">Max edition. Your infrastructure.</h2>
+        <ul>
+          <li>Helm chart for your Kubernetes cluster</li>
+          <li>{DEMO.days}-day evaluation license from issuance</li>
+          <li>Bee, Eagle, Piper and EagleMCP in the stack</li>
+          <li>EagleSRE preview access agreed with your evaluation</li>
+          <li>Activate the same installation with the paid plan you choose</li>
+        </ul>
+        <p class="small">Evaluation access does not include a production SLA or Max's paid 24/7 support commitment. Model and notification providers bill separately.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head"><div class="stack"><div class="eyebrow">How it works</div><h2 class="h2">Install, evaluate, activate.</h2></div><p class="body-2">You supply Kubernetes, persistent storage and an S3-compatible bucket. We supply the chart, license and configuration instructions; deployment assistance is available.</p></div>
+      <ol class="steps">
+        <li><span class="mono">01</span><h3 class="h3">Get the chart and license</h3><p class="body-2">Request the Helm chart and an evaluation license for your company. The license runs for {DEMO.days} days from issuance.</p></li>
+        <li><span class="mono">02</span><h3 class="h3">Install Max</h3><p class="body-2">Use the supplied chart version, values and license to deploy to your Kubernetes cluster. Connect your own telemetry and model endpoint.</p></li>
+        <li><span class="mono">03</span><h3 class="h3">Choose the right plan</h3><p class="body-2">Activate self-hosted Go, Pro or Max with your evaluation license or customer ID. Retain your installation and data; adjust resources where the selected plan requires it.</p></li>
+      </ol>
+      <p class="small">At the end of the evaluation, the trial license expires unless you activate a paid plan. There is no automatic order or charge. Choose a plan and complete activation before expiry for continuity. EagleSRE remains in preview.</p>
+    </div>
+  </section>
+
+  <section class="section-tight" id="activate">
+    <div class="wrap">
+      <div class="section-head"><div class="stack"><div class="eyebrow">Make it your paid installation</div><h2 class="h2">Your Max demo can become Go, Pro or Max.</h2></div><p class="body-2">The paid license, support and resource requirements follow the plan you select. Starter is available on Obstack Cloud only.</p></div>
+      <div class="tile-grid grid-3">
+        {plans.map((plan) => <div class="stack" style="gap: 16px"><h3 class="h3">{plan.name} · self-hosted</h3><p class="h3"><Price eur={planPrice(plan, 'self-hosted')} /> <span class="small">/ month</span></p><p class="body-2">{plan.headline}</p><a class="btn btn-dark" href={url(`/buy?plan=${plan.id}&deploy=self-hosted&trial=max&term=1`)}>Activate {plan.name} <Arrow size={16} /></a></div>)}
+      </div>
+      <p class="small" style="margin-top: 24px">Monthly list prices exclude VAT. Annual and three-year terms are available at checkout. {AI_BILLING}</p>
+      <div class="btn-row" style="margin-top: 24px"><a class="text-link" href={url('/self-hosted')}>Compare self-hosted versions <Arrow size={16} /></a><a class="text-link" href={url('/terms#demo')}>Evaluation and activation terms</a></div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .activation-link { color: var(--mint); }
+  .trial-card { padding: 32px; color: var(--text); }
+  .trial-card ul { margin: 0; padding-left: 20px; line-height: 1.8; }
+  .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; list-style: none; padding: 0; margin: 0 0 28px; }
+  .steps li { display: flex; flex-direction: column; gap: 12px; border-top: 2px solid var(--ink); padding-top: 20px; }
+  #activate { scroll-margin-top: 96px; }
+  @media (max-width: 1100px) { .hero-grid { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 800px) { .steps { grid-template-columns: minmax(0, 1fr); } .trial-card { padding: 24px; } }
+</style>

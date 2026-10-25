@@ -255,7 +255,7 @@ const lineY = (n: Node, i: number) => n.y + n.h / 2 + (i - (n.lines.length - 1) 
         <h1 class="display rise">An observability console that speaks PromQL, LogQL and TraceQL — and answers back.</h1>
         <p class="lead rise-2">Eagle is the Obstack Stack's own console, and it is running today. Workloads, infrastructure, the service map, logs, traces and AI spans, read straight from the store in its own query languages. Ask Eagle answers from that same telemetry, TypeScript functions run beside it on an edge runtime, and EagleSRE brings incidents into the same place.</p>
         <div class="btn-row rise-2" style="padding-top: 6px">
-          <a class="btn btn-primary" href={url('/pricing#demo')}>Start the {DEMO.days}-day evaluation <Arrow /></a>
+          <a class="btn btn-primary" href={url('/download')}>Start the {DEMO.days}-day evaluation <Arrow /></a>
           <a class="btn btn-ghost" href="#tour">Tour the console</a>
         </div>
         <div class="hero-meta mono rise-2">
@@ -434,7 +434,7 @@ const lineY = (n: Node, i: number) => n.y + n.h / 2 + (i - (n.lines.length - 1) 
       <div class="model">
         <div class="stack" style="gap: 12px">
           <h3 class="h3">Your model, on your network.</h3>
-          <p class="body-2">Point Eagle at any OpenAI-compatible Chat Completions endpoint with tool calls: Netter's router, a hosted provider, or a model you run yourself. The browser never talks to the model; Eagle does, from the server, and renders its answers as text, never as HTML.</p>
+          <p class="body-2">Eagle is included in every stack plan; model-provider usage and inference hosting are separate. Point Eagle at any OpenAI-compatible Chat Completions endpoint with tool calls: Netter's router, a hosted provider, or a model you run yourself. The browser never talks to the model; Eagle does, from the server, and renders its answers as text, never as HTML.</p>
         </div>
         <pre class="code model-env"><span class="p"># eagle.env</span>
 COMPANION_URL=https://llm.internal.example
@@ -537,7 +537,7 @@ every = "5m"</pre>
     </div>
   </section>
 
-  <section class="dark sre-band">
+  <section class="dark sre-band" id="eaglesre">
     <div class="wrap section">
       <div class="section-head">
         <div class="stack">
@@ -583,7 +583,7 @@ every = "5m"</pre>
         </div>
       </div>
 
-      <p class="preview-note"><b>Preview.</b> Incidents, escalation workers, the Slack and Teams adapters and the investigation agent are built; delivery through each provider is in acceptance testing. It is not yet a replacement for a production pager. Today, that is <a href={url('/pageroot')}>PageRoot</a>.</p>
+      <p class="preview-note"><b>Preview.</b> Incidents, escalation workers, the Slack and Teams adapters and the investigation agent are built; delivery through each provider is in acceptance testing. It is not yet a replacement for a production pager. <a href={url('/eaglesre')}>Explore EagleSRE</a> or contact us to scope an evaluation.</p>
     </div>
   </section>
 
@@ -682,10 +682,11 @@ every = "5m"</pre>
           <span class="eyebrow">Available now</span>
         </div>
         <h2 class="h2">Eagle is in the Obstack Stack today.</h2>
-        <p class="body-2" style="font-size: 18px; max-width: 620px">Give us a Kubernetes cluster of your choice and we deploy the full stack on it, Eagle and Grafana side by side. Run your own telemetry through it for {DEMO.days} days, then decide.</p>
+        <p class="body-2"><a class="text-link" href={url('/eaglemcp')}>Explore EagleMCP</a> for assistant access to the stack.</p>
+        <p class="body-2" style="font-size: 18px; max-width: 620px">Install the self-hosted Max demo with our Helm chart and a {DEMO.days}-day evaluation license. Run your own telemetry through Eagle and Grafana, then activate Go, Pro or Max on the same installation.</p>
       </div>
       <div class="btn-row">
-        <a class="btn btn-primary" href={url('/pricing#demo')}>Start the {DEMO.days}-day evaluation <Arrow /></a>
+        <a class="btn btn-primary" href={url('/download')}>Start the {DEMO.days}-day evaluation <Arrow /></a>
         <a class="btn btn-ghost" href={url('/stack')}>See the full stack</a>
       </div>
     </div>

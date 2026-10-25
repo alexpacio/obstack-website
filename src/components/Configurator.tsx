@@ -18,9 +18,8 @@ import ConfigFields, { QuoteSummary, quoteText } from './ConfigFields';
 import './checkout.css';
 
 export default function Configurator() {
-  const [config, setConfig] = useState<Config>(() =>
-    typeof window === 'undefined' ? DEFAULT_CONFIG : configFromSearch(window.location.search),
-  );
+  // Match the static server render; read the selected plan and currency after hydration.
+  const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
   // Only drives the side-by-side: the fleet size changes their bill, never ours.
   const [nodes, setNodes] = useState(DEFAULT_COMPARE_NODES);
   const q = quote(config);

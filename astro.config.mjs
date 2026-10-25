@@ -7,6 +7,7 @@ import starlight from '@astrojs/starlight';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://obstack.it',
+  redirects: { '/pageroot': '/eaglesre', '/aurora': '/eaglesre' },
   trailingSlash: 'ignore',
   integrations: [
     starlight({
@@ -35,8 +36,8 @@ export default defineConfig({
     }),
     react(),
     sitemap({
-      // /buy is a checkout funnel, not a landing page: keep it out of the index.
-      filter: (page) => !page.includes('/buy'),
+      // Checkout and retired product redirects do not belong in the sitemap.
+      filter: (page) => !/\/(buy|pageroot|aurora)\/?$/.test(new URL(page).pathname),
       changefreq: 'weekly',
       lastmod: new Date(),
       serialize(item) {
